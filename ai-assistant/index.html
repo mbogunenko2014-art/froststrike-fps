@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>NEXUS AI — умный ассистент</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#04060c; --panel:rgba(9,14,26,.82); --panel2:rgba(13,20,36,.9);
+  --line:rgba(120,190,255,.16); --txt:#dfeaff; --dim:#8fa5c8;
+  --acc:#22d3ee; --acc2:#818cf8; --ok:#34d399; --danger:#ef4444;
+  --bubble-you:rgba(34,211,238,.12); --bubble-ai:rgba(129,140,248,.1);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{font-family:'Rajdhani',sans-serif;background:var(--bg);color:var(--txt);overflow:hidden}
+body.light{--bg:#eef3fa;--panel:rgba(255,255,255,.86);--panel2:rgba(245,249,255,.94);
+  --line:rgba(30,80,140,.18);--txt:#12213a;--dim:#5b6f8e;--bubble-you:rgba(34,150,220,.12);--bubble-ai:rgba(99,102,241,.1)}
+/* background aurora */
+#aur{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+   radial-gradient(60% 45% at 18% 8%,rgba(34,211,238,.14),transparent 60%),
+   radial-gradient(55% 40% at 85% 90%,rgba(129,140,248,.16),transparent 60%),
+   radial-gradient(40% 30% at 60% 25%,rgba(52,211,153,.06),transparent 60%)}
+#app{position:fixed;inset:0;display:flex;flex-direction:column;z-index:1}
+header{display:flex;align-items:center;gap:12px;padding:12px clamp(12px,3vw,26px);
+  background:var(--panel);border-bottom:1px solid var(--line);backdrop-filter:blur(14px)}
+.logo{font-family:'Orbitron',sans-serif;font-weight:900;font-size:clamp(15px,2.4vw,20px);letter-spacing:.14em}
+.logo b{color:var(--acc)}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--ok);box-shadow:0 0 10px var(--ok);flex:none}
+.dot.err{background:var(--danger);box-shadow:0 0 10px var(--danger)}
+.pm{font-size:13px;color:var(--dim);min-width:110px}
+.sp{flex:1}
+.ib{border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--txt);
+  font-family:inherit;font-weight:600;font-size:13.5px;padding:7px 13px;border-radius:10px;cursor:pointer;transition:.18s}
+.ib:hover{border-color:var(--acc);color:var(--acc);transform:translateY(-1px)}
+.ib.on{border-color:var(--acc);color:var(--acc);background:rgba(34,211,238,.08)}
+#chat{flex:1;overflow-y:auto;padding:20px clamp(10px,3vw,26px);scroll-behavior:smooth}
+#chat::-webkit-scrollbar{width:9px}
+#chat::-webkit-scrollbar-thumb{background:rgba(120,190,255,.18);border-radius:6px}
+.msg{display:flex;gap:10px;margin:0 0 16px;max-width:860px;animation:in .25s ease}
+.msg.you{margin-left:auto;flex-direction:row-reverse}
+@keyframes in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.av{width:34px;height:34px;border-radius:10px;flex:none;display:flex;align-items:center;justify-content:center;
+  font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;border:1px solid var(--line)}
+.msg.ai .av{background:linear-gradient(135deg,rgba(34,211,238,.25),rgba(129,140,248,.25));color:var(--acc)}
+.msg.you .av{background:rgba(255,255,255,.06);color:var(--dim)}
+.body{min-width:0}
+.name{font-size:12px;color:var(--dim);letter-spacing:.08em;margin:0 0 4px;font-weight:600}
+.bub{padding:11px 15px;border-radius:14px;border:1px solid var(--line);font-size:16.5px;line-height:1.55;overflow-wrap:break-word}
+.msg.ai .bub{background:var(--bubble-ai);border-top-left-radius:4px}
+.msg.you .bub{background:var(--bubble-you);border-top-right-radius:4px}
+.bub p{margin:0 0 8px}.bub p:last-child{margin:0}
+.bub ul,.bub ol{margin:4px 0 8px 18px}
+.bub code{font-family:ui-monospace,Consolas,monospace;font-size:13.5px;background:rgba(0,0,0,.3);
+  border:1px solid var(--line);border-radius:6px;padding:1px 6px}
+body.light .bub code{background:rgba(10,30,60,.07)}
+.bub pre{background:rgba(0,0,0,.42);border:1px solid var(--line);border-radius:12px;padding:12px 14px;
+  overflow-x:auto;margin:8px 0;position:relative}
+body.light .bub pre{background:rgba(12,30,60,.08)}
+.bub pre code{background:none;border:none;padding:0;font-size:13.5px;line-height:1.5}
+.bub a{color:var(--acc)}
+.bub h1,.bub h2,.bub h3{font-family:'Orbitron',sans-serif;font-size:15px;margin:10px 0 6px}
+.copy{position:absolute;top:8px;right:8px;font-size:11px;padding:3px 9px;border-radius:7px;
+  border:1px solid var(--line);background:var(--panel2);color:var(--dim);cursor:pointer;font-family:inherit}
+.copy:hover{color:var(--acc);border-color:var(--acc)}
+.acts{display:flex;gap:8px;margin-top:6px}
+.mini{font-size:12px;color:var(--dim);background:none;border:1px solid transparent;border-radius:7px;
+  padding:2px 9px;cursor:pointer;font-family:inherit;font-weight:600}
+.mini:hover{color:var(--acc);border-color:var(--line)}
+.typing{display:inline-flex;gap:5px;padding:4px 2px}
+.typing i{width:7px;height:7px;border-radius:50%;background:var(--acc);animation:tp 1s infinite}
+.typing i:nth-child(2){animation-delay:.16s}.typing i:nth-child(3){animation-delay:.32s}
+@keyframes tp{0%,60%,100%{transform:translateY(0);opacity:.45}30%{transform:translateY(-5px);opacity:1}}
+.notice{font-size:12.5px;color:var(--dim);text-align:center;margin:0 auto 14px;max-width:600px;
+  border:1px dashed var(--line);border-radius:10px;padding:7px 12px;background:rgba(255,255,255,.02)}
+.notice b{color:var(--acc2)}
+/* composer */
+#compWrap{padding:10px clamp(10px,3vw,26px) calc(12px + env(safe-area-inset-bottom));
+  background:var(--panel);border-top:1px solid var(--line);backdrop-filter:blur(14px)}
+.quick{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:9px}
+.qk{font-size:12.5px;color:var(--dim);border:1px solid var(--line);border-radius:999px;
+  padding:4px 12px;cursor:pointer;background:rgba(255,255,255,.02);font-family:inherit;font-weight:600;transition:.15s}
+.qk:hover{color:var(--acc);border-color:var(--acc)}
+#comp{display:flex;gap:10px;align-items:flex-end;max-width:860px;margin:0 auto}
+#ta{flex:1;resize:none;max-height:160px;min-height:46px;border-radius:14px;border:1px solid var(--line);
+  background:rgba(255,255,255,.03);color:var(--txt);font-family:inherit;font-size:16.5px;
+  padding:12px 14px;outline:none;line-height:1.45;transition:border .2s}
+#ta:focus{border-color:var(--acc)}
+#send{width:46px;height:46px;border-radius:12px;border:none;cursor:pointer;
+  background:linear-gradient(135deg,var(--acc),var(--acc2));color:#04121a;font-size:19px;
+  display:flex;align-items:center;justify-content:center;transition:.18s;flex:none}
+#send:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(34,211,238,.35)}
+#send.stop{background:linear-gradient(135deg,var(--danger),#c2410c);color:#fff}
+/* settings drawer */
+#set{position:fixed;top:0;right:0;height:100%;width:min(400px,94vw);z-index:5;overflow-y:auto;
+  background:var(--panel2);border-left:1px solid var(--line);backdrop-filter:blur(20px);
+  padding:18px;transform:translateX(105%);transition:transform .28s ease}
+#set.on{transform:none}
+#set h2{font-family:'Orbitron',sans-serif;font-size:15px;letter-spacing:.12em;margin-bottom:14px}
+#set label{display:block;font-size:13px;color:var(--dim);font-weight:600;margin:13px 0 5px;letter-spacing:.05em}
+#set input[type=text],#set input[type=password],#set select,#set textarea{
+  width:100%;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.03);
+  color:var(--txt);font-family:inherit;font-size:14.5px;padding:9px 11px;outline:none}
+#set input[type=range]{width:100%}
+#set textarea#sysP{min-height:88px;resize:vertical;line-height:1.45}
+#set .row{display:flex;justify-content:space-between;font-size:13.5px;font-weight:600}
+#set .wrapM{font-size:12.5px;color:var(--dim);line-height:1.5;margin-top:6px}
+#setClose{position:absolute;top:14px;right:14px}
+.fade{margin-top:16px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font-size:13px;color:var(--dim);line-height:1.5}
+@media(max-width:640px){
+  .bub{font-size:15.5px;padding:10px 13px}
+  #chat{padding:14px 10px}
+  .msg{gap:8px;margin-bottom:13px}
+  .av{width:29px;height:29px;border-radius:9px;font-size:10.5px}
+}
+</style>
+</head>
+<body>
+<div id="aur"></div>
+<div id="app">
+  <header>
+    <div class="dot" id="netDot" title="состояние подключения"></div>
+    <div class="logo">NEXUS <b>AI</b></div>
+    <div class="pm" id="modelLabel">openai-fast</div>
+    <div class="sp"></div>
+    <button class="ib" id="btnTheme" title="Тема">◐</button>
+    <button class="ib" id="btnNew" title="Новый чат">＋ Чат</button>
+    <button class="ib" id="btnExport" title="Скачать диалог">⭳</button>
+  <button class="ib" id="btnSet" title="Настройки">⚙</button>
+  </header>
+  <div id="chat"></div>
+  <div id="compWrap">
+    <div class="quick" id="quick"></div>
+    <div id="comp">
+      <textarea id="ta" rows="1" placeholder="Спроси что угодно… (Enter — отправить)"></textarea>
+      <button id="send" title="Отправить">➤</button>
+    </div>
+  </div>
+</div>
+
+<aside id="set">
+  <button class="ib" id="setClose">✕</button>
+  <h2>⚙ НАСТРОЙКИ</h2>
+  <label>Личность ИИ</label>
+  <select id="persona">
+    <option value="assistant">Универсальный ассистент</option>
+    <option value="coder">Программист</option>
+    <option value="teacher">Учитель (объясняет просто)</option>
+    <option value="translator">Переводчик</option>
+    <option value="writer">Копирайтер / писатель</option>
+    <option value="custom">Свой системный промпт…</option>
+  </select>
+  <label>Системный промпт</label>
+  <textarea id="sysP"></textarea>
+  <label>Модель</label>
+  <select id="modelSel"></select>
+  <div class="row"><span>Температура</span><span id="tempV">0.7</span></div>
+  <input type="range" id="temp" min="0" max="1500" value="700">
+  <div class="row"><span>Стриминг ответа</span><input type="checkbox" id="stream" checked style="width:auto"></div>
+  <label>API-ключ Pollinations (необязательно)</label>
+  <input type="password" id="apiKey" placeholder="sk_… — повышает лимиты">
+  <div class="wrapM">Ключ не обязателен: базовые модели работают бесплатно без регистрации. Ключ хранится только в этом браузере и отправляется только на text.pollinations.ai.</div>
+  <div class="fade">🛟 <b>Оффлайн-режим</b> — если сеть недоступна, встроенный локальный движок отвечает на базовые вопросы: математика, дата/время, монетка/кубик, маленькие заметки (запомни…). Полные ответы на любой вопрос дают онлайн-модели.</div>
+</aside>
+
+<script type="module">
+/* ================= NEXUS AI ================= */
+const $=id=>document.getElementById(id);
+const API='https://text.pollinations.ai';
+const PERSONAS={
+  assistant:'Ты NEXUS AI — дружелюбный и точный универсальный ассистент. Отвечай на языке пользователя, по делу, уместными абзацами и списками. В коде используй markdown-блоки с указанием языка.',
+  coder:'Ты NEXUS AI — опытный инженер-программист. Давай рабочий код с краткими пояснениями, отмечай подводные камни и сложность решений.',
+  teacher:'Ты NEXUS AI — терпеливый учитель. Объясняй просто, шаг за шагом, с примерами и аналогиями, проверяй понимание встречными вопросами.',
+  translator:'Ты NEXUS AI — точный переводчик. Переводи естественно, сохраняя смысл и стиль; если текст на русском — переводи на английский и наоборот, определяй язык автоматически.',
+  writer:'Ты NEXUS AI — талантливый копирайтер. Пиши живо и структурно, предлагай варианты заголовков и улучшай стиль.'
+};
+const FALLBACK_MODELS=['openai-fast','openai','gpt-oss-20b'];
+
+/* ---------- state ---------- */
+let MSGS=[],busy=false,ctrl=null,netOK=true;
+const SETS=Object.assign({persona:'assistant',model:'',stream:true,temp:.7,key:'',light:false},
+  JSON.parse(localStorage.getItem('nexus_set')||'{}'));
+const saveSet=()=>localStorage.setItem('nexus_set',JSON.stringify(SETS));
+try{MSGS=JSON.parse(localStorage.getItem('nexus_chat')||'[]')}catch(e){MSGS=[]}
+const saveChat=()=>{try{localStorage.setItem('nexus_chat',JSON.stringify(MSGS.slice(-80)))}catch(e){}};
+
+/* ---------- markdown-lite ---------- */
+const esc=s=>s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function md(src){
+  let out='',i=0;
+  const blocks=[];
+  src=src.replace(/```(\w*)\n([\s\S]*?)```/g,(_,lang,code)=>{
+    blocks.push({lang:lang||'text',code});return '\u0000B'+(blocks.length-1)+'\u0000';
+  });
+  const lines=src.split('\n');
+  let list=null,para=[];
+  const flushP=()=>{if(para.length){out+='<p>'+para.join('<br>')+'</p>';para=[]}};
+  const flushL=()=>{if(list){out+=list.t==='ul'?'</ul>':'</ol>';list=null}};
+  for(let ln of lines){
+    if(/^\u0000B\d+\u0000$/.test(ln.trim())||ln.trim()==='\u0000B'+(blocks.length-1)+'\u0000'){flushP();flushL();
+      const m=ln.trim().match(/\u0000B(\d+)\u0000/);
+      if(m){const b=blocks[+m[1]];
+        out+='<pre><button class="copy">копировать</button><code data-lang="'+b.lang+'">'+esc(b.code)+'</code></pre>';continue;}
+    }
+    const h=ln.match(/^(#{1,3})\s+(.*)/);
+    if(h){flushP();flushL();out+='<h'+h[1].length+'>'+inline(h[2])+'</h'+h[1].length+'>';continue}
+    const li=ln.match(/^\s*([-*•]|\d+[.)])\s+(.*)/);
+    if(li){
+      flushP();
+      const isUl=/^[-*•]/.test(li[1]);
+      if(!list||list.t!==(isUl?'ul':'ol')){flushL();out+=isUl?'<ul>':'<ol>';list={t:isUl?'ul':'ol'}}
+      out+='<li>'+inline(li[2])+'</li>';continue;
+    }
+    if(ln.trim()===''){flushP();flushL();continue}
+    para.push(inline(ln));
+  }
+  if(para.length)out+='<p>'+para.join('<br>')+'</p>';flushL();
+  return out;
+  function inline(t){
+    return esc(t)
+      .replace(/`([^`]+)`/g,'<code>$1</code>')
+      .replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>')
+      .replace(/(^|\W)\*([^*\n]+)\*(?=\W|$)/g,'$1<i>$2</i>')
+      .replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>')
+      .replace(/(^|[\s>])(https?:\/\/[^\s<]+)/g,'$1<a href="$2" target="_blank" rel="noopener">$2</a>');
+  }
+}
+document.addEventListener('click',e=>{
+  const c=e.target.closest('.copy');
+  if(c){navigator.clipboard&&navigator.clipboard.writeText(c.nextElementSibling.textContent);
+    c.textContent='✓';setTimeout(()=>c.textContent='копировать',1200);}
+});
+
+/* ---------- local offline engine ---------- */
+const KB=[
+ [/погод|дождь|температура за окном/, 'Погоду лучше всего спросить в онлайн-режиме — подключись к интернету, и я дам полноценный прогноз и советы, что надеть.'],
+ [/кто ты|ты кто|что ты за|расскажи о себе/, 'Я NEXUS AI: в сети живу большой языковой моделью через text.pollinations.ai, а без интернета отвечаю встроенным локальным движком (математика, время, заметки).'],
+ [/что ты умеешь|помощь|help|команды/, 'Я умею: отвечать на любые вопросы (онлайн), считать примеры «2+2*10», называть дату/время, подбрасывать монетку «монетка» и кубик «кубик d20», запоминать заметки: «запомни купить хлеб» / «что ты помнишь».'],
+ [/как дела|как ты/, 'Отлично! Все модули на месте 😄 А у тебя как?'],
+ [/привет|здравствуй|хай|hi|hello/, 'Привет! Спроси меня о чём угодно — работаю и онлайн, и без сети.'],
+ [/спасибо|благодар/, 'Всегда рад помочь! 🙌'],
+ [/пока|до свидания/, 'До встречи! Возвращайся, если появятся вопросы 👋']
+];
+let MEM=JSON.parse(localStorage.getItem('nexus_mem')||'[]');
+function localAnswer(qRaw){
+  const q=qRaw.trim(),lq=q.toLowerCase();
+  if(/^что ты помнишь|тв.? заметк/.test(lq))
+    return MEM.length?'Держи мои заметки:\n'+MEM.map((m,i)=>(i+1)+'. '+m).join('\n'):'Пока заметок нет. Скажи «запомни …».';
+  const memo=lq.match(/^запомни[:\s]+(.+)/);
+  if(memo){MEM.push(qRaw.trim().replace(/^запомни[:\s]*/i,''));localStorage.setItem('nexus_mem',JSON.stringify(MEM));
+    return 'Запомнил: «'+MEM[MEM.length-1]+'». Скажи «что ты помнишь», чтобы посмотреть список.';}
+  const d20=lq.match(/кубик\s*d?(\d+)?/);
+  if(d20)return '🎲 Выпало: **'+(1+Math.floor(Math.random()*+('0'+(d20[1]||6))))+'** (d'+(d20[1]||6)+')';
+  if(/монет[ак]|решк|орел|орёл/.test(lq))return '🪙 Монетка говорит: **'+(Math.random()<.5?'орёл':'решка')+'**';
+  if(/который час|сколько времени/.test(lq))return '⏰ Сейчас **'+new Date().toLocaleTimeString('ru-RU')+'**';
+  if(/какое число|какой (день|сег|мес)|какая дата|сегодня/.test(lq))
+    return '📅 Сегодня **'+new Date().toLocaleDateString('ru-RU',{weekday:'long',year:'numeric',month:'long',day:'numeric'})+'**';
+  const expr=q.replace(/[^0-9+\-*/().,%^\s]/g,' ').replace(/\s+/g,' ').trim();
+  if(/^[\d\s+\-*/().,%^]+$/.test(expr)&&/\d[\s]*[+\-*/^%]/.test(expr)&&expr.replace(/\D/g,'').length>1){
+    try{
+      const js=expr.replace(/\^/g,'**').replace(/,(\d)/g,'.$1');
+      const val=Function('"use strict";return ('+js+')')();
+      if(typeof val==='number'&&isFinite(val))
+        return '**'+q.replace(/\?/g,'').trim()+' = '+Math.round(val*1e8)/1e8+'**';
+    }catch(e){}
+  }
+  for(const[re,ans]of KB)if(re.test(lq))return ans;
+  return null;
+}
+
+/* ---------- API ---------- */
+async function loadModels(){
+  const sel=$('modelSel');sel.innerHTML='';
+  let list=FALLBACK_MODELS;
+  try{
+    const r=await fetch(API+'/models');
+    if(r.ok){
+      const j=await r.json();
+      const arr=Array.isArray(j)?j:(j.data||[]);
+      const ids=arr.map(m=>typeof m==='string'?m:(m.id||m.name)).filter(Boolean);
+      if(ids.length)list=ids;
+    }
+  }catch(e){}
+  for(const m of list){const o=document.createElement('option');o.value=m;o.textContent=m;sel.appendChild(o)}
+  sel.value=list.includes(SETS.model)?SETS.model:list[0];
+  SETS.model=sel.value;
+  $('modelLabel').textContent=SETS.model;
+}
+function sysPrompt(){return SETS.persona==='custom'?SETS.sysP:(SETS.sysP||PERSONAS[SETS.persona]||PERSONAS.assistant);}
+async function apiCall(here){
+  const ctx=MSGS.slice(-16).map(m=>({role:m.role,content:m.text}));
+  const body={model:SETS.model||'openai-fast',messages:[{role:'system',content:sysPrompt()},...ctx],
+    stream:!!SETS.stream,temperature:SETS.temp};
+  ctrl=new AbortController();
+  const headers={'Content-Type':'application/json'};
+  if(SETS.key)headers['Authorization']='Bearer '+SETS.key;
+  const r=await fetch(API+'/openai',{method:'POST',headers,body:JSON.stringify(body),signal:ctrl.signal});
+  if(!r.ok)throw new Error('HTTP '+r.status);
+  const ct=r.headers.get('content-type')||'';
+  if(SETS.stream&&r.body&&!/json/.test(ct)){
+    const rd=r.body.getReader(),dec=new TextDecoder();
+    let buf='';
+    for(;;){
+      const {done,value}=await rd.read();
+      if(done)break;
+      buf+=dec.decode(value,{stream:true});
+      const parts=buf.split('\n');buf=parts.pop();
+      for(const line of parts){
+        const s=line.trim();
+        if(!s.startsWith('data:'))continue;
+        const data=s.slice(5).trim();
+        if(data==='[DONE]')return;
+        try{
+          const j=JSON.parse(data);
+          const d=(j.choices&&j.choices[0]&&(j.choices[0].delta||j.choices[0].message))||{};
+          const txt=d.content||'';
+          if(txt)here(txt);
+        }catch(e){}
+      }
+    }
+    return;
+  }
+  const j=await r.json();
+  const txt=j.choices&&j.choices[0]&&(j.choices[0].message&&j.choices[0].message.content||j.choices[0].text)||'';
+  if(txt)here(txt);
+}
+async function apiGetFallback(){
+  const ctx=MSGS.slice(-6).map(m=>m.role==='user'?m.text:'[предыдущий ответ] '+m.text).join('\n---\n');
+  const url=API+'/'+encodeURIComponent(ctx.slice(-1500))+'?model='+encodeURIComponent(SETS.model||'openai-fast')
+    +'&system='+encodeURIComponent(sysPrompt());
+  const r=await fetch(url);
+  if(!r.ok)throw new Error('HTTP '+r.status);
+  const t=await r.text();
+  try{const j=JSON.parse(t);return j.choices?.[0]?.message?.content||t}catch(e){return t}
+}
+
+/* ---------- UI ---------- */
+function addMsg(role,text,opts={}){
+  const el=document.createElement('div');
+  el.className='msg '+(role==='user'?'you':'ai');
+  el.innerHTML='<div class="av">'+(role==='user'?'ТЫ':'N∈')+'</div>'+
+    '<div class="body"><div class="name">'+(role==='user'?'ВЫ':'NEXUS AI')+'</div>'+
+    '<div class="bub"></div></div>';
+  const bub=el.querySelector('.bub');
+  if(opts.raw)bub.textContent=text;else bub.innerHTML=md(text);
+  const chat=$('chat');chat.appendChild(el);chat.scrollTop=chat.scrollHeight;
+  if(role!=='user'&&!opts.raw){
+    const acts=document.createElement('div');acts.className='acts';
+    const rg=document.createElement('button');rg.className='mini';rg.textContent='↻ ещё раз';
+    rg.onclick=()=>{if(busy)return;
+      let i=MSGS.length-1;while(i>=0&&MSGS[i].role!=='user')i--;
+      if(i>=0){MSGS.splice(i+1);saveChat();render();respond();}};
+    acts.appendChild(rg);el.querySelector('.body').appendChild(acts);
+  }
+  return{el,bub};
+}
+function render(){
+  const chat=$('chat');chat.innerHTML='';
+  if(!MSGS.length){
+    chat.insertAdjacentHTML('beforeend','<div class="notice">👋 Привет! Я <b>NEXUS AI</b> — полноценная языковая модель (онлайн) + встроенный оффлайн-движок. Задай любой вопрос.</div>');
+    return;
+  }
+  for(const m of MSGS)addMsg(m.role,m.text);
+}
+async function send(){
+  if(busy)return;
+  const ta=$('ta'),text=ta.value.trim();
+  if(!text)return;
+  ta.value='';ta.style.height='auto';
+  MSGS.push({role:'user',text});saveChat();
+  addMsg('user',text);
+  await respond();
+}
+async function respond(){
+  busy=true;
+  const btn=$('send');btn.classList.add('stop');btn.textContent='■';
+  const{bub}=addMsg('assistant','');
+  bub.innerHTML='<span class="typing"><i></i><i></i><i></i></span>';
+  const chat=$('chat');chat.scrollTop=chat.scrollHeight;
+  let acc='',first=true;
+  const here=t=>{
+    if(first){first=false;acc=t;bub.innerHTML=md(acc);}
+    else{acc+=t;bub.innerHTML=md(acc+'▌');}
+    chat.scrollTop=chat.scrollHeight;
+  };
+  try{
+    await apiCall(here);
+    if(!acc)throw new Error('пустой ответ');
+    netOK=true;
+  }catch(err){
+    if(err&&(err.name==='AbortError')){if(!acc)acc='⏹ Остановлено.';}
+    else{
+      try{
+        const t=await apiGetFallback();
+        if(t&&t.trim()){acc=t;netOK=true;bub.innerHTML=md(acc+'▌');}
+        else throw new Error('пусто');
+      }catch(err2){
+        netOK=false;netDot();
+        const loc=localAnswer(MSGS[MSGS.length-1].text);
+        acc=(loc?('🛟 **Оффлайн-режим.** '+loc)
+          :'⚠️ Не удалось связаться с облачной моделью ('+(err&&err.message||'сеть недоступна')+
+          '). Проверь интернет — без него для полных ответов быстрее всего снова открыть эту страницу онлайн.');
+        bub.innerHTML=md(acc);
+      }
+    }
+  }
+  MSGS.push({role:'assistant',text:acc});saveChat();
+  bub.innerHTML=md(acc);
+  busy=false;ctrl=null;
+  const chat2=$('chat');chat2.scrollTop=chat2.scrollHeight;
+  btn.classList.remove('stop');btn.textContent='➤';
+}
+function stop(){if(ctrl&&busy)ctrl.abort();}
+function netDot(){const d=$('netDot');d.classList.toggle('err',!netOK);
+  d.title=netOK?'онлайн-модель доступна':'сеть недоступна — работает оффлайн-движок';}
+
+/* ---------- wiring ---------- */
+async function init(){
+  render();netDot();
+  $('persona').value=SETS.persona;
+  $('sysP').value=SETS.sysP||PERSONAS[SETS.persona]||PERSONAS.assistant;
+  if(SETS.persona==='custom')$('sysP').value=SETS.sysP||'';
+  $('temp').value=String(SETS.temp*1000);
+  $('tempV').textContent=SETS.temp.toFixed(2);
+  $('stream').checked=SETS.stream;
+  $('apiKey').value=SETS.key;
+  if(SETS.light)document.body.classList.add('light');
+  loadModels();
+  const ta=$('ta');
+  ta.addEventListener('input',()=>{ta.style.height='auto';ta.style.height=Math.min(ta.scrollHeight,160)+'px'});
+  ta.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}});
+  $('send').onclick=()=>{busy?stop():send();};
+  $('persona').onchange=e=>{
+    SETS.persona=e.target.value;
+    if(SETS.persona!=='custom')$('sysP').value=PERSONAS[SETS.persona];
+    saveSet();
+  };
+  $('sysP').oninput=e=>{SETS.sysP=e.target.value;saveSet();};
+  $('modelSel').onchange=e=>{SETS.model=e.target.value;saveSet();$('modelLabel').textContent=SETS.model||'—'};
+  $('temp').oninput=e=>{SETS.temp=+e.target.value/1000;$('tempV').textContent=SETS.temp.toFixed(2);saveSet();};
+  $('stream').onchange=e=>{SETS.stream=e.target.checked;saveSet();};
+  $('apiKey').oninput=e=>{SETS.key=e.target.value.trim();saveSet();};
+  $('btnSet').onclick=()=>$('set').classList.toggle('on');
+  $('setClose').onclick=()=>$('set').classList.remove('on');
+  $('btnTheme').onclick=()=>{SETS.light=!SETS.light;document.body.classList.toggle('light',SETS.light);saveSet();};
+  $('btnNew').onclick=()=>{if(busy)stop();MSGS=[];saveChat();render();};
+  $('btnExport').onclick=()=>{
+    const txt=MSGS.map(m=>(m.role==='user'?'ВЫ':'NEXUS AI')+':\n'+m.text).join('\n\n———\n\n');
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(new Blob([txt||'Пустой диалог'],{type:'text/plain;charset=utf-8'}));
+    a.download='nexus-ai-dialog.txt';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),3000);
+  };
+  const QUICK=['Объясни квантовую физику просто','Напиши код таймера на JS','Идеи для сюжета игры','Переведи: скоро встретимся','Составь план тренировки'];
+  const qk=$('quick');
+  for(const q of QUICK){
+    const b=document.createElement('button');b.className='qk';b.textContent=q;
+    b.onclick=()=>{$('ta').value=q;send();};
+    qk.appendChild(b);
+  }
+}
+init();
+</script>
+</body>
+</html>
