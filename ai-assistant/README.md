@@ -14,3 +14,5 @@ Dark glassmorphism interface over an atmospheric SVG scenery (wooden hut, slate 
 - Prompt library (▤), chat sessions with search, web-search capsule (searchgpt model first, graceful fallback), regenerate, stop generation, TXT export
 - Markdown-lite rendering with code blocks, chat history in localStorage, fully responsive
 - Mobile (phones): bottom navigation bar (new chat / chats / prompts / settings), settings as a bottom-sheet, voice input (ru-RU) via SpeechRecognition, popups repositioned above the nav bar, reduced blur cost
+- Voice control: wake word «Нексус» — opens sites in a new tab (YouTube, Google, Wikipedia, GitHub, mail, weather…, any domain, or a Google search fallback), plus app commands (new chat, clear history, settings, chats, prompts, web search on/off, mind flash/smart/deep/ultra, help); if the popup blocker interferes, an inline «Открыть» action bar appears
+- Read-aloud answers: NEXUS can speak responses via SpeechSynthesis (ru-RU), toggled by the speaker button or voice command
