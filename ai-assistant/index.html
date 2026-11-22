@@ -184,7 +184,18 @@ body.noanim #heroMark i{animation:none}
   background:rgba(5,5,9,.88);cursor:zoom-out;padding:24px}
 #lb.on{display:flex}
 #lb img{max-width:min(92vw,900px);max-height:88vh;border-radius:14px;border:1px solid var(--line2)}
-#toast,#actT{position:fixed;left:50%;transform:translateX(-50%) translateY(10px);bottom:104px;z-index:21;
+          <button id="btnMind" title="Выбрать разум">🧠 Smart ▾</button>
+        </div>
+        <div id="styleRow">
+          <button class="schip on" data-sfx="">обычный</button>
+          <button class="schip" data-sfx="photorealistic, 35mm photo, sharp focus, high detail, natural light">фотореализм</button>
+          <button class="schip" data-sfx="anime illustration, vibrant colors, clean line art, studio quality">аниме</button>
+          <button class="schip" data-sfx="pixel art, 16-bit retro game sprite, crisp pixels, limited palette">пиксель-арт</button>
+          <button class="schip" data-sfx="cyberpunk style, neon lights, rain reflections, cinematic mood">киберпанк</button>
+          <button class="schip" data-sfx="oil painting, textured brushstrokes, rich colors">масло</button>
+          <button class="schip" data-sfx="watercolor painting, soft colors, paper texture">акварель</button>
+          <button class="schip" data-sfx="cute 3D render, pixar style, soft global illumination">3D-мультфильм</button>
+        </div>;left:50%;transform:translateX(-50%) translateY(10px);bottom:104px;z-index:21;
   background:rgba(24,24,31,.96);border:1px solid var(--line);border-radius:14px;color:var(--txt);
   opacity:0;pointer-events:none;transition:opacity .25s,transform .25s}
 #toast{padding:10px 16px;font-size:13px;max-width:min(440px,88vw);text-align:center}
@@ -322,6 +333,7 @@ body.noanim #heroMark i{animation:none}
   .tbtn{width:44px;height:44px}
   #send{width:44px;height:44px}
   .cap{height:36px}
+  .schip{padding:9px 13px;font-size:13px}
   #compWrap{padding-bottom:6px}
   #ta{font-size:16px}
   #win{background:rgba(14,14,18,.5)}
@@ -357,6 +369,7 @@ body.noanim #heroMark i{animation:none}
 <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.4"/><path d="M3.6 12h16.8M12 3.6c2.5 2.3 3.9 5.2 3.9 8.4s-1.4 6.1-3.9 8.4c-2.5-2.3-3.9-5.2-3.9-8.4s1.4-6.1 3.9-8.4z"/></symbol>
 <symbol id="i-send" viewBox="0 0 24 24"><path d="M12 19V5.4M5.8 11.2L12 5l6.2 6.2"/></symbol>
 <symbol id="i-sound" viewBox="0 0 24 24"><path d="M11 5L6.5 9H3v6h3.5L11 19V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 6a9.5 9.5 0 0 1 0 12"/></symbol>
+<symbol id="i-loop" viewBox="0 0 24 24"><path d="M17 2.5l3.5 3.5-3.5 3.5"/><path d="M3.5 11.5v-1a4.5 4.5 0 0 1 4.5-4.5h12"/><path d="M7 21.5L3.5 18 7 14.5"/><path d="M20.5 12.5v1a4.5 4.5 0 0 1-4.5 4.5h-12"/></symbol>
 <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 4.5V15M7.2 10.2L12 15l4.8-4.8M4.5 19.5h15"/></symbol>
 <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
 <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 7h9M17.5 7H20M4 12h3M11.5 12H20M4 17h11M19.5 17H20"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="17" r="2"/></symbol>
@@ -478,9 +491,20 @@ body.noanim #heroMark i{animation:none}
           <button class="tbtn" id="btnArt" title="Режим рисования" aria-label="Режим рисования"><svg class="ic"><use href="#i-img"/></svg></button>
           <button id="btnMind" title="Выбрать разум">🧠 Smart ▾</button>
         </div>
+        <div id="styleRow">
+          <button class="schip on" data-sfx="">обычный</button>
+          <button class="schip" data-sfx="photorealistic, 35mm photo, sharp focus, high detail, natural light">фотореализм</button>
+          <button class="schip" data-sfx="anime illustration, vibrant colors, clean line art, studio quality">аниме</button>
+          <button class="schip" data-sfx="pixel art, 16-bit retro game sprite, crisp pixels, limited palette">пиксель-арт</button>
+          <button class="schip" data-sfx="cyberpunk style, neon lights, rain reflections, cinematic mood">киберпанк</button>
+          <button class="schip" data-sfx="oil painting, textured brushstrokes, rich colors">масло</button>
+          <button class="schip" data-sfx="watercolor painting, soft colors, paper texture">акварель</button>
+          <button class="schip" data-sfx="cute 3D render, pixar style, soft global illumination">3D-мультфильм</button>
+        </div>
         <div id="compRow">
           <input type="file" id="fileIn" accept="image/*" hidden>
-          <button class="tbtn" id="btnVoice" title="Голосовой ввод и команды" aria-label="Голосовой ввод" style="display:none"><svg class="ic"><use href="#i-mic"/></svg></button><button class="tbtn" id="btnTts" title="Читать ответы вслух" aria-label="Читать ответы вслух" style="display:none"><svg class="ic"><use href="#i-sound"/></svg></button><textarea id="ta" rows="1" placeholder="Спросите что угодно…"></textarea>
+          <button class="tbtn" id="btnVoice" title="Голосовой ввод и команды" aria-label="Голосовой ввод" style="display:none"><svg class="ic"><use href="#i-mic"/></svg></button><button class="tbtn" id="btnTts" title="Читать ответы вслух" aria-label="Читать ответы вслух" style="display:none"><svg class="ic"><use href="#i-sound"/></svg></button>
+          <button class="tbtn" id="btnLoop" title="Голосовой режим: говори — Nexus слушает и отвечает вслух" aria-label="Голосовой режим диалога" style="display:none"><svg class="ic"><use href="#i-loop"/></svg></button><textarea id="ta" rows="1" placeholder="Спросите что угодно…"></textarea>
           <button id="send" title="Отправить" aria-label="Отправить"><svg class="ic"><use href="#i-send"/></svg></button>
         </div>
       </div>
@@ -639,6 +663,19 @@ const KB=[
 ];
 const MEM_KEY='nexus_mem';
 function getMem(){try{return JSON.parse(localStorage.getItem(MEM_KEY)||'[]')}catch(e){return[]}}
+function addMem(note){
+  note=String(note||'').trim().slice(0,220);
+  if(!note)return false;
+  const mem=getMem();
+  if(mem.some(m=>m.toLowerCase()===note.toLowerCase()))return false;
+  mem.push(note);
+  try{localStorage.setItem(MEM_KEY,JSON.stringify(mem.slice(-30)))}catch(e){}
+  return true;
+}
+function memSys(){
+  const mem=getMem();
+  return mem.length?'\n\nДолгая память о пользователе (используй, если уместно, в т.ч. по имени):\n- '+mem.slice(-20).join('\n- '):'';
+}
 function localAnswer(qRaw){
   const q=qRaw.trim(),lq=q.toLowerCase();
   if(/^что ты помнишь|тв\.? заметк|покажи заметк/.test(lq)){
@@ -666,6 +703,10 @@ function localAnswer(qRaw){
         return '**'+q.replace(/[?=]/g,'').trim()+' = '+Math.round(val*1e8)/1e8+'**';
     }catch(e){}
   }
+  if(/^(забудь|сотри память|очисти память|забудь всё|забудь всё что помнишь|забудь меня)/.test(lq)){
+    try{localStorage.setItem(MEM_KEY,'[]')}catch(e){}
+    return '🧠 Память очищена — начинаем с чистого листа!';
+  }
   for(const[re,ans]of KB)if(re.test(lq))return ans;
   return null;
 }
@@ -675,7 +716,7 @@ function stripTags(t){return String(t||'').replace(/<\/?think>/g,'')}
 function cleanOut(t){return stripTags(t).replace(/^[\s\uFEFF]+|[\s]+$/g,'')}
 function buildCtx(){
   const tail=MSGS.slice(-14);
-  return [{role:'system',content:SYS},
+  return [{role:'system',content:SYS+memSys()},
     ...tail.map((m,i)=>{
       const last=i===tail.length-1;
       if(m.img&&last&&m.full)
@@ -750,7 +791,7 @@ async function finishNonStream(here,j){
 async function tryGet(){
   const q=MSGS.filter(m=>m.role==='user').pop();
   const url=API_GET+'/'+encodeURIComponent((q?q.text:'hi').slice(-700))
-    +'?model='+(MODEL_QUEUE[0]||'openai-fast')+'&system='+encodeURIComponent(SYS)+'&temperature=0.65';
+    +'?model='+(MODEL_QUEUE[0]||'openai-fast')+'&system='+encodeURIComponent(SYS+memSys())+'&temperature=0.65';
   ctrl=new AbortController();stopReason='';
   const t=reqTimeout();
   let r;
@@ -864,6 +905,22 @@ function clearImg(){
   $('imgPrevIm').removeAttribute('src');$('imgPrevName').textContent='';
 }
 
+let ARTSFX='';
+async function enhanceImgPrompt(raw){
+  const p=raw.slice(0,300);
+  if(navigator.onLine===false)return p;
+  try{
+    const url=API_GET+'/'+encodeURIComponent('Переведи точно на английский язык и преврати в один яркий визуальный промпт для генератора изображений (15-35 слов, перечисли главные детали сцены, без кавычек, без пояснений, ответь только промптом): '+p)
+      +'?model=openai-fast&temperature=0.7';
+    const c=new AbortController();const t=setTimeout(()=>c.abort(),9000);
+    let r;
+    try{r=await fetch(url,{signal:c.signal});}finally{clearTimeout(t);}
+    if(!r.ok)throw 0;
+    const txt=(await r.text()).trim().replace(/^["'«»]+|["'«»]+$/g,'').slice(0,500);
+    if(txt&&txt.length>8&&!/[а-яё]/i.test(txt))return txt;
+  }catch(e){}
+  return p;
+}
 function imgUrl(prompt,seed){
   const p=encodeURIComponent(prompt.slice(0,900));
   if(SETS.key)return 'https://gen.pollinations.ai/image/'+p+
@@ -921,7 +978,11 @@ async function drawImg(prompt){
   $('chat').appendChild(el);
   $('chat').scrollTop=$('chat').scrollHeight;
   let ok=false;
-  if(navigator.onLine!==false)ok=await loadGen(bub,prompt);
+  if(navigator.onLine!==false){
+    let pp=await enhanceImgPrompt(prompt);
+    if(ARTSFX)pp+=', '+ARTSFX;
+    ok=await loadGen(bub,pp);
+  }
   if(!ok){
     const msg='🎨 Не получилось нарисовать'+(navigator.onLine===false?' — нет подключения к сети.':'. Проверь сеть и попробуй ещё раз, или попробуй позже — сервис бесплатный и иногда занят.');
     bub.textContent=msg;
@@ -1003,10 +1064,37 @@ function render(){
     addMsg(m.role,m.text);
   }
 }
+function localNote(text){
+  const ta=$('ta');ta.value='';ta.style.height='auto';
+  const note=text.replace(/^запомни[,:]??\s*/i,'').trim();
+  const dup=getMem().some(m=>m.toLowerCase()===note.toLowerCase());
+  addMem(note);
+  MSGS.push({role:'user',text});saveChat();
+  MSGS.push({role:'assistant',text:dup?'🧠 Это у меня уже записано: «'+note+'».':'🧠 Запомнил навсегда: «'+note+'». Скажи «что ты помнишь» — покажу список.'});
+  saveChat();render();
+}
 async function send(){
   if(busy)return;
   const ta=$('ta'),text=ta.value.trim();
   if(!text&&!PEND)return;
+  {
+    const lm=text.toLowerCase();
+    if(/^запомни[,:]??\s*(.+)/.test(lm)){localNote(text);return;}
+    if(/^(забудь всё|забудь всё что помнишь|забудь меня|сотри память|очисти память)$/.test(lm)){
+      try{localStorage.setItem(MEM_KEY,'[]')}catch(e){}
+      ta.value='';ta.style.height='auto';
+      MSGS.push({role:'user',text});saveChat();
+      MSGS.push({role:'assistant',text:'🧠 Память очищена — начинаем с чистого листа!'});saveChat();render();
+      hap();return;}
+    if(/^(что ты помнишь|что ты обо мне знаешь|покажи память)$/.test(lm)){
+      const mem=getMem();
+      ta.value='';ta.style.height='auto';
+      MSGS.push({role:'user',text});saveChat();
+      MSGS.push({role:'assistant',text:mem.length?'🧠 Я помню:\n'+mem.map((m,i)=>(i+1)+'. '+m).join('\n'):'🧠 Пока ничего не запомнил. Скажи «запомни …» — сохраню навсегда.'});
+      saveChat();render();return;}
+    const nm=text.match(/меня зовут\s+([A-ZА-ЯЁ][а-яёa-z\-]{1,20})/i);
+    if(nm&&addMem('Имя пользователя: '+nm[1].trim()))window.nxsToast&&window.nxsToast('Приятно познакомиться, '+nm[1].trim()+'! Запомнил 👋');
+  }
   if(IMGMODE&&text){ta.value='';ta.style.height='auto';drawImg(text);return;}
   const mImg=text.match(/^\/(?:img|рисунок|картинк[аи])\s+(.+)/i);
   if(mImg){ta.value='';ta.style.height='auto';drawImg(mImg[1]);return;}
@@ -1119,6 +1207,27 @@ function drawSettings(){
   head.querySelector('.pc.show').onclick=()=>{KEYSHOW=!KEYSHOW;drawSettings();};
   head.querySelector('.pc.act').onclick=checkKey;
   wf.appendChild(head);
+  const mem=getMem();
+  const mr=document.createElement('div');mr.className='prow';
+  mr.innerHTML='<div class="pl"><b>🧠 Долгая память</b><span class="ps '+(mem.length?'ok':'')+'">'+
+    (mem.length?mem.length+' заметок':'пусто')+'</span></div>'+
+    '<div class="pc act">'+(mem.length?'показать':'—')+'</div>'+
+    '<div class="pc show">очистить</div>'+
+    '<div class="lim '+(mem.length?'ok':'')+'">'+(mem.length||'0')+'</div>';
+  const memView=mr.querySelector('.pc.act');
+  if(mem.length)memView.onclick=()=>{
+    KEYSHOW=KEYSHOW;closeSet();newChat();
+    MSGS.push({role:'user',text:'что ты помнишь'});
+    MSGS.push({role:'assistant',text:'🧠 Я помню:\n'+mem.map((m,i)=>(i+1)+'. '+m).join('\n')});
+    saveChat();render();
+  };
+  mr.querySelector('.pc.show').onclick=function(){
+    if(!mem.length)return;
+    this.__c=!this.__c;
+    this.textContent=this.__c?'точно очистить?':'очистить';
+    if(this.__c){try{localStorage.setItem(MEM_KEY,'[]')}catch(e){}drawSettings();toast('Память очищена');}
+  };
+  wf.appendChild(mr);
   const kr=document.createElement('div');kr.className='prow keyrow';
   kr.innerHTML='<input id="setKey" type="'+(KEYSHOW?'text':'password')+'" placeholder="sk_… ключ Pollinations (Ultra и Nano Banana)">';
   wf.appendChild(kr);
@@ -1186,9 +1295,14 @@ async function init(){
   $('btnArt').onclick=()=>{
     hap();IMGMODE=!IMGMODE;
     $('btnArt').classList.toggle('has',IMGMODE);
+    $('comp').classList.toggle('art',IMGMODE);
     $('ta').placeholder=IMGMODE?'Опиши картинку…':'Спросите что угодно…';
-    if(IMGMODE)clearImg();
+    if(IMGMODE){WEB=false;$('btnWeb').classList.remove('has');clearImg();}
   };
+  document.querySelectorAll('.schip').forEach(b=>b.onclick=()=>{
+    hap();ARTSFX=b.dataset.sfx||'';
+    document.querySelectorAll('.schip').forEach(x=>x.classList.toggle('on',x===b));
+  });
   $('btnTts').style.display=(window.speechSynthesis&&window.SpeechSynthesisUtterance)?'':'none';
   const syncTts=()=>$('btnTts').classList.toggle('has',SETS.vread===true);
   syncTts();
@@ -1198,6 +1312,7 @@ async function init(){
   let toastT=null;
   function toast(msg,ms){const t=$('toast');if(!t)return;t.textContent=msg;t.classList.add('on');
     clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),ms||2600);}
+  window.nxsToast=toast;
   let ACTF=null;
   function actAsk(msg,label,fn){const a=$('actT');if(!a){fn&&fn();return;}
     const t=$('toast');t&&t.classList.remove('on');
@@ -1218,6 +1333,7 @@ async function init(){
     SS.cancel();
     const u=new window.SpeechSynthesisUtterance(s);
     u.lang='ru-RU';u.rate=1.07;u.pitch=1;
+    u.onend=()=>{if(LOOP&&!recOn&&!busy){setTimeout(()=>{if(LOOP&&!recOn&&!busy)startRec()},350)}};
     SS.speak(u);
   }
   window.nxsSpeak=t=>{if(SETS.vread)try{speak(t)}catch(e){}};
@@ -1226,6 +1342,12 @@ async function init(){
     MSGS.push({role:'assistant',text:'Управляй мной голосом — скажи в микрофон команду:\n• «Нексус, открой ютуб» — открою YouTube (так же: гугл, википедия, гитхаб, почта, телеграм, вк, инстаграм, тикток, карты, переводчик, погода…)\n• «Открой сайт example.com» / «Открой браузер»\n• «Новый чат», «Очисти чат», «Настройки», «Чаты», «Промпты»\n• «Включи веб-поиск», «Выключи веб-поиск»\n• «Разум флеш / смарт / глубокий / ультра»\n• «Читай ответы вслух», «Молчи»\nВсё остальное просто диктуй — я напишу сообщение и отвечу.'});
     saveChat();render();
     if(SETS.vread)try{speak('Слушаю команды')}catch(e){}
+  }
+  function sysSay(q,a){
+    MSGS.push({role:'user',text:q});
+    MSGS.push({role:'assistant',text:a});
+    saveChat();render();
+    if(SETS.vread)try{speak(a)}catch(e){}
   }
   const SITES=[
     [['ютуб','youtube'],'https://www.youtube.com','YouTube'],
@@ -1281,6 +1403,18 @@ async function init(){
     if(/(читай|говори|озвуч|включи голос|включить голос)/.test(t)&&/(вслух|голос)/.test(t)){
       SETS.vread=true;saveSet();syncTts();toast('Буду читать ответы вслух');speak('Слушаюсь');return true;}
     if(/^(что ты умеешь|команды|какие команды|помощь|help)$/.test(t)){sysHelp();return true;}
+    if(/^(что ты помнишь|что ты обо мне знаешь|покажи память)$/.test(t)){
+      const mem=getMem();
+      sysSay('что ты помнишь',mem.length?'🧠 Я помню:\n'+mem.map((m,i)=>(i+1)+'. '+m).join('\n'):'🧠 Пока ничего. Скажи «запомни …» — сохраню навсегда.');return true;}
+    if(/^(забудь всё|забудь всё что помнишь|забудь меня|сотри память|очисти память)$/.test(t)){
+      try{localStorage.setItem(MEM_KEY,'[]')}catch(e){}
+      sysSay('забудь всё','🧠 Память очищена — начинаем с чистого листа!');return true;}
+    if(/^(стоп|хватит|отмена|стоп генерация)$/.test(t)){
+      if(busy)stopGen();
+      if(LOOP){LOOP=false;$('btnLoop').classList.remove('has');}
+      endSession();if(window.speechSynthesis)window.speechSynthesis.cancel();
+      toast('Останавливаю');return true;}
+    if(/^(голосовой режим|режим диалога|слушай меня continuously)$/.test(t)){$('btnLoop').click();return true;}
     m=t.match(/^(открой|запусти|открыть|покажи)\s+(.+)$/);
     if(m){
       let n=norm(m[2]).replace(/^сайт\s+/,'').replace(/^(открой|открыть)\s+/,'');
@@ -1297,16 +1431,33 @@ async function init(){
     return false;
   }
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  let LOOP=false;
+  let rec=null,recOn=false,chain=0;
+  let mic=()=>$('btnVoice').classList;
+  let endSession=()=>{recOn=false;chain=0;$('btnVoice').classList.remove('has')};
+  let startRec=()=>{};
+  $('btnLoop').style.display=(SR&&window.speechSynthesis&&window.SpeechSynthesisUtterance)?'':'none';
+  $('btnLoop').onclick=()=>{
+    hap(12);
+    LOOP=!LOOP;$('btnLoop').classList.toggle('has',LOOP);
+    if(LOOP){
+      if(!SETS.vread){SETS.vread=true;saveSet();syncTts();}
+      toast('🎧 Голосовой режим: говори — отвечу вслух и дослушаю дальше',3600);
+      startRec();
+    }else{
+      toast('Голосовой режим выключен');
+      if(window.speechSynthesis)window.speechSynthesis.cancel();
+      if(recOn&&rec){endSession();try{rec.stop()}catch(e){}}
+    }
+  };
   if(!SR){
     $('btnVoice').style.display='';
     $('btnVoice').classList.add('off');
     $('btnVoice').onclick=()=>{hap();toast('Этот браузер не поддерживает распознавание речи. Открой NEXUS в Chrome (Google), Edge или Safari на iPhone/iPad',5200);};
   }else{
     $('btnVoice').style.display='';
-    let rec=null,recOn=false,chain=0;
-    const mic=()=>$('btnVoice').classList;
-    const endSession=()=>{recOn=false;chain=0;mic().remove('has');};
-    function startRec(){
+    endSession=()=>{recOn=false;chain=0;mic().remove('has');};
+    startRec=function(){
       try{rec=new SR();}catch(e){toast('Распознавание речи не запустилось');return;}
       rec.lang='ru-RU';rec.interimResults=true;rec.continuous=false;rec.maxAlternatives=1;
       rec.onresult=e=>{
@@ -1327,11 +1478,15 @@ async function init(){
           handled=voiceCmd(t);
         }
         if(handled){ta.value='';ta.style.height='auto';chain=Math.min(chain+1,6);}
-        else chain=0;
+        else{
+          chain=0;
+          if(LOOP&&ta.value.trim()){setTimeout(()=>{if(LOOP&&!busy&&ta.value.trim())send()},250);}
+        }
       };
       rec.onerror=e=>{
         const code=e&&e.error||'';
-        if(code==='not-allowed'||code==='service-not-allowed'){toast('Нет доступа к микрофону — разреши его в настройках браузера для этого сайта',5200);endSession();}
+        if(code==='not-allowed'||code==='service-not-allowed'){toast('Нет доступа к микрофону — разреши его в настройках браузера для этого сайта',5200);
+          if(LOOP){LOOP=false;$('btnLoop').classList.remove('has');}endSession();}
         else if(code==='network'){toast('Распознаванию речи нужен интернет',3800);endSession();}
         else if(code==='aborted'){endSession();}
         else if(code==='no-speech'){toast(chain>0?'Слушаю…':'Не услышал — нажми микрофон и скажи ещё раз',3000);}
@@ -1340,6 +1495,7 @@ async function init(){
       };
       rec.onend=()=>{
         mic().remove('has');recOn=false;
+        if(!(chain>0)&&LOOP&&!busy){setTimeout(()=>{if(LOOP&&!recOn&&!busy)startRec()},350);return;}
         if(chain>0){
           setTimeout(()=>{
             try{rec.start();recOn=true;mic().add('has');}
@@ -1355,7 +1511,10 @@ async function init(){
     }
     $('btnVoice').onclick=()=>{
       hap(12);
-      if(recOn&&rec){endSession();try{rec.stop()}catch(e){}toast('Слушание остановлено');return;}
+      if(recOn&&rec){
+        if(LOOP){LOOP=false;$('btnLoop').classList.remove('has');toast('Голосовой режим остановлен');}
+        else toast('Слушание остановлено');
+        endSession();try{rec.stop()}catch(e){}return;}
       $('actT')&&$('actT').classList.remove('on');
       startRec();
     };
@@ -1363,7 +1522,7 @@ async function init(){
   }
   $('btnWeb').onclick=()=>{
     hap();WEB=!WEB;$('btnWeb').classList.toggle('has',WEB);
-    if(WEB)IMGMODE=false,$('btnArt').classList.remove('has'),$('ta').placeholder='Что искать?';
+    if(WEB){IMGMODE=false,$('btnArt').classList.remove('has'),$('comp').classList.remove('art'),$('ta').placeholder='Что искать?';}
     else $('ta').placeholder='Спросите что угодно…';
   };
   $('railMenu').onclick=e=>{e.stopPropagation();$('promptPop').classList.toggle('on');$('mindPop').classList.remove('on');};
