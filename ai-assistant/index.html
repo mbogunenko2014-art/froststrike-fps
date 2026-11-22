@@ -126,6 +126,8 @@ body.light .bub pre{background:rgba(12,30,60,.07)}
 #imgPrev span{font-size:12.5px;color:var(--dim);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #imgPrev button{cursor:pointer}
 .chatimg{max-width:min(240px,60vw);max-height:240px;border-radius:12px;margin-top:8px;display:block;border:1px solid var(--line);cursor:zoom-in}
+.genimg{max-width:min(440px,82vw);border-radius:14px;display:block;border:1px solid var(--line);cursor:zoom-in}
+.genimg.loading{opacity:.6}
 @media(max-width:640px){
   .bub{font-size:15.5px;padding:10px 13px}
   #chat{padding:12px 9px}
@@ -153,6 +155,7 @@ body.light .bub pre{background:rgba(12,30,60,.07)}
     <div id="comp">
       <input type="file" id="fileIn" accept="image/*" hidden>
       <button id="btnImg" title="Прикрепить фото">📎</button>
+      <button id="btnArt" title="Режим рисования">🎨</button>
       <textarea id="ta" rows="1" placeholder="Спросите что угодно…"></textarea>
       <button id="send" title="Отправить">➤</button>
     </div>
@@ -448,6 +451,7 @@ async function respond(){
 }
 
 let PEND=null;
+let IMGMODE=false;
 function fmtSize(n){return n>1048576?(n/1048576).toFixed(1)+' МБ':Math.round(n/1024)+' КБ'}
 function readImg(file){
   return new Promise((res,rej)=>{
@@ -483,6 +487,73 @@ function clearImg(){
   $('imgPrevIm').removeAttribute('src');$('imgPrevName').textContent='';
 }
 
+function imgUrl(prompt,seed){
+  const p=encodeURIComponent(prompt.slice(0,900));
+  if(SETS.key)return 'https://gen.pollinations.ai/image/'+p+
+    '?model=google/gemini-nano-banana-2.1&width=1024&height=1024&nologo=true&seed='+seed+
+    '&token='+encodeURIComponent(SETS.key);
+  return 'https://image.pollinations.ai/prompt/'+p+'?width=1024&height=1024&nologo=true&seed='+seed;
+}
+function imgActs(bub,prompt){
+  const acts=document.createElement('div');acts.className='acts';
+  const again=document.createElement('button');again.className='mini';again.textContent='🎨 ещё вариант';
+  again.onclick=()=>{
+    if(busy)return;
+    let n=MSGS.length;while(n>0&&MSGS[n-1].role==='assistant')n--;
+    MSGS.splice(Math.max(0,n-1));saveChat();render();drawImg(prompt);
+  };
+  acts.appendChild(again);
+  bub.parentElement.appendChild(acts);
+}
+function loadGen(bub,prompt){
+  return new Promise(res=>{
+    const im=new window.Image();
+    const to=setTimeout(()=>{im.onerror=null;im.onload=null;res(false)},90000);
+    im.onload=()=>{
+      clearTimeout(to);
+      bub.innerHTML='';
+      const v=document.createElement('img');
+      v.className='genimg';v.src=im.src;
+      bub.appendChild(v);
+      MSGS.push({role:'assistant',text:'🎨 «'+prompt+'»',imgurl:im.src});saveChat();
+      imgActs(bub,prompt);
+      res(true);
+    };
+    im.onerror=()=>{
+      clearTimeout(to);
+      if(SETS.key&&im.src.startsWith('https://gen.')){
+        const prev=SETS.key;SETS.key='';const url=imgUrl(prompt,Math.floor(Math.random()*1e6));SETS.key=prev;
+        im.src=url;
+        return;
+      }
+      res(false);
+    };
+    im.src=imgUrl(prompt,Math.floor(Math.random()*1e6));
+  });
+}
+async function drawImg(prompt){
+  if(busy)return;
+  busy=true;
+  const btn=$('send');btn.classList.add('stop');btn.textContent='■';
+  const hero=$('hero');if(hero)hero.remove();
+  clearImg();
+  MSGS.push({role:'user',text:prompt});saveChat();
+  addUserMsg({text:prompt});
+  const {el,bub}=addMsgEl('assistant');
+  bub.innerHTML='<span class="typing"><i></i><i></i><i></i></span>';
+  $('chat').appendChild(el);
+  $('chat').scrollTop=$('chat').scrollHeight;
+  let ok=false;
+  if(navigator.onLine!==false)ok=await loadGen(bub,prompt);
+  if(!ok){
+    const msg='🎨 Не получилось нарисовать'+(navigator.onLine===false?' — нет подключения к сети.':'. Проверь сеть и попробуй ещё раз, или попробуй позже — сервис бесплатный и иногда занят.');
+    bub.textContent=msg;
+    MSGS.push({role:'assistant',text:msg});saveChat();
+  }
+  busy=false;ctrl=null;
+  btn.classList.remove('stop');btn.textContent='➤';
+}
+
 /* ---------- UI ---------- */
 function addMsgEl(role){
   const el=document.createElement('div');
@@ -512,8 +583,26 @@ function render(){
   }
   for(const m of MSGS){
     if(m.role==='user'&&m.thumb){addUserMsg(m);continue;}
+    if(m.role==='assistant'&&m.imgurl){addAiImg(m);continue;}
     addMsg(m.role,m.text);
   }
+}
+function addAiImg(m){
+  const {el,bub}=addMsgEl('assistant');
+  bub.innerHTML='<p>'+esc(m.text)+'</p>';
+  const im=document.createElement('img');im.className='genimg';im.src=m.imgurl;
+  bub.appendChild(im);
+  $('chat').appendChild(el);
+  $('chat').scrollTop=$('chat').scrollHeight;
+  const acts=document.createElement('div');acts.className='acts';
+  const again=document.createElement('button');again.className='mini';again.textContent='🎨 ещё вариант';
+  again.onclick=()=>{
+    if(busy)return;
+    let n=MSGS.length;while(n>0&&MSGS[n-1].role==='assistant')n--;
+    MSGS.splice(Math.max(0,n-1));saveChat();render();drawImg(m.prompt||m.text.replace(/^🎨 «|»$/g,''));
+  };
+  acts.appendChild(again);
+  el.querySelector('.body').appendChild(acts);
 }
 function addUserMsg(m){
   const {el,bub}=addMsgEl('user');
@@ -526,6 +615,9 @@ async function send(){
   if(busy)return;
   const ta=$('ta'),text=ta.value.trim();
   if(!text&&!PEND)return;
+  if(IMGMODE&&text){ta.value='';ta.style.height='auto';drawImg(text);return;}
+  const mImg=text.match(/^\/(?:img|рисунок|картинк[аи])\s+(.+)/i);
+  if(mImg){ta.value='';ta.style.height='auto';drawImg(mImg[1]);return;}
   const msg={role:'user',text:text||('Опиши, что на фото'+(PEND?' «'+PEND.name+'»':''))};
   if(PEND){msg.img=true;msg.thumb=PEND.thumb;msg.full=PEND.full;msg.name=PEND.name}
   ta.value='';ta.style.height='auto';
@@ -559,6 +651,12 @@ async function init(){
   $('send').onclick=()=>{busy?stopGen():send();};
   $('btnImg').onclick=()=>{$('fileIn').click();};
   $('imgDel').onclick=clearImg;
+  $('btnArt').onclick=()=>{
+    IMGMODE=!IMGMODE;
+    $('btnArt').classList.toggle('has',IMGMODE);
+    $('ta').placeholder=IMGMODE?'Опиши картинку…':'Спросите что угодно…';
+    if(IMGMODE)clearImg();
+  };
   $('fileIn').onchange=e=>{
     const f=e.target.files&&e.target.files[0];
     e.target.value='';
