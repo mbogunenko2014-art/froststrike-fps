@@ -1,6 +1,7 @@
 # NEXUS AI — browser assistant in one file
 
 Single-file web AI chat (HTML + CSS + vanilla JS, no build step, no frameworks).
+Dark glassmorphism interface over an atmospheric SVG scenery (wooden hut, slate mountains, drifting fog) with desktop window layout (icon rail + collapsible sidebar + macOS-style window dots) and an adaptive mobile layout with drawers.
 
 - Live LLM via free keyless `text.pollinations.ai` (OpenAI-compatible, SSE streaming) — answers any question like mainstream AI assistants
 - Mind picker: ⚡ Flash / 🧠 Smart / 🔬 Deep / 👑 Ultra (top-tier GPT-5/6 + Claude-class models via gen.pollinations.ai with a free `sk_` key from enter.pollinations.ai)
@@ -9,4 +10,6 @@ Single-file web AI chat (HTML + CSS + vanilla JS, no build step, no frameworks).
 - Identity guard: the assistant always presents itself as NEXUS AI (system prompt + response sanitizer)
 - Request cascade (stream → JSON per queued model → GET fallback → offline engine), 35 s per-attempt timeout — no hangs, no missing answers
 - Offline fallback engine: math evaluation, date/time, coin/dice, persistent notes («запомни…»), small talk
-- Markdown-lite rendering with code blocks, chat history in localStorage, regenerate, stop generation, TXT export, dark/light theme, fully responsive
+- Settings screen («Внешний вид и данные»): provider status cards with key check, background animation toggle, background brightness slider, double-confirm history wipe
+- Prompt library (▤), chat sessions with search, web-search capsule (searchgpt model first, graceful fallback), regenerate, stop generation, TXT export
+- Markdown-lite rendering with code blocks, chat history in localStorage, fully responsive
