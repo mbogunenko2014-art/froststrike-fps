@@ -13,3 +13,4 @@ Dark glassmorphism interface over an atmospheric SVG scenery (wooden hut, slate 
 - Settings screen («Внешний вид и данные»): provider status cards with key check, background animation toggle, background brightness slider, double-confirm history wipe
 - Prompt library (▤), chat sessions with search, web-search capsule (searchgpt model first, graceful fallback), regenerate, stop generation, TXT export
 - Markdown-lite rendering with code blocks, chat history in localStorage, fully responsive
+- Mobile (phones): bottom navigation bar (new chat / chats / prompts / settings), settings as a bottom-sheet, voice input (ru-RU) via SpeechRecognition, popups repositioned above the nav bar, reduced blur cost
