@@ -184,18 +184,7 @@ body.noanim #heroMark i{animation:none}
   background:rgba(5,5,9,.88);cursor:zoom-out;padding:24px}
 #lb.on{display:flex}
 #lb img{max-width:min(92vw,900px);max-height:88vh;border-radius:14px;border:1px solid var(--line2)}
-          <button id="btnMind" title="Выбрать разум">🧠 Smart ▾</button>
-        </div>
-        <div id="styleRow">
-          <button class="schip on" data-sfx="">обычный</button>
-          <button class="schip" data-sfx="photorealistic, 35mm photo, sharp focus, high detail, natural light">фотореализм</button>
-          <button class="schip" data-sfx="anime illustration, vibrant colors, clean line art, studio quality">аниме</button>
-          <button class="schip" data-sfx="pixel art, 16-bit retro game sprite, crisp pixels, limited palette">пиксель-арт</button>
-          <button class="schip" data-sfx="cyberpunk style, neon lights, rain reflections, cinematic mood">киберпанк</button>
-          <button class="schip" data-sfx="oil painting, textured brushstrokes, rich colors">масло</button>
-          <button class="schip" data-sfx="watercolor painting, soft colors, paper texture">акварель</button>
-          <button class="schip" data-sfx="cute 3D render, pixar style, soft global illumination">3D-мультфильм</button>
-        </div>;left:50%;transform:translateX(-50%) translateY(10px);bottom:104px;z-index:21;
+#toast,#actT{position:fixed;left:50%;transform:translateX(-50%) translateY(10px);bottom:104px;z-index:21;
   background:rgba(24,24,31,.96);border:1px solid var(--line);border-radius:14px;color:var(--txt);
   opacity:0;pointer-events:none;transition:opacity .25s,transform .25s}
 #toast{padding:10px 16px;font-size:13px;max-width:min(440px,88vw);text-align:center}
@@ -333,7 +322,6 @@ body.noanim #heroMark i{animation:none}
   .tbtn{width:44px;height:44px}
   #send{width:44px;height:44px}
   .cap{height:36px}
-  .schip{padding:9px 13px;font-size:13px}
   #compWrap{padding-bottom:6px}
   #ta{font-size:16px}
   #win{background:rgba(14,14,18,.5)}
@@ -490,16 +478,6 @@ body.noanim #heroMark i{animation:none}
           <button class="tbtn" id="btnImg" title="Прикрепить фото" aria-label="Прикрепить фото"><svg class="ic"><use href="#i-clip"/></svg></button>
           <button class="tbtn" id="btnArt" title="Режим рисования" aria-label="Режим рисования"><svg class="ic"><use href="#i-img"/></svg></button>
           <button id="btnMind" title="Выбрать разум">🧠 Smart ▾</button>
-        </div>
-        <div id="styleRow">
-          <button class="schip on" data-sfx="">обычный</button>
-          <button class="schip" data-sfx="photorealistic, 35mm photo, sharp focus, high detail, natural light">фотореализм</button>
-          <button class="schip" data-sfx="anime illustration, vibrant colors, clean line art, studio quality">аниме</button>
-          <button class="schip" data-sfx="pixel art, 16-bit retro game sprite, crisp pixels, limited palette">пиксель-арт</button>
-          <button class="schip" data-sfx="cyberpunk style, neon lights, rain reflections, cinematic mood">киберпанк</button>
-          <button class="schip" data-sfx="oil painting, textured brushstrokes, rich colors">масло</button>
-          <button class="schip" data-sfx="watercolor painting, soft colors, paper texture">акварель</button>
-          <button class="schip" data-sfx="cute 3D render, pixar style, soft global illumination">3D-мультфильм</button>
         </div>
         <div id="compRow">
           <input type="file" id="fileIn" accept="image/*" hidden>
@@ -905,7 +883,6 @@ function clearImg(){
   $('imgPrevIm').removeAttribute('src');$('imgPrevName').textContent='';
 }
 
-let ARTSFX='';
 async function enhanceImgPrompt(raw){
   const p=raw.slice(0,300);
   if(navigator.onLine===false)return p;
@@ -979,9 +956,7 @@ async function drawImg(prompt){
   $('chat').scrollTop=$('chat').scrollHeight;
   let ok=false;
   if(navigator.onLine!==false){
-    let pp=await enhanceImgPrompt(prompt);
-    if(ARTSFX)pp+=', '+ARTSFX;
-    ok=await loadGen(bub,pp);
+    ok=await loadGen(bub,await enhanceImgPrompt(prompt));
   }
   if(!ok){
     const msg='🎨 Не получилось нарисовать'+(navigator.onLine===false?' — нет подключения к сети.':'. Проверь сеть и попробуй ещё раз, или попробуй позже — сервис бесплатный и иногда занят.');
@@ -1295,14 +1270,9 @@ async function init(){
   $('btnArt').onclick=()=>{
     hap();IMGMODE=!IMGMODE;
     $('btnArt').classList.toggle('has',IMGMODE);
-    $('comp').classList.toggle('art',IMGMODE);
     $('ta').placeholder=IMGMODE?'Опиши картинку…':'Спросите что угодно…';
     if(IMGMODE){WEB=false;$('btnWeb').classList.remove('has');clearImg();}
   };
-  document.querySelectorAll('.schip').forEach(b=>b.onclick=()=>{
-    hap();ARTSFX=b.dataset.sfx||'';
-    document.querySelectorAll('.schip').forEach(x=>x.classList.toggle('on',x===b));
-  });
   $('btnTts').style.display=(window.speechSynthesis&&window.SpeechSynthesisUtterance)?'':'none';
   const syncTts=()=>$('btnTts').classList.toggle('has',SETS.vread===true);
   syncTts();
@@ -1522,7 +1492,7 @@ async function init(){
   }
   $('btnWeb').onclick=()=>{
     hap();WEB=!WEB;$('btnWeb').classList.toggle('has',WEB);
-    if(WEB){IMGMODE=false,$('btnArt').classList.remove('has'),$('comp').classList.remove('art'),$('ta').placeholder='Что искать?';}
+    if(WEB){IMGMODE=false,$('btnArt').classList.remove('has'),$('ta').placeholder='Что искать?';}
     else $('ta').placeholder='Спросите что угодно…';
   };
   $('railMenu').onclick=e=>{e.stopPropagation();$('promptPop').classList.toggle('on');$('mindPop').classList.remove('on');};

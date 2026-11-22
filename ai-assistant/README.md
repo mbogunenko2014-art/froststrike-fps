@@ -19,4 +19,4 @@ Dark glassmorphism interface over an atmospheric SVG scenery (wooden hut, slate 
 - Read-aloud answers: NEXUS can speak responses via SpeechSynthesis (ru-RU), toggled by the speaker button or voice command
 - Voice dialogue mode (loop button): mic listens → you speak → NEXUS answers aloud → listens again, no keyboard needed; «стоп»/«хватит» disables it, mic tap stops the mode
 - Long memory: «запомни …» saves a note, «что ты помнишь» lists, «забудь всё» clears; names captured automatically; notes are injected into every LLM request; memory card with counters in settings
-- Art styles: photorealism / anime / pixel art / cyberpunk / oil / watercolor / 3D-cartoon chips in drawing mode; every prompt is auto-translated and expanded into a vivid English image prompt (fallback to raw text offline)
+- Every drawing prompt is auto-translated and expanded into a vivid English image prompt before generation (fallback to raw text offline)
