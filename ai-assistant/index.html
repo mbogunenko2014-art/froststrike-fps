@@ -4,11 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>NEXUS AI</title>
+<link rel="preconnect" href="https://text.pollinations.ai">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#04060c; --panel:rgba(9,14,26,.82); --panel2:rgba(12,18,34,.94);
+  --bg:#04060c; --panel:rgba(9,14,26,.82); --panel2:rgba(12,18,34,.96);
   --line:rgba(120,190,255,.15); --txt:#e2eaff; --dim:#8fa5c8;
   --acc:#22d3ee; --acc2:#818cf8;
   --bub-you:rgba(34,211,238,.1); --bub-ai:rgba(129,140,248,.09);
@@ -16,7 +17,7 @@
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{height:100%}
 body{font-family:'Rajdhani',sans-serif;background:var(--bg);color:var(--txt);overflow:hidden}
-body.light{--bg:#eef3fa;--panel:rgba(255,255,255,.85);--panel2:rgba(248,251,255,.95);
+body.light{--bg:#eef3fa;--panel:rgba(255,255,255,.85);--panel2:rgba(255,255,255,.98);
   --line:rgba(30,80,140,.16);--txt:#12213a;--dim:#5b6f8e;--bub-you:rgba(34,150,220,.1);--bub-ai:rgba(99,102,241,.09)}
 #aur{position:fixed;inset:0;z-index:0;pointer-events:none;
   background:
@@ -35,7 +36,25 @@ body.light .dot{background:#0e9ed8}
 .ib{border:none;background:none;color:var(--dim);font-family:inherit;font-size:17px;
   width:36px;height:36px;border-radius:10px;cursor:pointer;transition:.18s;flex:none}
 .ib:hover{color:var(--acc);background:rgba(34,211,238,.08)}
-#chat{flex:1;overflow-y:auto;padding:18px clamp(10px,3vw,24px);gap:0}
+#btnMind{border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--txt);
+  font-family:'Rajdhani',sans-serif;font-weight:700;font-size:13.5px;letter-spacing:.04em;
+  padding:7px 13px;border-radius:999px;cursor:pointer;transition:.18s;flex:none}
+#btnMind:hover{border-color:var(--acc);color:var(--acc)}
+#mindPop{position:fixed;top:56px;right:clamp(12px,3vw,24px);z-index:6;width:min(300px,90vw);
+  background:var(--panel2);border:1px solid var(--line);border-radius:16px;backdrop-filter:blur(20px);
+  padding:8px;transform:translateY(-8px);opacity:0;pointer-events:none;transition:.2s ease}
+#mindPop.on{transform:none;opacity:1;pointer-events:auto}
+.mind{display:flex;flex-direction:column;gap:1px;padding:10px 12px;border-radius:11px;cursor:pointer;transition:.15s}
+.mind:hover{background:rgba(34,211,238,.07)}
+.mind.on{background:rgba(34,211,238,.1)}
+.mind b{font-size:14.5px}
+.mind.on b{color:var(--acc)}
+.mind span{font-size:12.5px;color:var(--dim)}
+#apiKey{margin:6px 4px 4px;width:calc(100% - 8px)!important;border:1px solid var(--line);border-radius:10px;
+  background:rgba(255,255,255,.03);color:var(--txt);font-family:inherit;font-size:13.5px;padding:8px 10px;outline:none}
+#keyHint{font-size:11.5px;color:var(--dim);padding:0 8px 6px;line-height:1.4}
+#keyHint a{color:var(--acc)}
+#chat{flex:1;overflow-y:auto;padding:18px clamp(10px,3vw,24px)}
 #chat::-webkit-scrollbar{width:8px}
 #chat::-webkit-scrollbar-thumb{background:rgba(120,190,255,.16);border-radius:5px}
 .msg{display:flex;gap:10px;margin:0 auto 14px;max-width:820px;animation:in .22s ease}
@@ -72,7 +91,6 @@ body.light .bub pre{background:rgba(12,30,60,.07)}
 .typing i{width:6px;height:6px;border-radius:50%;background:var(--acc);animation:tp 1s infinite}
 .typing i:nth-child(2){animation-delay:.16s}.typing i:nth-child(3){animation-delay:.32s}
 @keyframes tp{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-5px);opacity:1}}
-/* empty state */
 #hero{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:20px}
 #heroMark{width:76px;height:76px;border-radius:22px;display:flex;align-items:center;justify-content:center;
   font-family:'Orbitron',sans-serif;font-weight:900;font-size:24px;color:var(--acc);
@@ -85,7 +103,6 @@ body.light .bub pre{background:rgba(12,30,60,.07)}
 .qk{font-size:13.5px;color:var(--dim);border:1px solid var(--line);border-radius:999px;
   padding:6px 15px;cursor:pointer;background:rgba(255,255,255,.02);font-family:inherit;font-weight:600;transition:.16s}
 .qk:hover{color:var(--acc);border-color:var(--acc);transform:translateY(-1px)}
-/* composer */
 #compWrap{padding:10px clamp(10px,3vw,24px) calc(12px + env(safe-area-inset-bottom));
   background:var(--panel);border-top:1px solid var(--line);backdrop-filter:blur(14px)}
 #comp{display:flex;gap:10px;align-items:flex-end;max-width:820px;margin:0 auto}
@@ -98,21 +115,6 @@ body.light .bub pre{background:rgba(12,30,60,.07)}
   display:flex;align-items:center;justify-content:center;transition:.18s;flex:none}
 #send:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(34,211,238,.3)}
 #send.stop{background:linear-gradient(135deg,#f87171,#c2410c);color:#fff}
-/* settings */
-#set{position:fixed;top:0;right:0;height:100%;width:min(390px,94vw);z-index:5;overflow-y:auto;
-  background:var(--panel2);border-left:1px solid var(--line);backdrop-filter:blur(20px);
-  padding:18px;transform:translateX(105%);transition:transform .28s ease}
-#set.on{transform:none}
-#set h2{font-family:'Orbitron',sans-serif;font-size:14px;letter-spacing:.12em;margin-bottom:4px}
-#set .sub{font-size:12.5px;color:var(--dim);margin-bottom:10px}
-#set label{display:block;font-size:12.5px;color:var(--dim);font-weight:600;margin:13px 0 5px;letter-spacing:.05em}
-#set input[type=text],#set input[type=password],#set select,#set textarea{
-  width:100%;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.03);
-  color:var(--txt);font-family:inherit;font-size:14.5px;padding:9px 11px;outline:none}
-#set input[type=range]{width:100%}
-#set textarea#sysP{min-height:86px;resize:vertical;line-height:1.45}
-#set .note{font-size:12px;color:var(--dim);line-height:1.5;margin-top:5px}
-#setClose{position:absolute;top:14px;right:14px}
 @media(max-width:640px){
   .bub{font-size:15.5px;padding:10px 13px}
   #chat{padding:12px 9px}
@@ -128,10 +130,10 @@ body.light .bub pre{background:rgba(12,30,60,.07)}
     <div class="dot" id="netDot"></div>
     <div class="logo">NEXUS<b>AI</b></div>
     <div class="sp"></div>
+    <button id="btnMind" title="Выбрать разум">🧠 Smart ▾</button>
     <button class="ib" id="btnTheme" title="Тема">◐</button>
     <button class="ib" id="btnExport" title="Сохранить диалог">⭳</button>
     <button class="ib" id="btnNew" title="Новый чат">＋</button>
-    <button class="ib" id="btnSet" title="Настройки">⚙</button>
   </header>
   <div id="chat"></div>
   <div id="compWrap">
@@ -142,55 +144,36 @@ body.light .bub pre{background:rgba(12,30,60,.07)}
   </div>
 </div>
 
-<aside id="set">
-  <button class="ib" id="setClose">✕</button>
-  <h2>НАСТРОЙКИ</h2>
-  <div class="sub">Всё сохраняется в этом браузере</div>
-  <label>Личность</label>
-  <select id="persona">
-    <option value="assistant">Универсальный ассистент</option>
-    <option value="coder">Программист</option>
-    <option value="teacher">Учитель</option>
-    <option value="translator">Переводчик</option>
-    <option value="writer">Писатель</option>
-    <option value="custom">Свой промпт…</option>
-  </select>
-  <label>Системный промпт</label>
-  <textarea id="sysP"></textarea>
-  <label>Модель</label>
-  <select id="modelSel"></select>
-  <div class="note">Если модель недоступна, NEXUS автоматически переключается на следующую.</div>
-  <div style="display:flex;justify-content:space-between;font-size:13.5px;font-weight:600">
-    <span>Температура</span><span id="tempV">0.65</span></div>
-  <input type="range" id="temp" min="0" max="1500" value="650" style="margin-top:4px">
-  <div style="display:flex;justify-content:space-between;font-size:13.5px;font-weight:600;margin-top:10px">
-    <span>Стриминг</span><input type="checkbox" id="stream" checked style="width:auto"></div>
-  <label>Ключ Pollinations (необязательно)</label>
-  <input type="password" id="apiKey" placeholder="sk_…">
-  <div class="note">Работает и без ключа. Ключ хранится только локально и уходит только на text.pollinations.ai.</div>
-</aside>
+<div id="mindPop">
+  <div class="mind" data-m="flash"><b>⚡ Flash</b><span>максимальная скорость</span></div>
+  <div class="mind" data-m="smart"><b>🧠 Smart</b><span>баланс ума и скорости</span></div>
+  <div class="mind" data-m="deep"><b>🔬 Deep</b><span>думает глубже, чуть дольше</span></div>
+  <div class="mind" data-m="ultra"><b>👑 Ultra</b><span>топ-модели — нужен бесплатный ключ</span></div>
+  <input id="apiKey" type="password" placeholder="Ключ Pollinations (для Ultra)">
+  <div id="keyHint">Бесплатный ключ за минуту: <a href="https://enter.pollinations.ai" target="_blank" rel="noopener">enter.pollinations.ai</a>. Хранится только в этом браузере.</div>
+</div>
 
 <script type="module">
 /* ================= NEXUS AI ================= */
 const $=id=>document.getElementById(id);
-const API='https://text.pollinations.ai';
-const REQ_TIMEOUT=42000;
-const PERSONAS={
-  assistant:'Ты NEXUS AI — дружелюбный и высокоточный ассистент. Отвечай на языке пользователя. Будь конкретным, структурируй ответ (короткие абзацы, списки), не добавляй дисклеймеров и лишних извинений. Код оформляй в ```блоки с языком.',
-  coder:'Ты NEXUS AI — senior-разработчик. Давай рабочий, безопасный код в блоках ```язык, кратко поясняй решение и отмечай edge cases.',
-  teacher:'Ты NEXUS AI — терпеливый преподаватель. Объясняй просто, пошагово, с примерами и аналогиями. В конце предлагай, что закрепить.',
-  translator:'Ты NEXUS AI — профессиональный переводчик. Определяй язык автоматически: русский ↔ английский (или язык запроса). Переводи естественно, сохраняя смысл, тон и стиль. Отвечай только переводом, без пояснений, если не попросили.',
-  writer:'Ты NEXUS AI — сильный редактор и копирайтер. Пиши живо и структурно, предлагай 2-3 варианта и улучшай стиль.'
+const API='https://text.pollinations.ai/openai';
+const API_GET='https://text.pollinations.ai';
+const GEN='https://gen.pollinations.ai/v1/chat/completions';
+const REQ_TIMEOUT=35000;
+const SYS='Ты — NEXUS AI, дружелюбный и высокоточный ассистент. Ты НЕ GPT, не ChatGPT, не Claude, не Gemini и не любая другая внешняя модель — эти движки лишь работают под капотом; твоё единственное имя: NEXUS AI. Никогда не называй другие имена моделей от первого лица; на вопрос «кто ты» отвечай «Я NEXUS AI». Отвечай на языке пользователя, конкретно и структурированно: короткие абзацы, списки, код в блоках ``` с указанием языка. Без дисклеймеров и лишних извинений.';
+const MINDS={
+  flash:{label:'⚡ Flash',models:['openai-fast']},
+  smart:{label:'🧠 Smart',models:['openai','openai-fast','gpt-oss-20b']},
+  deep:{label:'🔬 Deep',models:['gpt-oss-20b','openai']},
+  ultra:{label:'👑 Ultra',models:['openai/gpt-6.1-sol','openai/gpt-5-nano','openai/gpt-oss-120b']}
 };
-const FALLBACK_MODELS=['openai-fast','openai','gpt-oss-20b','mistral'];
-let MODELS=FALLBACK_MODELS.slice();
+let MODEL_QUEUE=[];
 
 /* ---------- state ---------- */
-let MSGS=[],busy=false,ctrl=null,userStop=false,timer=null;
-let MODEL_CUR='';
-const SETS=Object.assign({persona:'assistant',model:'',stream:true,temp:.65,key:'',light:false},
-  JSON.parse(localStorage.getItem('nexus_set')||'{}'));
-const saveSet=()=>localStorage.setItem('nexus_set',JSON.stringify(SETS));
+let MSGS=[],busy=false,ctrl=null,userStop=false,stopReason='';
+const SETS=Object.assign({mind:'smart',light:false,key:''},
+  JSON.parse(localStorage.getItem('nexus_set2')||'{}'));
+const saveSet=()=>localStorage.setItem('nexus_set2',JSON.stringify(SETS));
 try{MSGS=JSON.parse(localStorage.getItem('nexus_chat')||'[]')}catch(e){MSGS=[]}
 const saveChat=()=>{try{localStorage.setItem('nexus_chat',JSON.stringify(MSGS.slice(-90)))}catch(e){}};
 
@@ -239,10 +222,21 @@ document.addEventListener('click',e=>{
     c.textContent='✓';setTimeout(()=>c.textContent='копировать',1200);}
 });
 
+/* identity sanitizer: no other model names from the assistant's own mouth */
+function brandFix(t){
+  return String(t||'')
+    .replace(/(Я|я)(?:\s+—|\s+это|\s+по сути|\s+ просто)?\s+(?:ChatGPT|GPT-[\w.\-]+|Claude\s*[\w.\-]*|Gemini\s*[\w.\-]*|моделью\s+(?:ChatGPT|GPT-[\w.\-]+|Claude\s*[\w.\-]*|Gemini\s*[\w.\-]*))/g,'$1 NEXUS AI')
+    .replace(/(меня зовут|меня создал|меня сделали|я разработан[аы]?)\s+(?:компани[ией]+\s+)?(?:OpenAI|Anthropic|Google|Z\.?AI)/gi,'$1 на движке NEXUS')
+    .replace(/(NEXUS AI)\s+от\s+(?:компани[ия]+\s+)?(?:OpenAI|Anthropic|Google|Z\.?AI)/gi,'$1')
+    .replace(/\s+которы[йо]\s+разработан[аы]?\s+(?:компание[йи]\s+)?(?:OpenAI|Anthropic|Google|Z\.?AI)/gi,'')
+    .replace(/разработан[аы]?\s+(?:компанией\s+)?OpenAI/gi,'разработан командой NEXUS')
+    .replace(/создан[аы]?\s+(?:компанией\s+)?OpenAI/gi,'создан командой NEXUS');
+}
+
 /* ---------- offline engine ---------- */
 const KB=[
- [/кто ты|ты кто|что ты за|расскажи о себе/,'Я NEXUS AI — ассистент: в интернете мозгом служит большая языковая модель (Pollinations), а без сети — мой встроенный локальный движок.'],
- [/что ты умеешь|что можешь|помощь|help/,'Онлайн — отвечу на любой вопрос. Оффлайн умею: считать «12*7+3», дату и время, «монетка», «кубик d20», запоминать: «запомни …» / «что ты помнишь».'],
+ [/кто ты|ты кто|что ты за|расскажи о себе/,'Я **NEXUS AI** — ассистент: в интернете мозгом служит большая нейросеть (Pollinations), а без сети — мой встроенный локальный движок.'],
+ [/что ты умеешь|что можешь|помощь|help/,'Онлайн — отвечу на любой вопрос. Оффлайн: посчитаю «12*7+3», дату и время, «монетка», «кубик d20», запомню: «запомни …» / «что ты помнишь».'],
  [/погод|дождь|температура за окном/,'Погоду подскажу в онлайн-режиме — подключи интернет и переспроси.'],
  [/как дела|как ты/,'Работаю штатно 🙂 Как сам?'],
  [/привет|здравствуй|хай|hi|hello/,'Привет! Чем заняться?'],
@@ -282,27 +276,32 @@ function localAnswer(qRaw){
   return null;
 }
 
-/* ---------- network: robust cascade ---------- */
-function modelsToTry(){
-  const list=[MODEL_CUR,...MODELS].filter(Boolean);
-  return [...new Set(list)];
-}
-function reqTimeout(setT){
-  return setTimeout(()=>{if(stopReason==='')stopReason='timeout';ctrl.abort();},setT);
-}
-let stopReason='';
+/* ---------- network ---------- */
 function stripTags(t){return String(t||'').replace(/<\/?think>/g,'')}
-function cleanOut(t){
-  return stripTags(t).replace(/^[\s\uFEFF]+|[\s]+$/g,'');
+function cleanOut(t){return stripTags(t).replace(/^[\s\uFEFF]+|[\s]+$/g,'')}
+function buildCtx(){
+  return [{role:'system',content:SYS},
+    ...MSGS.slice(-14).map(m=>({role:m.role,content:m.text}))];
 }
+function headers(){
+  const h={'Content-Type':'application/json'};
+  if(SETS.key)h['Authorization']='Bearer '+SETS.key;
+  return h;
+}
+function reqTimeout(){return setTimeout(()=>{if(stopReason==='')stopReason='timeout';ctrl.abort();},REQ_TIMEOUT);}
 async function tryStream(model,here){
-  const body={model,messages:buildCtx(),stream:true,temperature:SETS.temp};
-  const r=await doFetch(API+'/openai',body,true);
-  const ct=r.headers.get('content-type')||'';
+  ctrl=new AbortController();stopReason='';
+  const t=reqTimeout();
+  let r;
+  try{
+    r=await fetch(SETS.mind==='ultra'?GEN:API,{method:'POST',headers:headers(),
+      body:JSON.stringify({model,messages:buildCtx(),stream:true,temperature:.65}),signal:ctrl.signal});
+  }catch(e){clearTimeout(t);throw e}
+  clearTimeout(t);
   if(!r.ok)throw new Error('HTTP '+r.status);
+  const ct=r.headers.get('content-type')||'';
   if(!r.body||/application\/json/.test(ct)){
-    const j=await r.json();
-    return await finishNonStream(here,j);
+    return await finishNonStream(here,await r.json());
   }
   const rd=r.body.getReader(),dec=new TextDecoder();
   let buf='';
@@ -312,12 +311,11 @@ async function tryStream(model,here){
     buf+=dec.decode(value,{stream:true});
     const parts=buf.split('\n');buf=parts.pop();
     for(let line of parts){
-      line=line.trim();
+      line=line.replace(/\r$/,'');
       if(!line||line.startsWith(':'))continue;
       let data=line;
       if(data.startsWith('data:')){data=data.slice(5);if(data.startsWith(' '))data=data.slice(1);}
-      data=data.replace(/\r$/,'');
-      if(data==='[DONE]')return;
+      if(data.trim()==='[DONE]')return;
       try{
         const j=JSON.parse(data);
         if(j.error)throw new Error(j.error.message||'api error');
@@ -330,11 +328,16 @@ async function tryStream(model,here){
   }
 }
 async function tryJson(model,here){
-  const body={model,messages:buildCtx(),stream:false,temperature:SETS.temp};
-  const r=await doFetch(API+'/openai',body,false);
+  ctrl=new AbortController();stopReason='';
+  const t=reqTimeout();
+  let r;
+  try{
+    r=await fetch(SETS.mind==='ultra'?GEN:API,{method:'POST',headers:headers(),
+      body:JSON.stringify({model,messages:buildCtx(),stream:false,temperature:.65}),signal:ctrl.signal});
+  }catch(e){clearTimeout(t);throw e}
+  clearTimeout(t);
   if(!r.ok)throw new Error('HTTP '+r.status);
-  const j=await r.json();
-  return await finishNonStream(here,j);
+  return await finishNonStream(here,await r.json());
 }
 async function finishNonStream(here,j){
   const ch=j&&j.choices&&j.choices[0];
@@ -344,11 +347,10 @@ async function finishNonStream(here,j){
 }
 async function tryGet(){
   const q=MSGS.filter(m=>m.role==='user').pop();
-  const url=API+'/'+encodeURIComponent((q?q.text:'hi').slice(-800))
-    +'?model='+encodeURIComponent(MODEL_CUR||'openai-fast')
-    +'&system='+encodeURIComponent(sysPrompt())+'&temperature='+SETS.temp;
+  const url=API_GET+'/'+encodeURIComponent((q?q.text:'hi').slice(-700))
+    +'?model='+(MODEL_QUEUE[0]||'openai-fast')+'&system='+encodeURIComponent(SYS)+'&temperature=0.65';
   ctrl=new AbortController();stopReason='';
-  const t=reqTimeout(REQ_TIMEOUT);
+  const t=reqTimeout();
   let r;
   try{r=await fetch(url,{signal:ctrl.signal});}finally{clearTimeout(t);}
   if(!r.ok)throw new Error('HTTP '+r.status);
@@ -362,43 +364,8 @@ async function tryGet(){
   if(!out)throw new Error('пустой ответ');
   return out;
 }
-async function doFetch(url,bodyObj,stream){
-  ctrl=new AbortController();
-  stopReason='';
-  let h={'Content-Type':'application/json'};
-  if(SETS.key)h['Authorization']='Bearer '+SETS.key;
-  const t=reqTimeout(REQ_TIMEOUT);
-  try{
-    return await fetch(url,{method:'POST',headers:h,body:JSON.stringify(bodyObj),signal:ctrl.signal});
-  }finally{clearTimeout(t);}
-}
-function buildCtx(){
-  return [{role:'system',content:sysPrompt()},
-    ...MSGS.slice(-18).map(m=>({role:m.role,content:m.text}))];
-}
-function sysPrompt(){return SETS.persona==='custom'?SETS.sysP:(SETS.sysP||PERSONAS[SETS.persona]||PERSONAS.assistant);}
 
 /* ---------- respond cascade ---------- */
-async function loadModels(){
-  const sel=$('modelSel');sel.innerHTML='';
-  let ids=[];
-  try{
-    const r=await fetch(API+'/models');
-    if(r.ok){
-      const j=await r.json();
-      const arr=Array.isArray(j)?j:(j.data||[]);
-      ids=arr.map(m=>typeof m==='string'?m:(m.id||m.name||''))
-        .filter(Boolean)
-        .filter(id=>!/image|flux|dall|sd-|stable|whisper|tts|audio|video|veo|kling|i2v/.test(id.toLowerCase()));
-    }
-  }catch(e){}
-  MODELS=[...new Set(ids.length?ids:FALLBACK_MODELS)];
-  if(!MODELS.includes('openai-fast'))MODELS.unshift('openai-fast');
-  for(const m of MODELS){const o=document.createElement('option');o.value=m;o.textContent=m;sel.appendChild(o)}
-  sel.value=MODELS.includes(SETS.model)?SETS.model:MODELS[0];
-  MODEL_CUR=sel.value;
-}
-let waiting=0;
 async function respond(){
   busy=true;userStop=false;
   const btn=$('send');btn.classList.add('stop');btn.textContent='■';
@@ -406,49 +373,38 @@ async function respond(){
   const{bub,el}=addMsgEl('assistant');
   bub.innerHTML='<span class="typing"><i></i><i></i><i></i></span>';
   chat.appendChild(el);
-  waiting=0;
-  const tt=setInterval(()=>{
-    if(busy){waiting+=1;
-      if(waiting%8===0)bub.innerHTML='<span class="typing"><i></i><i></i><i></i></span>';
-    }
-  },1000);
   const nearBottom=chat.scrollHeight-chat.scrollTop-chat.clientHeight<160;
   const stick=()=>{if(nearBottom)chat.scrollTop=chat.scrollHeight};
   let acc='';
-  const here=t=>{if(!acc)bub.innerHTML='';acc+=t;bub.innerHTML=md(acc);stick();};
+  const here=t=>{if(!acc)bub.innerHTML='';acc+=t;bub.innerHTML=md(brandFix(acc));stick();};
   const attempts=[];
-  for(const mdl of modelsToTry()){
-    if(SETS.stream){
-      attempts.push({fn:()=>tryStream(mdl,here),name:mdl});
-      attempts.push({fn:()=>tryJson(mdl,here),name:mdl});
-    }else{
-      attempts.push({fn:()=>tryJson(mdl,here),name:mdl});
-      attempts.push({fn:()=>tryStream(mdl,here),name:mdl});
-    }
+  for(const mdl of MODEL_QUEUE){
+    attempts.push(()=>tryStream(mdl,here));
+    attempts.push(()=>tryJson(mdl,here));
   }
-  attempts.push({fn:async()=>{here(await tryGet())},name:'get'});
+  if(SETS.mind!=='ultra')attempts.push(async()=>{here(await tryGet())});
   let ok=false,lastErr=null;
   for(const at of attempts){
     if(userStop)break;
-    const savedCtrl=ctrl;
-    try{await at.fn();ok=true;break;}
+    try{await at();ok=true;break;}
     catch(err){
-      if(userStop||(err&&err.name==='AbortError'&&!stopReason)){userStop=true;break;}
+      if(userStop){break;}
       if(stopReason==='timeout'){stopReason='';continue;}
       lastErr=err;
       bub.innerHTML='<span class="typing"><i></i><i></i><i></i></span>';
     }
   }
-  clearInterval(tt);
   let finalText='',offline=false;
-  if(acc){finalText=acc.replace(/\s+$/,'');}
+  if(acc){finalText=brandFix(acc).replace(/\s+$/,'');}
   else if(userStop){finalText='⏹ Остановлено.';}
   else{
     const loc=localAnswer(MSGS[MSGS.length-1]&&MSGS[MSGS.length-1].text||'');
     offline=true;
     finalText=loc||('Не удалось получить ответ: '+((lastErr&&lastErr.message)||'сеть недоступна')+
       '. Проверь подключение и попробуй ещё раз.');
+    $('netDot').classList.add('err');
   }
+  if(ok)$('netDot').classList.remove('err');
   if(offline){
     const chip=document.createElement('div');chip.className='chip';chip.textContent='офлайн-режим';
     el.insertBefore(chip,el.firstChild);
@@ -461,8 +417,7 @@ async function respond(){
     let i=MSGS.length-1;while(i>=0&&MSGS[i].role!=='user')i--;
     if(i>=0){MSGS.splice(i+1);saveChat();render();respond();}};
   acts.appendChild(rg);
-  const bodyDiv=el.querySelector('.body');
-  bodyDiv.appendChild(acts);
+  el.querySelector('.body').appendChild(acts);
   stick();
   busy=false;ctrl=null;
   btn.classList.remove('stop');btn.textContent='➤';
@@ -510,36 +465,37 @@ async function send(){
 function stopGen(){userStop=true;stopReason='';if(ctrl)ctrl.abort();}
 function netDot(){
   const upd=()=>$('netDot').classList.toggle('err',navigator.onLine===false);
-  upd();addEventListener('online',upd);addEventListener('offline',upd);
+  upd();window.addEventListener('online',upd);window.addEventListener('offline',upd);
 }
 
 /* ---------- wiring ---------- */
+function syncMindLbl(){
+  $('btnMind').textContent=(MINDS[SETS.mind]||MINDS.smart).label+' ▾';
+  document.querySelectorAll('.mind').forEach(n=>n.classList.toggle('on',n.dataset.m===SETS.mind));
+}
+function rebuildQueue(){
+  MODEL_QUEUE=MINDS[SETS.mind].models.filter(m=>SETS.mind!=='ultra'||SETS.key);
+  if(!MODEL_QUEUE.length)MODEL_QUEUE=MINDS.smart.models;
+}
 async function init(){
-  render();
-  $('persona').value=SETS.persona;
-  $('sysP').value=SETS.sysP||(SETS.persona!=='custom'?PERSONAS[SETS.persona]:'');
-  $('temp').value=String(Math.round(SETS.temp*1000));
-  $('tempV').textContent=SETS.temp.toFixed(2);
-  $('stream').checked=SETS.stream;
+  render();netDot();syncMindLbl();rebuildQueue();
   $('apiKey').value=SETS.key;
-  if(SETS.light)document.body.classList.add('light');
-  loadModels();
   const ta=$('ta');
   ta.addEventListener('input',()=>{ta.style.height='auto';ta.style.height=Math.min(ta.scrollHeight,150)+'px'});
   ta.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}});
   $('send').onclick=()=>{busy?stopGen():send();};
-  $('persona').onchange=e=>{
-    SETS.persona=e.target.value;
-    if(SETS.persona!=='custom')$('sysP').value=PERSONAS[SETS.persona];
-    saveSet();
+  $('btnMind').onclick=e=>{e.stopPropagation();$('mindPop').classList.toggle('on');};
+  document.addEventListener('click',e=>{
+    if(!e.target.closest('#mindPop')&&!e.target.closest('#btnMind'))$('mindPop').classList.remove('on');
+  });
+  document.querySelectorAll('.mind').forEach(n=>n.onclick=()=>{
+    SETS.mind=n.dataset.m;saveSet();syncMindLbl();rebuildQueue();
+    $('mindPop').classList.remove('on');
+  });
+  $('apiKey').oninput=e=>{
+    SETS.key=e.target.value.trim();saveSet();rebuildQueue();
+    if(SETS.mind==='ultra')syncMindLbl();
   };
-  $('sysP').oninput=e=>{SETS.sysP=e.target.value;saveSet();};
-  $('modelSel').onchange=e=>{SETS.model=e.target.value;MODEL_CUR=e.target.value;saveSet();};
-  $('temp').oninput=e=>{SETS.temp=+e.target.value/1000;$('tempV').textContent=SETS.temp.toFixed(2);saveSet();};
-  $('stream').onchange=e=>{SETS.stream=e.target.checked;saveSet();};
-  $('apiKey').oninput=e=>{SETS.key=e.target.value.trim();saveSet();};
-  $('btnSet').onclick=()=>$('set').classList.toggle('on');
-  $('setClose').onclick=()=>$('set').classList.remove('on');
   $('btnTheme').onclick=()=>{SETS.light=!SETS.light;document.body.classList.toggle('light',SETS.light);saveSet();};
   $('btnNew').onclick=()=>{if(busy)stopGen();MSGS=[];saveChat();render();};
   $('btnExport').onclick=()=>{
