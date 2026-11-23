@@ -172,6 +172,35 @@ body.noanim #heroMark i{animation:none}
 .plugrow .pl span{font-size:11.5px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .plugtiny{display:inline-flex;align-items:center;gap:4px;margin-bottom:8px;font-size:11px;color:#A5B4FC;
   border:1px solid rgba(129,140,248,.3);border-radius:999px;padding:2px 9px}
+#plugList{max-height:56vh;overflow-y:auto}
+.blue{background:var(--ind);border:1px solid transparent;color:#fff}
+.blue:hover{background:var(--ind2)}
+#vidScr{position:fixed;inset:0;z-index:10;display:none;align-items:center;justify-content:center;
+  background:rgba(8,8,12,.72);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);padding:16px}
+#vidScr.on{display:flex}
+#vidCard{width:min(760px,100%);max-height:calc(100vh - 40px);overflow-y:auto;border-radius:18px;
+  background:rgba(20,20,27,.97);border:1px solid var(--line2);padding:18px;box-shadow:0 30px 80px rgba(0,0,0,.6)}
+#vidCard h2{font-size:17px}
+#vidSub{font-size:12.5px;color:var(--mut);margin:2px 0 12px}
+#vidRow{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin-bottom:10px}
+#vidRow>div{flex:1;min-width:180px}
+#vidRow label{display:block;font-size:11.5px;color:var(--mut);margin-bottom:4px}
+#vidTopic,#vidScenes{width:100%;height:38px;border-radius:9px;border:1px solid var(--line);
+  background:rgba(255,255,255,.04);color:var(--txt);font-family:inherit;font-size:13px;padding:0 10px;outline:none}
+#vidTopic:focus,#vidScenes:focus{border-color:var(--ind2)}
+#vidCv{width:100%;border-radius:12px;background:#000;display:block;border:1px solid var(--line)}
+#vidOut{width:100%;border-radius:12px;margin-top:10px;border:1px solid var(--line)}
+#vidBar{height:4px;background:rgba(255,255,255,.08);border-radius:4px;overflow:hidden;margin:10px 0 6px}
+#vidBarIn{display:block;height:100%;width:0;background:var(--ind2);transition:width .25s}
+#vidStat{font-size:12px;color:var(--mut);margin-bottom:10px;min-height:16px}
+#vidBtns{display:flex;gap:8px;flex-wrap:wrap}
+#runScr{position:fixed;inset:0;z-index:11;display:none;background:rgba(8,8,12,.8);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);padding:14px}
+#runScr.on{display:block}
+#runWrap{width:min(1000px,100%);height:calc(100vh - 28px);margin:0 auto;display:flex;flex-direction:column}
+#runBar{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+#runBar b{flex:1;font-size:13.5px;font-weight:600}
+#runIframe{flex:1;width:100%;border:1px solid var(--line2);border-radius:14px;background:#fff}
+.ncard{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
 .chip{display:inline-block;font-size:10.5px;color:var(--mut);background:rgba(255,255,255,.05);
   border:1px solid var(--line);border-radius:6px;padding:2px 7px;margin-bottom:6px}
 .typing{display:inline-flex;gap:4px;padding:4px 0}
@@ -381,6 +410,9 @@ body.noanim #heroMark i{animation:none}
 <symbol id="i-plug" viewBox="0 0 24 24"><path d="M10 4.5a2 2 0 0 1 4 0V6h3.5v3.4a2.1 2.1 0 0 1 0 4.2V17H14v1.5a2 2 0 0 1-4 0V17H6.5v-3.4a2.1 2.1 0 0 1 0-4.2V6H10z"/></symbol>
 <symbol id="i-key" viewBox="0 0 24 24"><circle cx="8.2" cy="15.8" r="4.4"/><path d="M11.4 12.6L20 4M16.2 4.6l3.2 3.2M13.6 7.2l2.8 2.8"/></symbol>
 <symbol id="i-dice" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="3.5"/><path d="M8.3 8.3h.01M15.7 8.3h.01M12 12h.01M8.3 15.7h.01M15.7 15.7h.01"/></symbol>
+<symbol id="i-video" viewBox="0 0 24 24"><rect x="2.8" y="6" width="13.2" height="12" rx="2.5"/><path d="M16 12l5.2-3.4v6.8z"/></symbol>
+<symbol id="i-code" viewBox="0 0 24 24"><path d="M8.5 7L4 12l4.5 5M15.5 7L20 12l-4.5 5"/></symbol>
+<symbol id="i-cal" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="16" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></symbol>
 <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></symbol>
 <symbol id="i-flash" viewBox="0 0 24 24"><path d="M13 2.5L4.8 13.2H11l-1 8.3L19.2 10.8H13z"/></symbol>
 <symbol id="i-mind" viewBox="0 0 24 24"><path d="M12 4l1.7 4.6L18.4 10l-4.7 1.7L12 16.4l-1.7-4.7L5.6 10l4.7-1.4z"/><path d="M18.5 16l.8 2.1 2.2.9-2.2.8-.8 2.2-.9-2.2-2.1-.8 2.1-.9z"/></symbol>
@@ -536,6 +568,39 @@ body.noanim #heroMark i{animation:none}
 <div id="promptPop">
   <b style="font-size:13px;padding:2px 4px 6px">Библиотека промптов</b>
   <div id="promptGrid"></div>
+</div>
+
+<div id="vidScr">
+  <div id="vidCard">
+    <h2>Видео-студия NEXUS</h2>
+    <div id="vidSub">AI генерирует сцены по сюжету, добавляет движение камеры, титры, музыку — и записывает видео (WebM) прямо в браузере</div>
+    <div id="vidRow">
+      <div><label>Сюжет видео (через запятую — отдельные сцены)</label><input id="vidTopic" placeholder="Например: полёт над горами, закат в пустыне, город будущего"></div>
+      <div style="max-width:150px"><label>Сцен</label>
+        <select id="vidScenes"><option value="3">3</option><option value="4" selected>4</option><option value="6">6</option></select>
+      </div>
+    </div>
+    <div id="vidStat">Готов к созданию</div>
+    <div id="vidBar"><i id="vidBarIn"></i></div>
+    <canvas id="vidCv" width="852" height="480"></canvas>
+    <video id="vidOut" controls style="display:none"></video>
+    <div id="vidBtns">
+      <button class="mini blue" id="vidGo">Создать видео</button>
+      <button class="mini" id="vidStop">Стоп</button>
+      <button class="mini" id="vidDl" style="display:none">⤓ Скачать .webm</button>
+      <button class="mini" id="vidClose">Закрыть</button>
+    </div>
+  </div>
+</div>
+
+<div id="runScr">
+  <div id="runWrap">
+    <div id="runBar"><b>Nexus Code — предпросмотр (защищённая песочница)</b>
+      <button class="pc" id="runDl">Скачать</button>
+      <button class="pc" id="runClose">Закрыть</button>
+    </div>
+    <iframe id="runIframe" sandbox="allow-scripts allow-pointer-lock allow-modals"></iframe>
+  </div>
 </div>
 
 <div id="setScr">
@@ -770,7 +835,12 @@ const PLUGINS=[
   {id:'unit',n:'Конвертер',ico:'i-loop',d:'Метры, футы, кг, °C/°F, системы счисления'},
   {id:'clock',n:'Дата и время',ico:'i-clock',d:'Точное время, дата, день недели'},
   {id:'pass',n:'Пароли',ico:'i-key',d:'Надёжные случайные пароли'},
-  {id:'rnd',n:'Случайность',ico:'i-dice',d:'Кубик, монета, случайные числа'}
+  {id:'rnd',n:'Случайность',ico:'i-dice',d:'Кубик, монета, случайные числа'},
+  {id:'video',n:'Видео',ico:'i-video',d:'Собирает видео из AI-сцен с музыкой и титрами',flow:'video',act:'Создать'},
+  {id:'ncode',n:'Nexus Code',ico:'i-code',d:'Пишет игры и приложения: план \u2192 код \u2192 ревью агентов',flow:'code',act:'Написать код'},
+  {id:'timer',n:'Таймер',ico:'i-clock',d:'\u00abтаймер на 5 минут\u00bb \u2014 просигналит точно'},
+  {id:'picker',n:'Выбор за меня',ico:'i-mind',d:'\u00abвыбери из: \u2026\u00bb \u2014 случайно выберет вариант'},
+  {id:'days',n:'Счёт дней',ico:'i-cal',d:'\u00abсколько дней до 8 марта\u00bb \u2014 посчитает'}
 ];
 const PLUG_KEY='nexus_plugs';
 function getPlugState(){
@@ -900,9 +970,332 @@ function runPlug(qRaw){
     }
     return {id:'pass',n:'Пароли',out:'Сгенерировал '+cnt+' надёжн'+(cnt===1?'ый':'ых')+' парол'+(cnt===1?'ь':'ей')+' ('+len+' символов):\n'+lines.join('\n')};
   }
+  if(plugOn('video')&&/(\/видео|\/video)|((сдела[а-яё]*|созда[а-яё]*|сгенерируй|сгенерировать|запиши)\s+(мне\s+)?(видео|ролик|клип|монтаж))/.test(lq))
+    return {id:'video',n:'Видео',out:null,flow:'video',task:q};
+  if(plugOn('ncode')&&(lq.indexOf('/код')===0||lq.indexOf('/code')===0||lq.indexOf('/nexcode')===0||/(напиши|создай|сделаю|сделай|сгенерируй|сгенерировать)\s+(код|программу|игру|приложение|сайт|бот|бота)/.test(lq)))
+    return {id:'ncode',n:'Nexus Code',out:null,flow:'code',task:q.replace(/^\/(код|code|nexcode)\s*/i,'')};
+  if(plugOn('timer')&&/(таймер|будильник|напомни\s+(мне\s+)?через)/.test(lq)){
+    const tm=lq.match(/(\d+)\s*(секунд|сек|минут|мин|час\w*|ч(?![а-яё])|с(?![а-яё])|м(?![а-яё]))/);
+    let ms=300000,label='5 минут';
+    if(tm){
+      const n=+tm[1],c=tm[2][0];
+      ms=c==='с'?n*1000:c==='м'?n*60000:n*3600000;
+      label=tm[1]+' '+tm[2];
+    }
+    if(ms>0&&ms<=6*3600000){
+      setTimeout(()=>{
+        try{nxsToast('⏰ Время вышло! (таймер: '+label+')')}catch(e){}
+        try{
+          const ac=new (window.AudioContext||window.webkitAudioContext)();
+          [0,.4,.8].forEach(d=>{
+            const o=ac.createOscillator(),g=ac.createGain();
+            o.connect(g);g.connect(ac.destination);o.frequency.value=880;
+            g.gain.setValueAtTime(.001,ac.currentTime+d);
+            g.gain.exponentialRampToValueAtTime(.25,ac.currentTime+d+.04);
+            g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+d+.45);
+            o.start(ac.currentTime+d);o.stop(ac.currentTime+d+.5);
+          });
+        }catch(e2){}
+        try{window.nxsSpeak&&window.nxsSpeak('Время вышло')}catch(e3){}
+      },ms);
+      return {id:'timer',n:'Таймер',out:'⏰ Таймер на '+label+' запущен. Просигналю, когда время выйдет.'};
+    }
+  }
+  if(plugOn('picker')){
+    const pm=lq.match(/выбери\s+(?:за\s?меня\s+)?(?:из\s*)?[:\u00a0]?([\s\S]+)/);
+    if(pm){
+      const items=pm[1].split(/[,\n•]+|\s+или\s+/).map(x=>x.trim().replace(/[.?!]+$/,'')).filter(Boolean);
+      if(items.length>=2)
+        return {id:'picker',n:'Выбор за меня',out:'Мой случайный выбор: **'+items[randInts(1)[0]%items.length]+'** (случайно из '+items.length+' вариантов)'};
+    }
+  }
+  if(plugOn('days')){
+    const dm=lq.match(/(?:сколько дней|сколько времени|какая дата|какое число)\s*(?:осталось\s*)?(?:до|перед)\s+(.+)/);
+    if(dm){
+      const MON={январ:0,феврал:1,март:2,апрел:3,мая:4,июн:5,июл:6,август:7,сент:8,окт:9,нояб:10,дек:11};
+      const HOL=[[/(нов[а-яё]*\s*год)/,11,31,'Нового года'],[/рождеств/,0,7,'Рождества'],
+        [/8\s*марта|восьм(о|ё)го марта/,2,8,'8 Марта'],[/9\s*мая/,4,9,'9 Мая'],
+        [/14\s*февраля|день влюбл/,1,14,'Дня влюблённых'],[/хэллоуин|хеллоуин/,9,31,'Хэллоуина']];
+      let t=null,title='';
+      const y0=new Date().getFullYear();
+      for(const[re,mo,dy,nm]of HOL)if(re.test(dm[1])){t=new Date(y0,mo,dy);title=nm;break}
+      const dm2=dm[1].match(/(\d{1,2})\s*[.\/]\s*(\d{1,2})/);
+      if(!t&&dm2){t=new Date(y0,+dm2[2]-1,+dm2[1]);title=+dm2[1]+'.'+dm2[2]}
+      if(!t){
+        const dm3=dm[1].match(/(\d{1,2})\s+([а-яё]+)/);
+        if(dm3)for(const k in MON)if(dm3[2].indexOf(k)===0){t=new Date(y0,MON[k],+dm3[1]);title=+dm3[1]+'.'+(MON[k]+1);break}
+      }
+      if(t){
+        const now=new Date();now.setHours(0,0,0,0);
+        t.setHours(0,0,0,0);
+        if(t.getTime()<now.getTime())t.setFullYear(t.getFullYear()+1);
+        const days=Math.round((t.getTime()-now.getTime())/86400000);
+        const pl2=days%10===1&&days%100!==11?'день':(days%10>=2&&days%10<=4&&(days%100<12||days%100>14))?'дня':'дней';
+        const wd=t.toLocaleDateString('ru-RU',{weekday:'long'});
+        return {id:'days',n:'Счёт дней',out:'До '+title+' осталось **'+days+' '+pl2+'** ('+wd+', '+t.toLocaleDateString('ru-RU')+').'+(days===0?' Это сегодня! 🎉':'')};
+      }
+    }
+  }
   return null;
 }
-window.nxPlug={runPlug,plugOn,togglePlug,PLUGINS};
+
+const NCS={
+  plan:'Ты — Архитектор, агент Nexus Code. Составь краткий план реализации (3-5 пунктов) по задаче пользователя. Только план, без кода.',
+  code:'Ты — Кодер, агент Nexus Code, senior-разработчик. Напиши полный автономный HTML-файл (HTML+CSS+JS в одном файле) по задаче и плану. Всё должно реально работать: никакой фейковой функциональности. Верни код ровно одним блоком ```html ... ``` без пояснений вне блока.',
+  review:'Ты — ревьюер-агент Nexus Code. Проверь код: баги, ошибки, нерабочие кнопки, отсутствие адаптации под телефон. Кратко перечисли конкретные исправления списком, без переписывания всего кода.',
+  fix:'Ты — Кодер, агент Nexus Code. Примени к коду перечисленные исправления и верни ПОЛНЫЙ исправленный код одним блоком ```html ... ``` без пояснений.'
+};
+let NCODE_CUR='';
+function extractCode(t){
+  const m=String(t||'').match(/```(?:html|htm|js|javascript)?\s*\n?([\s\S]*?)```/i);
+  if(m&&m[1].trim())return m[1].trim();
+  if(/<html|<!doctype|<body/i.test(String(t||'')))return String(t).trim();
+  return null;
+}
+function llmShot(sys,usr){
+  const ctl=new AbortController();
+  const tm=setTimeout(()=>ctl.abort(),110000);
+  const q=MODEL_QUEUE.length?MODEL_QUEUE:['openai'];
+  llmShot.i=(((llmShot.i||0)+1)%q.length);
+  const model=q[llmShot.i];
+  return fetch(SETS.mind==='ultra'?GEN:API,{
+    method:'POST',headers:headers(),
+    body:JSON.stringify({model,messages:[{role:'system',content:sys},{role:'user',content:usr}],stream:false,temperature:.5}),
+    signal:ctl.signal
+  }).then(r=>{clearTimeout(tm);if(!r.ok)throw new Error('HTTP '+r.status);return r.json()})
+    .then(j=>{const ch=j&&j.choices&&j.choices[0];
+      const t=cleanOut(ch&&(ch.message&&ch.message.content||ch.text)||(j&&j.content)||'');
+      if(!t)throw new Error('пустой ответ');return t});
+}
+function openRunScr(code){
+  NCODE_CUR=code||'';
+  const f=$('runIframe');if(f)f.srcdoc=NCODE_CUR;
+  $('runScr').classList.add('on');
+}
+function closeRunScr(){$('runScr').classList.remove('on');const f=$('runIframe');if(f)f.srcdoc='';}
+async function nCodeRespond(cmsg){
+  busy=true;userStop=false;
+  const btn=$('send');btn.classList.add('stop');btn.textContent='■';
+  const chat=$('chat');
+  const{bub,el}=addMsgEl('assistant');
+  bub.innerHTML='<span class="typing"><i></i><i></i><i></i></span>';
+  chat.appendChild(el);chat.scrollTop=chat.scrollHeight;
+  const log=[];
+  const show=()=>{bub.innerHTML=md(log.join('\n\n'));chat.scrollTop=chat.scrollHeight};
+  const step=async(name,sys,usr)=>{
+    log.push('**'+name+'**: работает…');show();
+    try{
+      const t=await llmShot(sys,usr);
+      if(userStop)throw new Error('остановлено');
+      log[log.length-1]='**'+name+'** — готов';show();
+      return t;
+    }catch(e){
+      log[log.length-1]='**'+name+'**: не смог ('+((e&&e.message)||'ошибка')+')';show();
+      return '';
+    }
+  };
+  let code=null,ultra=SETS.mind==='ultra';
+  try{
+    const task=cmsg.plug&&cmsg.plug.task||cmsg.text;
+    const plan=await step('Архитектор',NCS.plan,task);
+    if(userStop)throw new Error('остановлено');
+    let cod=await step('Кодер',NCS.code,task+(plan?'\n\nПлан:\n'+plan:''));
+    code=extractCode(cod);
+    if(!code)throw new Error('код не получен');
+    if(ultra){
+      const r1=await step('Claude Mini — ревью',NCS.review,task+'\n\nКод:\n'+code.slice(0,9000));
+      code=extractCode(await step('Кодер — улучшение',NCS.fix,'Задача: '+task+'\n\nКод:\n'+code.slice(0,9000)+'\n\nЗамечания:\n'+r1))||code;
+      const r2=await step('Open Code — тесты',NCS.review+' Особое внимание: рабочие кнопки, мобильность, отсутствие багов.',task+'\n\nКод:\n'+code.slice(0,9000));
+      code=extractCode(await step('Кодер — финал',NCS.fix,'Задача: '+task+'\n\nКод:\n'+code.slice(0,9000)+'\n\nЗамечания:\n'+r2))||code;
+    }else{
+      const r1=await step('Код-ревью',NCS.review,task+'\n\nКод:\n'+code.slice(0,9000));
+      code=extractCode(await step('Кодер — улучшение',NCS.fix,'Задача: '+task+'\n\nКод:\n'+code.slice(0,9000)+'\n\nЗамечания:\n'+r1))||code;
+    }
+  }catch(e){
+    const ft=(userStop?'⏹ Остановлено.':'Плагин «Nexus Code»: не удалось собрать код — '+((e&&e.message)||'ошибка')+'. Попробуй ещё раз.');
+    bub.innerHTML=md(ft);
+    MSGS.push({role:'assistant',text:ft});saveChat();
+    if(!userStop)$('netDot').classList.add('err');
+    try{window.nxsSpeak&&window.nxsSpeak('Код не собрался')}catch(e2){}
+    busy=false;ctrl=null;btn.classList.remove('stop');btn.textContent='➤';
+    return;
+  }
+  const who=ultra?'Архитектор, Кодер и два агента-ревьюера (Claude Mini и Open Code)':'Архитектор, Кодер и ревьюер';
+  bub.innerHTML=md('**Nexus Code: готово!**\n\n'+log.join('\n\n')+'\n\n'+who+' собрали рабочий код. Он в карточке ниже: запуск в песочнице, копирование или скачивание файла.');
+  const card=document.createElement('div');card.className='ncard';
+  const mk=(txt,fn)=>{const b=document.createElement('button');b.className='mini';b.textContent=txt;b.onclick=e=>{e.stopPropagation();fn()};return b};
+  card.appendChild(mk('▶ Запустить',()=>openRunScr(code)));
+  card.appendChild(mk('⧉ Копировать',()=>{const tt=m=>{window.nxsToast&&window.nxsToast(m)};try{navigator.clipboard.writeText(code).then(()=>tt('Код скопирован'),()=>tt('Не скопировалось'))}catch(e){tt('Не скопировалось')}}));
+  card.appendChild(mk('⤓ Скачать .html',()=>{
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(new Blob([code],{type:'text/html'}));
+    a.download='nexus-code.html';a.click();
+  }));
+  el.querySelector('.body').appendChild(card);
+  MSGS.push({role:'assistant',text:'Nexus Code собрал код по задаче «'+(cmsg.plug&&cmsg.plug.task||'')+'»: '+who+'. Код доступен в карточке: запуск / копия / скачивание.'});
+  saveChat();
+  try{window.nxsSpeak&&window.nxsSpeak('Код готов')}catch(e2){}
+  chat.scrollTop=chat.scrollHeight;
+  busy=false;ctrl=null;btn.classList.remove('stop');btn.textContent='➤';
+}
+
+let VIDBLOB=null,VIDBUSY=false,VSTOP=false;
+function vidPlaceholder(x,W,H,title,sub){
+  const g=x.createLinearGradient(0,0,W,H);
+  g.addColorStop(0,'#1b2436');g.addColorStop(1,'#0e0e12');
+  x.fillStyle=g;x.fillRect(0,0,W,H);
+  x.fillStyle='rgba(255,255,255,.92)';x.textAlign='center';
+  x.font='600 '+Math.round(H/13)+'px Inter,sans-serif';
+  x.fillText(title.slice(0,58),W/2,H/2-H*0.02);
+  x.fillStyle='rgba(165,180,252,.85)';
+  x.font='500 '+Math.round(H/26)+'px Inter,sans-serif';
+  x.fillText((sub||'NEXUS AI').slice(0,58),W/2,H/2+H*0.08);
+}
+function loadVidImg(url){
+  return new Promise(res=>{
+    const im=new Image();
+    im.crossOrigin='anonymous';
+    im.onload=()=>res(im);im.onerror=()=>res(null);
+    im.src=url;
+  });
+}
+function openVideoStudio(preset){
+  $('vidTopic').value=preset||'';
+  $('vidOut').style.display='none';
+  const cv=$('vidCv');cv.width=852;cv.height=480;cv.style.display='block';
+  $('vidStat').textContent='Готов к созданию: заполни сюжет и нажми «Создать видео»';
+  $('vidBarIn').style.width='0%';
+  $('vidDl').style.display='none';
+  vidPlaceholder(cv.getContext('2d'),852,480,'NEXUS AI — Видео-студия');
+  $('vidScr').classList.add('on');
+}
+async function makeVideo(){
+  if(VIDBUSY)return;
+  VIDBUSY=true;VIDBLOB=null;VSTOP=false;
+  const cv=$('vidCv'),x=cv.getContext('2d'),W=cv.width,H=cv.height;
+  const topic=($('vidTopic').value.trim()||'приключение в космосе');
+  const nsc=+($('vidScenes').value||4);
+  $('vidOut').style.display='none';cv.style.display='block';
+  $('vidStat').textContent='Генерирую сцены…';
+  const parts=topic.split(/[,.]/).map(z=>z.trim()).filter(Boolean);
+  const scenes=(parts.length>=2?parts:[topic]).slice(0,nsc);
+  const total=2+scenes.length*3.2+2;
+  const dur=i=>i===-1?2:i===scenes.length?2:3.2;
+  const imgs=[];
+  for(let i=0;i<scenes.length;i++){
+    $('vidStat').textContent='Генерирую сцену '+(i+1)+' из '+scenes.length+'…';
+    const u='https://image.pollinations.ai/prompt/'+encodeURIComponent(scenes[i]+', cinematic still, dramatic light, high detail, masterpiece')+'?width=852&height=480&nologo=true&seed='+(9173+i*631);
+    imgs.push(await loadVidImg(u));
+  }
+  if(VSTOP){VIDBUSY=false;return}
+  $('vidStat').textContent='Собираю видео…';
+  let rec=null,chunks=[];
+  try{
+    const stream=cv.captureStream?cv.captureStream(30):null;
+    if(stream&&window.MediaRecorder){
+      try{
+        const ac=new (window.AudioContext||window.webkitAudioContext)();
+        const dest=ac.createMediaStreamDestination();
+        const g=ac.createGain();g.gain.value=.045;g.connect(dest);
+        [[110,0],[165.2,.004]].forEach(pr=>{
+          const o=ac.createOscillator();o.type='sine';o.frequency.value=pr[0];
+          const og=ac.createGain();og.gain.value=pr[1]?0:.9;
+          o.connect(og);og.connect(g);o.start();
+        });
+        dest.stream.getAudioTracks().forEach(t=>stream.addTrack(t));
+      }catch(e){}
+      const mt=['video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm'];
+      const mime=mt.find(t=>{try{return MediaRecorder.isTypeSupported(t)}catch(e){return false}});
+      rec=new MediaRecorder(stream,mime?{mimeType:mime}:undefined);
+      rec.ondataavailable=e=>{if(e.data&&e.data.size)chunks.push(e.data)};
+      rec.start(500);
+    }
+  }catch(e){rec=null}
+  if(!VSTOP){
+    const t0=performance.now();
+    await new Promise(rs=>{
+      const fr=now=>{
+        const t=(now-t0)/1000;
+        let seg=-1,loc=t;
+        for(let i=-1;i<=scenes.length;i++){
+          if(loc<dur(i)){seg=i;break}
+          loc-=dur(i);
+        }
+        if(seg>scenes.length||loc<0){rs();return}
+        x.fillStyle='#0e0e12';x.fillRect(0,0,W,H);
+        if(seg===-1||seg===scenes.length){
+          vidPlaceholder(x,W,H,seg===-1?topic:'Создано NEXUS AI',seg===-1?'':'Плагин «Видео» • nexus');
+        }else{
+          const im=imgs[seg];
+          const p=Math.min(1,Math.max(0,loc/dur(seg)));
+          const sc=1.06+.09*p;
+          x.save();
+          if(im){
+            const iw=im.width||W,ih=im.height||H;
+            const base=Math.max(W/iw,H/ih)*sc;
+            const dw=iw*base,dh=ih*base;
+            const ox=(W-dw)*(0.5+0.06*(seg%2?1:-1)*p),oy=(H-dh)*0.5;
+            try{x.drawImage(im,ox,oy,dw,dh)}catch(e){vidPlaceholder(x,W,H,scenes[seg],'сцена '+(seg+1))}
+          }else{
+            vidPlaceholder(x,W,H,scenes[seg],'сцена '+(seg+1));
+          }
+          x.restore();
+          const fad=Math.min(1,Math.min(p,1-p)*6);
+          x.fillStyle='rgba(0,0,0,'+(1-fad)*0.55+')';
+          x.fillRect(0,0,W,H);
+          x.fillStyle='rgba(255,255,255,.95)';x.textAlign='center';
+          x.font='600 '+Math.round(H/17)+'px Inter,sans-serif';
+          const tt=scenes[seg]||'';
+          x.shadowColor='rgba(0,0,0,.9)';x.shadowBlur=8;
+          if(tt.length>44){
+            x.fillText(tt.slice(0,44),W/2,H*0.84);
+            x.fillText(tt.slice(44,88),W/2,H*0.84+H*0.075);
+          }else{
+            x.fillText(tt,W/2,H*0.86);
+          }
+          x.shadowBlur=0;
+        }
+        $('vidBarIn').style.width=Math.min(100,t/total*100).toFixed(1)+'%';
+        if(VSTOP||t*1000>=(total+.9)*1000)rs();
+        else requestAnimationFrame(fr);
+      };
+      requestAnimationFrame(fr);
+    });
+  }
+  if(rec&&rec.state!=='inactive'){
+    await new Promise(r=>{rec.onstop=r;try{rec.stop()}catch(e){r()}});
+  }
+  if(VSTOP){VIDBUSY=false;return}
+  if(chunks.length){
+    VIDBLOB=new Blob(chunks,{type:'video/webm'});
+    const v=$('vidOut');
+    v.src=URL.createObjectURL(VIDBLOB);
+    v.style.display='block';
+    cv.style.display='none';
+    $('vidDl').style.display='';
+    $('vidStat').textContent='Готово! Видео '+total.toFixed(0)+' сек, '+Math.round(VIDBLOB.size/1024)+' КБ — можно скачать или посмотреть.';
+  }else{
+    $('vidStat').textContent='Запись не поддерживается этим браузером — показал анимацию в превью.';
+  }
+  VIDBUSY=false;
+}
+$('vidClose').onclick=()=>{$('vidScr').classList.remove('on')};
+$('vidGo').onclick=()=>{VIDBUSY?null:makeVideo().catch(()=>{VIDBUSY=false;$('vidStat').textContent='Ошибка создания — попробуй ещё раз'})};
+$('vidStop').onclick=()=>{VSTOP=true;$('vidStat').textContent='Остановлено';};
+$('vidDl').onclick=()=>{
+  if(!VIDBLOB)return;
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(VIDBLOB);
+  a.download='nexus-video.webm';a.click();
+};
+$('runClose').onclick=closeRunScr;
+$('runDl').onclick=()=>{
+  if(!NCODE_CUR)return;
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([NCODE_CUR],{type:'text/html'}));
+  a.download='nexus-code.html';a.click();
+};
+window.nxPlug={runPlug,plugOn,togglePlug,PLUGINS,extractCode,openRunScr,closeRunScr,openVideoStudio,closeRunScr};
 
 function headers(){
   const h={'Content-Type':'application/json'};
@@ -1300,16 +1693,31 @@ async function send(){
   if(mImg){ta.value='';ta.style.height='auto';try{localStorage.removeItem('nexus_draft')}catch(e){}drawImg(mImg[1]);return;}
   const msg={role:'user',text:text||('Опиши, что на фото'+(PEND?' «'+PEND.name+'»':''))};
   if(PEND){msg.img=true;msg.thumb=PEND.thumb;msg.full=PEND.full;msg.name=PEND.name}
+  if(text){
+    try{
+      const pl=runPlug(text);
+      if(pl){
+        ta.value='';ta.style.height='auto';try{localStorage.removeItem('nexus_draft')}catch(eg){}hap();
+        if(pl.flow==='video'){
+          window.nxsToast&&window.nxsToast('Плагин «Видео»: открываю студию');
+          openVideoStudio(pl.task);
+          return;
+        }
+        if(pl.flow==='code'){
+          msg.plug=pl;MSGS.push(msg);saveChat();
+          const hero=$('hero');if(hero)hero.remove();
+          addUserMsg(msg);clearImg();
+          nCodeRespond(msg);
+          return;
+        }
+        msg.plug=pl;window.nxsToast&&window.nxsToast('Плагин «'+pl.n+'»: готово');
+      }
+    }catch(e){}
+  }
   if(WEB&&text){
     try{
       const rs=await webSearch(text);
       if(rs.length){msg.web=rs;toast('Найдено источников: '+rs.length)}
-    }catch(e){}
-  }
-  if(text){
-    try{
-      const pl=runPlug(text);
-      if(pl){msg.plug=pl;toast('Плагин «'+pl.n+'»: готово')}
     }catch(e){}
   }
   ta.value='';ta.style.height='auto';try{localStorage.removeItem('nexus_draft')}catch(e){}hap();
@@ -1501,10 +1909,22 @@ async function init(){
     const list=$('plugList');if(!list)return;list.innerHTML='';
     PLUGINS.forEach(p=>{
       const row=document.createElement('button');row.className='plugrow';
-      row.innerHTML='<div class="pl"><b><svg class="ic sm"><use href="#'+p.ico+'"/></svg>'+p.n+'</b><span>'+p.d+'</span></div>';
-      const t=document.createElement('span');t.className='tgl'+(plugOn(p.id)?' on':'');
-      row.appendChild(t);
-      row.onclick=e=>{e.stopPropagation();hap();const on=togglePlug(p.id);t.classList.toggle('on',on);toast('Плагин «'+p.n+'»: '+(on?'включён':'выключен'))};
+      row.innerHTML='<div class="pl"><b><svg class="ic sm"><use href="#'+p.ico+'"/></svg>'+p.n+(p.act?' <span style="margin-left:auto;color:#818CF8;font-size:10.5px;border:1px solid rgba(129,140,248,.35);border-radius:999px;padding:1px 8px">'+p.act+'</span>':'')+'</b><span>'+p.d+'</span></div>';
+      if(p.flow){
+        row.onclick=e=>{
+          e.stopPropagation();hap();$('plugPop').classList.remove('on');
+          if(p.flow==='video'){openVideoStudio($('ta').value.trim());}
+          else if(p.flow==='code'){
+            const tv=$('ta').value.trim();
+            $('ta').value='/код '+(tv||'небольшая игра или приложение на твой выбор');
+            send();
+          }
+        };
+      }else{
+        const t=document.createElement('span');t.className='tgl'+(plugOn(p.id)?' on':'');
+        row.appendChild(t);
+        row.onclick=e=>{e.stopPropagation();hap();const on=togglePlug(p.id);t.classList.toggle('on',on);toast('Плагин «'+p.n+'»: '+(on?'включён':'выключен'))};
+      }
       list.appendChild(row);
     });
   }
