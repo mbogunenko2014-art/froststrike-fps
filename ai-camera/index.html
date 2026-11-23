@@ -15,7 +15,7 @@
   --saT:env(safe-area-inset-top,0px);--saB:env(safe-area-inset-bottom,0px);
 }
 html,body{height:100%;overflow:hidden;overscroll-behavior:none}
-body{background:var(--bg);color:var(--txt);font:14px/1.45 Inter,system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+body{position:fixed;inset:0;width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--txt);font:14px/1.45 Inter,system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
 button{font-family:inherit;color:inherit;background:none;border:none;cursor:pointer}
 svg.ic{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;display:block}
 svg.ic.sm{width:17px;height:17px}
@@ -23,7 +23,7 @@ svg.ic.sm{width:17px;height:17px}
 .screen.on{display:flex}
 /* ---------- CAMERA ---------- */
 #scrCam{background:#000}
-#view{position:absolute;inset:0;overflow:hidden}
+#view{position:absolute;inset:0;overflow:hidden;touch-action:none}
 #vid{position:absolute;top:50%;left:50%;min-width:100%;min-height:100%;width:auto;height:auto;transform:translate(-50%,-50%);object-fit:cover;transition:transform .12s ease-out}
 #vid.mir{transform:translate(-50%,-50%) scaleX(-1)}
 #veil{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none;transition:opacity .12s;z-index:6}
@@ -62,9 +62,9 @@ svg.ic.sm{width:17px;height:17px}
 /* side control (exposure) */
 #expRail{position:absolute;right:10px;top:50%;transform:translateY(-50%);z-index:7;display:flex;flex-direction:column;align-items:center;gap:6px;background:rgba(10,11,16,.5);backdrop-filter:blur(12px);border:1px solid var(--line);border-radius:99px;padding:10px 6px}
 #expRail svg{color:var(--dim)}
-#exp{-webkit-appearance:none;appearance:none;width:110px;height:26px;transform:rotate(-90deg);background:transparent}
+#exp{-webkit-appearance:none;appearance:none;width:120px;height:32px;transform:rotate(-90deg);background:transparent}
 #exp::-webkit-slider-runnable-track{height:2px;background:rgba(255,255,255,.25);border-radius:2px}
-#exp::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:#fff;margin-top:-8px;box-shadow:0 1px 6px rgba(0,0,0,.5)}
+#exp::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:#fff;margin-top:-10px;box-shadow:0 1px 6px rgba(0,0,0,.5)}
 #expLbl{font-size:10.5px;color:var(--dim);min-width:34px;text-align:center}
 /* countdown */
 #timerOv{position:absolute;inset:0;z-index:9;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.25)}
@@ -226,6 +226,7 @@ svg.ic.sm{width:17px;height:17px}
 <symbol id="i-check" viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6"/></symbol>
 <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.2v.2"/></symbol>
 <symbol id="i-zap" viewBox="0 0 24 24"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"/></symbol>
+<symbol id="i-reset" viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 4.4-7.2"/><path d="M4 3v5h5"/></symbol>
 </defs></svg>
 
 <!-- ============ CAMERA ============ -->
@@ -357,6 +358,7 @@ svg.ic.sm{width:17px;height:17px}
       <button class="tg" data-tool="recognize"><svg class="ic"><use href="#i-spark"/></svg>Распознать</button>
       <button class="tg" data-tool="describe"><svg class="ic"><use href="#i-eye"/></svg>Описать (API)</button>
       <button class="tg" data-tool="upscale"><svg class="ic"><use href="#i-wand"/></svg>Апскейл 2×</button>
+      <button class="tg" data-tool="reset"><svg class="ic"><use href="#i-reset"/></svg>Сброс</button>
     </div>
   </div>
   <div id="eSave"><button id="btnESave">Сохранить в галерею</button></div>
@@ -451,6 +453,7 @@ function dataUrlFromCanvas(c,max=512,q=0.8){
 
 /* ===================== CAMERA ===================== */
 let stream=null,track=null,caps={},cset={},lastItem=null;
+let shooting=false,timerCancel=false,timerActive=false;
 
 function errShow(t,m){$('errTitle').textContent=t;$('errMsg').textContent=m||'';$('camErr').classList.add('on');updateChips();}
 function errOff(){$('camErr').classList.remove('on');}
@@ -465,9 +468,15 @@ async function camStart(facing){
   }
   camStopTracks(false);
   try{
-    stream=await navigator.mediaDevices.getUserMedia({audio:false,video:{
-      facingMode:facing,
-      width:{ideal:S.res||1920},height:{ideal:S.res||1080}}});
+    try{
+      stream=await navigator.mediaDevices.getUserMedia({audio:false,video:{
+        facingMode:facing,
+        width:{ideal:S.res||1920},height:{ideal:S.res||1080}}});
+    }catch(e1){
+      if(S.res){S.res=0;saveS();try{updateResUI();}catch(_){}
+        stream=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:facing}});}
+      else throw e1;
+    }
   }catch(e){
     const M={NotAllowedError:['Нет доступа к камере','Разрешите доступ в настройках браузера (значок замка/камеры в адресной строке), затем нажмите «Повторить».'],
       NotFoundError:['Камера не найдена','Проверьте, что камера не занята другим приложением.'],
@@ -487,6 +496,8 @@ async function camStart(facing){
   buildZoom();updateResUI();updateWbUI();updateFlashUI();
   expApply(true);wbApply(S.wb,true);
   updateChips();
+  try{if(!localStorage.getItem('nx_hint')){localStorage.setItem('nx_hint','1');
+    setTimeout(()=>toast('Пинч — зум · тап — фокус · двойной тап — смена камеры',4200),700);}}catch(e){}
   if(track)on(track,'ended',()=>{errShow('Камера отключена','Поток камеры был прерван системой. Нажмите «Повтерить».');});
   return true;
 }
@@ -631,8 +642,10 @@ function initGestures(){
 /* ---------- capture ---------- */
 function countdown(n){
   return new Promise(res=>{
-    const ov=$('timerOv'),el=$('timerN');ov.classList.add('on');
-    const step=()=>{if(n<=0){ov.classList.remove('on');res();return;}
+    const ov=$('timerOv'),el=$('timerN');ov.classList.add('on');timerActive=true;timerCancel=false;
+    const step=()=>{
+      if(timerCancel){timerActive=false;ov.classList.remove('on');toast('Таймер отменён');res(false);return;}
+      if(n<=0){timerActive=false;ov.classList.remove('on');res(true);return;}
       el.textContent=n;n--;setTimeout(step,1000);};
     step();
   });
@@ -661,16 +674,25 @@ async function grabPoster(){
   }catch(e){return null;}
 }
 async function snap(){
+  if(shooting)return;
   if(S.mode==='video'){S.recording?stopRec():startRec();return;}
-  if(S.timer){await countdown(S.timer);}
-  let blob;
-  try{blob=await captureBlob();}
-  catch(e){toast(e.message||'Кадр не готов');return;}
-  hap(18);
-  if(S.flash===2&&caps.torch){try{await track.applyConstraints({advanced:[{torch:true}]});}catch(e){}
-    await sleep(120);
-    try{await track.applyConstraints({advanced:[{torch:false}]});}catch(e){}}
-  autoProcess(blob).catch(e=>console.warn('process',e));
+  if(S.timer&&timerActive){timerCancel=true;return;}
+  shooting=true;
+  try{
+    if(S.timer){const ok=await countdown(S.timer);if(!ok)return;}
+    if(S.flash===2&&caps.torch){
+      try{await track.applyConstraints({advanced:[{torch:true}]});}catch(e){}
+      await sleep(300);
+    }
+    let blob;
+    try{blob=await captureBlob();}
+    catch(e){toast(e.message||'Кадр не готов');return;}
+    hap(18);
+    autoProcess(blob).catch(e=>console.warn('process',e));
+  }finally{
+    shooting=false;
+    if(S.flash===2&&caps.torch&&track){try{await track.applyConstraints({advanced:[{torch:false}]});}catch(e){}}
+  }
 }
 
 /* ---------- video record ---------- */
@@ -806,7 +828,9 @@ function boxBlurArr(src,w,h,r,passes=2){
 function denoise(id,w,h,st){
   if(st<=0||w<8||h<8)return;
   const src=id.data,out=new Uint8ClampedArray(src);
-  const sig=12+22*st,inv=1/(2*sig*sig);
+  const sig=12+22*st;
+  const WT=new Float32Array(256);
+  for(let q=0;q<256;q++)WT[q]=Math.exp(-q*q/(2*sig*sig));
   const lum=new Float32Array(w*h);
   for(let i=0,idx=0;i<src.length;i+=4,idx++)lum[idx]=0.299*src[i]+0.587*src[i+1]+0.114*src[i+2];
   const blend=Math.min(1,st);
@@ -816,7 +840,7 @@ function denoise(id,w,h,st){
       let wsum=1,R=src[idx*4],G=src[idx*4+1],B=src[idx*4+2];
       for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){
         if(!dx&&!dy)continue;
-        const k=idx+dy*w+dx,dl=lum[k]-lc,wgt=Math.exp(-dl*dl*inv);
+        const k=idx+dy*w+dx,dl=Math.abs(lum[k]-lc)|0,wgt=WT[dl>255?255:dl];
         wsum+=wgt;R+=src[k*4]*wgt;G+=src[k*4+1]*wgt;B+=src[k*4+2]*wgt;
       }
       R/=wsum;G/=wsum;B/=wsum;
@@ -831,7 +855,7 @@ function denoise(id,w,h,st){
 }
 function localContrast(id,w,h,k){
   if(k<=0||w<8)return;
-  const b=boxBlurArr(id.data,w,h,Math.max(6,Math.round(w/90)),2);
+  const b=boxBlurArr(id.data,w,h,Math.max(6,Math.round(w/90)),1);
   const d=id.data;
   for(let i=0;i<d.length;i+=4){
     const l=0.299*d[i]+0.587*d[i+1]+0.114*d[i+2];
@@ -868,8 +892,8 @@ function portraitFx(id,w,h,faces,sf){
     ?faces.map(f=>({cx:((f[0]+f[2])/2)*sf,cy:((f[1]+f[3])/2)*sf,rx:Math.max(30,((f[2]-f[0])*0.62)*sf),ry:Math.max(30,((f[3]-f[1])*0.72)*sf)}))
     :[{cx:w/2,cy:h*0.42,rx:w*0.40,ry:h*0.52}];
   const base=new Uint8ClampedArray(id.data);
-  const skin=boxBlurArr(base,w,h,3,2);
-  const bgb=boxBlurArr(id.data,w,h,10,2);
+  const skin=boxBlurArr(base,w,h,3,1);
+  const bgb=boxBlurArr(id.data,w,h,10,1);
   const d=id.data;
   for(let y=0;y<h;y++)for(let x=0;x<w;x++){
     let m=1;
@@ -899,7 +923,7 @@ const CURVES={
 };
 
 /* main enhance pipeline */
-const MAXP=()=>S.hq?2048:1600;
+const MAXP=()=>S.hq?2048:1280;
 async function runEnhance(blob,opt){
   opt=opt||{};
   const bmp=await imgFromBlob(blob);
@@ -916,6 +940,7 @@ async function runEnhance(blob,opt){
   const id=x.getImageData(0,0,W2,H2);
   if(opt.night){
     denoise(id,W2,H2,0.75);report.push('шумоподавление');
+    await sleep(0);
     wbGray(id);gamma(id,0.66-clamp(opt.ev||0,-1,1)*0.1);
     autoLevels(id,0.012,0.995);
     localContrast(id,W2,H2,0.38);report.push('ночная экспозиция','локальный контраст');
@@ -927,11 +952,14 @@ async function runEnhance(blob,opt){
     autoLevels(id,0.002,0.998);report.push('авто-уровни');
     satLum(id,1.1,-0.06,0.1);
   }
+  await sleep(0);
   unsharpMask(id,W2,H2,opt.night?0.5:0.85,1.4);report.push('резкость');
   if(opt.portrait){
+    await sleep(0);
     try{const fr=portraitFx(id,W2,H2,opt.faces||[],W2/W);report.push(fr);}catch(e){}
   }
   x.putImageData(id,0,0);
+  await sleep(0);
   vigDraw(x,W2,H2,opt.night?0.12:0);
   const out=await cvBlob(C,'image/jpeg',0.95);
   return {blob:out,report,w:W2,h:H2,upscaled:scale>1.01};
@@ -1075,48 +1103,50 @@ function eCompose(){
   x.restore();
   return c;
 }
+function applyPipeline(ctx,W,H,p){
+  let id=ctx.getImageData(0,0,W,H);
+  if(p.f_hdr)localContrast(id,W,H,p.f_hdr/160);
+  if(p.curve)applyLUT(id,makeLUT(CURVES[p.curve]||(v=>v)));
+  const ex=p.bright*0.6, cf=1+p.contrast/142, tp=p.temp*0.42, tn=p.tint*0.36;
+  const sat=1+p.sat/100, hiH=p.high/210, shS=p.shad/190;
+  const needTone=ex||p.contrast||tp||tn;
+  const needLum=p.sat||p.high||p.shad;
+  if(needTone||needLum){
+    const d=id.data;
+    const Lr=makeLUT(v=>CU8(clamp((v-128)*cf+128+ex+tp,-1,256)));
+    const Lg=makeLUT(v=>CU8(clamp((v-128)*cf+128+ex-tn*0.7,-1,256)));
+    const Lb=makeLUT(v=>CU8(clamp((v-128)*cf+128+ex-tp,-1,256)));
+    for(let i=0;i<d.length;i+=4){
+      let r=Lr[d[i]],g=Lg[d[i+1]],b=Lb[d[i+2]];
+      if(needLum){
+        let l=0.2126*r+0.7152*g+0.0722*b;
+        if(sat!==1){r=CU8(l+(r-l)*sat);g=CU8(l+(g-l)*sat);b=CU8(l+(b-l)*sat);}
+        if(hiH){const k=1-Math.max(0,hiH)*2.0*clamp((l-110)/145,0,1);r=CU8(r*k);g=CU8(g*k);b=CU8(b*k);l=0.2126*r+0.7152*g+0.0722*b;}
+        if(shS){const k=1+Math.max(0,shS)*0.9*clamp(1-l/128,0,1);r=CU8(r*k);g=CU8(g*k);b=CU8(b*k);}
+      }
+      d[i]=r;d[i+1]=g;d[i+2]=b;
+    }
+    ctx.putImageData(id,0,0);
+  }
+  if(p.blur>0){
+    const r=Math.round(p.blur/100*14);
+    if(r>=1){const bd=boxBlurArr(ctx.getImageData(0,0,W,H).data,W,H,r,1);
+      const bid=new ImageData(bd,W,H);ctx.putImageData(bid,0,0);}
+  }
+  if(p.sharp>0){const id2=ctx.getImageData(0,0,W,H);unsharpMask(id2,W,H,p.sharp/100*1.15,1.2);ctx.putImageData(id2,0,0);}
+  vigDraw(ctx,W,H,p.vig/100);
+}
 function eRender(){
   const baseCanvas=eCompose2();
   if(!baseCanvas)return;
-  const W=baseCanvas.width,H=baseCanvas.height;
+  const W0=baseCanvas.width,H0=baseCanvas.height;
+  const s=Math.min(1,900/Math.max(W0,H0));
+  const W=Math.max(2,Math.round(W0*s)),H=Math.max(2,Math.round(H0*s));
   const cv=$('eCv');cv.width=W;cv.height=H;
   const ctx=cv.getContext('2d',{willReadFrequently:true});
-  ctx.drawImage(baseCanvas,0,0);
-  if(!E.cmp){
-    const p=E.p;
-    let id=ctx.getImageData(0,0,W,H);
-    if(p.f_hdr)localContrast(id,W,H,p.f_hdr/160);
-    if(p.curve)applyLUT(id,makeLUT(CURVES[p.curve]||(v=>v)));
-    /* combined tone pass */
-    const ex=p.bright*0.6, cf=1+p.contrast/142, tp=p.temp*0.42, tn=p.tint*0.36;
-    const sat=1+p.sat/100, hiH=p.high/210, shS=p.shad/190;
-    const needTone=ex||p.contrast||tp||tn;
-    const needLum=p.sat||p.high||p.shad;
-    if(needTone||needLum){
-      const d=id.data;
-      const Lr=makeLUT(v=>CU8(clamp((v-128)*cf+128+ex+tp,-1,256)));
-      const Lg=makeLUT(v=>CU8(clamp((v-128)*cf+128+ex-tn*0.7,-1,256)));
-      const Lb=makeLUT(v=>CU8(clamp((v-128)*cf+128+ex-tp,-1,256)));
-      for(let i=0;i<d.length;i+=4){
-        let r=Lr[d[i]],g=Lg[d[i+1]],b=Lb[d[i+2]];
-        if(needLum){
-          let l=0.2126*r+0.7152*g+0.0722*b;
-          if(sat!==1){r=CU8(l+(r-l)*sat);g=CU8(l+(g-l)*sat);b=CU8(l+(b-l)*sat);}
-          if(hiH){const k=1-Math.max(0,hiH)*2.0*clamp((l-110)/145,0,1);r=CU8(r*k);g=CU8(g*k);b=CU8(b*k);l=0.2126*r+0.7152*g+0.0722*b;}
-          if(shS){const k=1+Math.max(0,shS)*0.9*clamp(1-l/128,0,1);r=CU8(r*k);g=CU8(g*k);b=CU8(b*k);}
-        }
-        d[i]=r;d[i+1]=g;d[i+2]=b;
-      }
-      ctx.putImageData(id,0,0);
-    }
-    if(p.blur>0){
-      const r=Math.round(p.blur/100*14);
-      if(r>=1){const bd=boxBlurArr(ctx.getImageData(0,0,W,H).data,W,H,r,1);
-        const bid=new ImageData(bd,W,H);ctx.putImageData(bid,0,0);}
-    }
-    if(p.sharp>0){const id2=ctx.getImageData(0,0,W,H);unsharpMask(id2,W,H,p.sharp/100*1.15,1.2);ctx.putImageData(id2,0,0);}
-    vigDraw(ctx,W,H,p.vig/100);
-  }
+  ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
+  ctx.drawImage(baseCanvas,0,0,W,H);
+  if(!E.cmp)applyPipeline(ctx,W,H,E.p);
 }
 let eCompose2Cache=null;
 function eCompose2(){
@@ -1138,7 +1168,7 @@ function eSnapshot(){return {p:Object.assign({},E.p),crop:E.crop?Object.assign({
 function eRestore(s){Object.assign(E.p,s.p);E.crop=s.crop?Object.assign({},s.crop):null;eCompose2Dirty=true;eSyncSliders();eSchedule();}
 function openEditor(blob,itemId){
   show('scrEdit');
-  E.img=null;E.crop=null;E.hist=[];E.hidx=-1;E.itemId=itemId||null;E.cmp=false;eCompose2Dirty=true;
+  E.img=null;E.crop=null;E.hist=[];E.hidx=-1;E.itemId=itemId||null;E.cmp=false;E.hasAlpha=false;eCompose2Dirty=true;
   Object.assign(E.p,P0);
   const done=(img)=>{E.img=img;eCompose2Dirty=true;ePushHist();eSyncSliders();drawFilterThumbs();setETab('sliders');eSchedule();refreshToolGridUI();};
   imgFromBlob(blob).then(done).catch(e=>toast('Не удалось открыть фото: '+(e.message||'')));
@@ -1220,14 +1250,16 @@ function eDrawCrop(){
 function cropApply(){
   CROP.mode=false;$('eCrop').style.display='none';$('eCropBtns').style.display='none';
   const cv=$('eCv'),cr=cv.getBoundingClientRect(),wr=$('eCvWrap').getBoundingClientRect();
-  const sx=cv.width/cr.width,sy=cv.height/cr.height;
-  const ox=(CROP.rect.x-(cr.left-wr.left))*sx,oy=(CROP.rect.y-(cr.top-wr.top))*sy;
-  const w=CROP.rect.w*sx,h=CROP.rect.h*sy;
-  const x0=clamp(Math.round(ox),0,cv.width-2),y0=clamp(Math.round(oy),0,cv.height-2);
-  const w2=clamp(Math.round(w),2,cv.width-x0),h2=clamp(Math.round(h),2,cv.height-y0);
-  if(w2>=cv.width-2&&h2>=cv.height-2){eSchedule();return;}
-  const src=eCompose2();
-  if(!src)return;
+  const src=eCompose2();if(!src)return;
+  const px=cv.width/cr.width,py=cv.height/cr.height;
+  const ox=(CROP.rect.x-(cr.left-wr.left))*px,oy=(CROP.rect.y-(cr.top-wr.top))*py;
+  const w=CROP.rect.w*px,h=CROP.rect.h*py;
+  const xp=clamp(Math.round(ox),0,cv.width-2),yp=clamp(Math.round(oy),0,cv.height-2);
+  const wp=clamp(Math.round(w),2,cv.width-xp),hp=clamp(Math.round(h),2,cv.height-yp);
+  if(wp>=cv.width-2&&hp>=cv.height-2){eSchedule();return;}
+  const k=src.width/cv.width;
+  const x0=Math.min(src.width-2,Math.round(xp*k)),y0=Math.min(src.height-2,Math.round(yp*k));
+  const w2=Math.max(2,Math.min(src.width-x0,Math.round(wp*k))),h2=Math.max(2,Math.min(src.height-y0,Math.round(hp*k)));
   const c=CT(w2,h2);
   c.getContext('2d').drawImage(src,x0,y0,w2,h2,0,0,w2,h2);
   E.p.rot=0;E.p.fx=false;E.p.fy=false;E.crop=null;
@@ -1261,9 +1293,13 @@ function initCropDrag(){
   on(el,'pointerup',()=>{mode=null;});
 }
 async function eSave(){
-  const cv=$('eCv');
   try{
-    const out=await cvBlob(cv,'image/jpeg',0.95);
+    const src=eCompose2();
+    if(!src)throw new Error('Нет изображения');
+    const c=CT(src.width,src.height),x=c.getContext('2d',{willReadFrequently:true});
+    x.drawImage(src,0,0);
+    if(!E.cmp)applyPipeline(x,c.width,c.height,E.p);
+    const out=await cvBlob(c,E.hasAlpha?'image/png':'image/jpeg',0.95);
     await saveMedia({kind:'photo',blob:out,orig:null,meta:{edited:true,tags:E.lastTags||[],caption:E.lastCaption||''}});
     toast('Сохранено в галерею');show('scrCam');
   }catch(e){toast('Ошибка сохранения: '+(e.message||''));}
@@ -1277,6 +1313,7 @@ async function bgMenu(tool){
     if(!AI.imgly)AI.imgly=(await import('https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.5.5/+esm')).default;
     const cut=await AI.imgly(srcBlob,{progress:(k,cur,tot)=>{if(k==='compute'||k==='fetch')setProc('Нейросеть: фон…',(k==='fetch'?'загрузка модели ':'обработка ')+Math.round((cur||0)/(tot||1)*100)+'%');}});
     const cutImg=await imgFromBlob(cut);
+    E.hasAlpha=(tool==='remove');
     if(tool==='remove'){
       E.img=cutImg;E.crop=null;eCompose2Dirty=true;ePushHist();eSchedule();drawFilterThumbs();
       toast('Фон удалён нейросетью');
@@ -1350,7 +1387,7 @@ async function renderGal(){
   try{
     if(!db)await idbOpen();
     GAL.items=(await shotAll()).sort((a,b)=>b.ts-a.ts);
-  }catch(e){GAL.items=[];toast('Галерея недоступна: IndexedDB '+navigator.userAgent.includes('jsdom')? 'не поддерживается в тесте':'ошибка');}
+  }catch(e){GAL.items=[];toast('Галерея недоступна: '+((e&&e.message)||'IndexedDB')+'. Перезапустите приложение.',3600);}
   const grid=$('galGrid');grid.innerHTML='';
   if(!GAL.items.length){
     const d=document.createElement('div');d.className='empty';
@@ -1512,6 +1549,7 @@ function initWiring(){
     else if(t==='recognize'){eRecognize();}
     else if(t==='describe'){eDescribe();}
     else if(t==='upscale'){eUpscale();}
+    else if(t==='reset'){ePushHist();E.p=Object.assign({},P0);E.hasAlpha=false;eCompose2Dirty=true;eSyncSliders();eSchedule();drawFilterThumbs();toast('Сброшено');}
   }));
   on($('cropOk'),'click',cropApply);
   on($('cropNo'),'click',cropCancel);
