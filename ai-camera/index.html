@@ -73,6 +73,13 @@ svg.ic.sm{width:17px;height:17px}
 /* rec badge */
 #recBadge{position:absolute;top:calc(var(--saT) + 66px);left:14px;z-index:7;display:none;align-items:center;gap:7px;background:rgba(10,11,16,.6);backdrop-filter:blur(10px);border:1px solid var(--line);border-radius:99px;padding:6px 12px;font-size:12.5px;font-variant-numeric:tabular-nums}
 #recBadge.on{display:flex}
+/* qr scanner */
+#qrBox{position:absolute;inset:0;z-index:8;display:none;pointer-events:none}
+#qrBox.on{display:block}
+.qbFrame{position:absolute;left:50%;top:44%;width:min(72vw,340px);height:min(72vw,340px);transform:translate(-50%,-50%);border:2px solid rgba(255,255,255,.4);border-radius:24px;box-shadow:0 0 0 100vmax rgba(4,5,9,.45)}
+.qbScan{position:absolute;left:50%;top:44%;width:min(72vw,340px);height:2px;transform:translate(-50%,-50%);background:linear-gradient(90deg,transparent,var(--ind2),transparent);border-radius:2px;animation:qrSweep 1.5s ease-in-out infinite alternate}
+@keyframes qrSweep{from{margin-top:-108px}to{margin-top:108px}}
+.qbSt{position:absolute;left:0;right:0;top:calc(44% + min(36vw,170px) + 18px);text-align:center;font-size:13.5px;color:#fff;text-shadow:0 1px 8px rgba(0,0,0,.65)}
 #recBadge i{width:9px;height:9px;border-radius:50%;background:#EF4444;animation:blink 1.1s infinite}
 @keyframes blink{50%{opacity:.25}}
 /* bottom controls */
@@ -227,6 +234,7 @@ svg.ic.sm{width:17px;height:17px}
 <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.2v.2"/></symbol>
 <symbol id="i-zap" viewBox="0 0 24 24"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"/></symbol>
 <symbol id="i-reset" viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 4.4-7.2"/><path d="M4 3v5h5"/></symbol>
+<symbol id="i-qr" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM19 19h2M14 21h3M21 14v3"/></symbol>
 </defs></svg>
 
 <!-- ============ CAMERA ============ -->
@@ -247,6 +255,7 @@ svg.ic.sm{width:17px;height:17px}
     <div id="camTitle">NEXUS AI</div>
     <div class="tgrp">
       <button class="tpill" id="btnFs" title="На весь экран"><svg class="ic"><use href="#i-fs"/></svg></button>
+      <button class="tpill" id="btnQr" title="QR-сканер"><svg class="ic"><use href="#i-qr"/></svg></button>
       <button class="tpill" id="btnAISet" title="AI"><svg class="ic"><use href="#i-spark"/></svg></button>
       <button class="tpill" id="btnSettings" title="Настройки"><svg class="ic"><use href="#i-set"/></svg></button>
     </div>
@@ -365,6 +374,21 @@ svg.ic.sm{width:17px;height:17px}
 </section>
 
 <!-- ============ AI SHEET ============ -->
+<div id="qrBox"><div class="qbFrame"></div><div class="qbScan"></div><div class="qbSt" id="qrSt">Наведите на QR-код</div></div>
+
+<div class="sheet" id="qrSheet">
+  <div class="grab"></div>
+  <div class="shTitle">QR-сканер</div>
+  <div class="qrVal" id="qrVal">—</div>
+  <div class="qbActs">
+    <button class="qbBtn ind" id="btnQrOpen" style="display:none">Открыть</button>
+    <button class="qbBtn" id="btnQrCopy">Копировать</button>
+    <button class="qbBtn" id="btnQrShare">Поделиться</button>
+    <button class="qbBtn bad" id="btnQrClose">Закрыть</button>
+  </div>
+  <div class="shSub">Сканер активен, пока кнопка QR подсвечена — наведите на следующий код</div>
+</div>
+
 <div id="sBk"></div>
 <div class="sheet" id="aiSheet">
   <div class="grab"></div>
@@ -693,6 +717,60 @@ async function snap(){
     shooting=false;
     if(S.flash===2&&caps.torch&&track){try{await track.applyConstraints({advanced:[{torch:false}]});}catch(e){}}
   }
+}
+
+/* ---------- QR scanner (jsQR · Apache-2.0) ---------- */
+let qrOn=false,qrTid=0,qrBusy=false,qrLib=false,qrCv=null,qrLast='';
+function qrStop(){qrOn=false;clearTimeout(qrTid);$('qrBox').classList.remove('on');$('btnQr').classList.remove('act');}
+async function qrToggle(){
+  if(qrOn){qrStop();toast('QR-сканер выключен');return;}
+  qrOn=true;$('qrBox').classList.add('on');$('btnQr').classList.add('act');$('qrSt').textContent='Наведите на QR-код';
+  try{
+    setProc('Сканер: загрузка jsQR…','Apache-2.0 · jsdelivr');$('proc').classList.add('on');
+    await qrLoad();
+    $('proc').classList.remove('on');
+    toast('QR-сканер включён');
+    qrTick();
+  }catch(e){
+    qrStop();$('proc').classList.remove('on');
+    toast('Сканер недоступен ('+(e.message||'нет сети')+'). Нужен интернет при первом запуске.',3600);
+  }
+}
+async function qrLoad(){
+  if(qrLib)return;
+  if(navigator.onLine===false)throw new Error('нет сети');
+  await loadScript('https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js');
+  if(!window.jsQR)throw new Error('библиотека не загрузилась');
+  qrLib=true;
+}
+async function qrTick(){
+  if(!qrOn||qrBusy)return;
+  qrBusy=true;
+  let wait=320;
+  try{
+    const v=$('vid');
+    if(qrLib&&v&&v.videoWidth){
+      if(!qrCv)qrCv=document.createElement('canvas');
+      const side=Math.min(420,v.videoWidth);
+      qrCv.width=side;qrCv.height=Math.max(2,Math.round(side*v.videoHeight/v.videoWidth));
+      const qx=qrCv.getContext('2d',{willReadFrequently:true});
+      qx.drawImage(v,0,0,qrCv.width,qrCv.height);
+      const code=window.jsQR(qx.getImageData(0,0,qrCv.width,qrCv.height).data,qrCv.width,qrCv.height);
+      if(code&&code.data){
+        qrLast=code.data;
+        $('qrVal').textContent=qrLast;
+        const okUrl=/^https?:\/\//i.test(qrLast.trim());
+        $('btnQrOpen').style.display=okUrl?'block':'none';
+        if(okUrl)$('btnQrOpen').onclick=()=>window.open(qrLast.trim(),'_blank','noopener');
+        $('qrSt').textContent='Найдено!';
+        hap(16);
+        $('qrSheet').classList.add('on');$('sBk').classList.add('on');
+        wait=1400;
+      }
+    }
+  }catch(e){}
+  finally{qrBusy=false;}
+  if(qrOn)qrTid=setTimeout(qrTick,wait);
 }
 
 /* ---------- video record ---------- */
@@ -1475,6 +1553,17 @@ function initWiring(){
   on($('btnFlip'),'click',switchCam);
   on($('btnSettings'),'click',()=>{$('setSheet').classList.add('on');$('sBk').classList.add('on');});
   on($('btnAISet'),'click',()=>{$('aiSheet').classList.add('on');$('sBk').classList.add('on');});
+  on($('btnQr'),'click',qrToggle);
+  on($('btnQrCopy'),'click',async()=>{
+    try{await navigator.clipboard.writeText(qrLast||'');toast('Скопировано');}
+    catch(e){try{const ta=document.createElement('textarea');ta.value=qrLast||''; ta.style.position='fixed';ta.style.opacity='0'; document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();toast('Скопировано');}
+      catch(e2){toast('Не удалось скопировать');}}
+  });
+  on($('btnQrShare'),'click',async()=>{
+    if(navigator.share){try{await navigator.share({title:'QR',text:qrLast||''});}catch(e){}}
+    else{$('btnQrCopy').click();}
+  });
+  on($('btnQrClose'),'click',()=>{$('qrSheet').classList.remove('on');$('sBk').classList.remove('on');$('qrSt').textContent='Наведите на QR-код';});
   on($('sBk'),'click',()=>{document.querySelectorAll('.sheet').forEach(s=>s.classList.remove('on'));$('sBk').classList.remove('on');});
   /* switches */
   const bindSw=(id,key)=>{const b=$(id);b.classList.toggle('on',S[key]);on(b,'click',()=>{S[key]=!S[key];b.classList.toggle('on',S[key]);hap();saveS();});};
@@ -1600,7 +1689,7 @@ async function init(){
   if(navigator.onLine===false)setTimeout(()=>toast('Нет сети — нейросети загрузятся при появлении интернета'),1200);
   camStart(S.facing);
 }
-window.NXCAM={S,E,histLoHi,makeLUT,applyLUT,gamma,wbGray,autoLevels,satLum,boxBlurArr,denoise,localContrast,unsharpMask,runEnhance,saveMedia,shotAll,refreshGalCount,CURVES,eApplyTiny,autoProcess,renderGal,openViewer,vDelete,ePushHist,openEditor,setETab};
+window.NXCAM={S,E,histLoHi,makeLUT,applyLUT,gamma,wbGray,autoLevels,satLum,boxBlurArr,denoise,localContrast,unsharpMask,runEnhance,saveMedia,shotAll,refreshGalCount,CURVES,eApplyTiny,autoProcess,renderGal,openViewer,vDelete,ePushHist,openEditor,setETab,qrToggle};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{init().catch(e=>console.error(e));});
 else init().catch(e=>console.error(e));
 
