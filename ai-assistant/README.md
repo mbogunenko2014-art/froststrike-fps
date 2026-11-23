@@ -13,6 +13,7 @@ Dark glassmorphism interface over an atmospheric SVG scenery (wooden hut, slate 
 - Settings screen («Внешний вид и данные»): provider status cards with key check, background animation toggle, background brightness slider, double-confirm history wipe
 - Prompt library (▤), chat sessions with search, web-search capsule, regenerate, stop generation, TXT export
 - Real web answers: when web-search is on, NEXUS looks the query up via the Wikipedia API (ru → en fallback) and injects the found extracts into the model context; source links appear under the answer
+- Built-in plugins (menu "Плагины" next to web-search, everything works offline): accurate calculator (incl. "15% от …"), unit converter (length/mass/volume, °C↔°F) and number systems (binary/octal/hex), exact date and time, secure password generator (length 8–64, crypto.getRandomValues), dice/coin/random numbers — each result is computed in the app and injected into the model context as a verified fact; plugins can be toggled off individually, work in offline fallback mode, and are openable by voice command
 - Follow-up chips under each answer («Объясни проще» / «Подробнее» / «Приведи примеры») — one tap continues the dialogue
 - Input draft: unsent text is autosaved and restored after reload
 - Markdown-lite rendering with code blocks, chat history in localStorage, fully responsive
