@@ -332,6 +332,30 @@ body.codemode #mindPop,body.codemode #plugPop{border-color:rgba(239,68,68,.4)}
 #idePrevBar{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--nx1);border-bottom:1px solid #1d1d20}
 #idePrevBar b{flex:1;color:#FF263F;font-size:12.5px;letter-spacing:.3px}
 #idePrevIframe{flex:1;border:0;background:#fff;width:100%}
+/* v7.0 polish: depth, focus states, scrollbars, micro-animations */
+#ideScr{background:radial-gradient(1100px 560px at 75% -12%,rgba(229,9,37,.08),transparent),linear-gradient(180deg,#0a0a0c,#090909);animation:ideIn .18s ease-out}
+@keyframes ideIn{from{opacity:0}to{opacity:1}}
+#ideScr ::-webkit-scrollbar{width:10px;height:10px}
+#ideScr ::-webkit-scrollbar-track{background:#0c0c0d}
+#ideScr ::-webkit-scrollbar-thumb{background:#26262b;border-radius:6px}
+#ideScr ::-webkit-scrollbar-thumb:hover{background:#E50925}
+#ideScr ::selection{background:rgba(229,9,37,.38);color:#fff}
+#ideScr button:focus-visible,#ideScr input:focus-visible,#ideScr textarea:focus-visible{outline:2px solid #FF263F;outline-offset:2px}
+#ideTop{background:linear-gradient(180deg,#16161a,#101013);box-shadow:0 1px 0 rgba(229,9,37,.28)}
+.mini{transition:transform .15s,box-shadow .15s,background .15s,border-color .15s}
+.mini:hover{transform:translateY(-1px)}
+.mini:active{transform:scale(.96)}
+.mini.red:hover{box-shadow:0 0 18px rgba(229,9,37,.35)}
+.irb{transition:transform .15s,background .15s,color .15s}
+.irb:hover{transform:translateY(-1px)}
+.tab{transition:color .15s,border-color .15s,background .15s}
+.prj{transition:border-color .15s,transform .15s,box-shadow .15s}
+.prj:hover{transform:translateY(-1px);border-color:rgba(229,9,37,.45)}
+#ideEdWrap:focus-within{border-color:rgba(229,9,37,.55);box-shadow:0 0 0 3px rgba(229,9,37,.12)}
+#termIn:focus,#aiTask:focus{border-color:rgba(229,9,37,.6);box-shadow:0 0 0 3px rgba(229,9,37,.13)}
+#ideLines span{display:block}
+#ideLines .cur{color:#FF263F;background:rgba(229,9,37,.13);border-radius:3px}
+@media(prefers-reduced-motion:reduce){#ideOcto .tku{animation:none}#ideOcto{animation:none}.mini,.irb,.tab,.prj{transition:none}#ideScr{animation:none}}
 @media(max-width:720px){
   #ideBody{flex-direction:column}
   #ideRail{width:100%;flex-direction:row;justify-content:space-around;padding:6px 4px;border-right:0;border-bottom:1px solid #1d1d20}
@@ -1215,8 +1239,8 @@ function runPlug(qRaw){
 
 const NCS={
   plan:'Ты — Архитектор, агент Nexus Code. Составь краткий план реализации (3-5 пунктов) по задаче пользователя. Только план, без кода.',
-  code:'Ты — Кодер, агент Nexus Code, senior-разработчик. Напиши полный автономный HTML-файл (HTML+CSS+JS в одном файле) по задаче и плану. Всё должно реально работать: никакой фейковой функциональности. Верни код ровно одним блоком ```html ... ``` без пояснений вне блока.',
-  review:'Ты — ревьюер-агент Nexus Code. Проверь код: баги, ошибки, нерабочие кнопки, отсутствие адаптации под телефон. Кратко перечисли конкретные исправления списком, без переписывания всего кода.',
+  code:'Ты — Кодер, агент Nexus Code, senior-разработчик игр и приложений. Напиши ПОЛНЫЙ автономный HTML-файл (HTML+CSS+JS в одном файле) по запросу и идее. Требования качества: 1) всё реально работает, никаких TODO, заглушек и фейков; 2) если это игра — <canvas> и игровой цикл на requestAnimationFrame, масштабирование под devicePixelRatio, стартовый экран с кнопкой «Играть», экран победы/проигрыша с рестартом, пауза (Esc/P); 3) счёт и рекорд сохраняются в localStorage; 4) управление: WASD/стрелки/мышь на ПК и свайпы или экранные кнопки на телефоне, все touch-события корректны; 5) звук через WebAudio без внешних файлов, с кнопкой вкл/выкл; 6) красивый продуманный дизайн (аккуратная тёмная тема, плавные анимации), код организован функциями с короткими комментариями, цель — 500–900 строк осмысленного кода; 7) файл запускается двойным кликом в любом браузере. Верни код ровно одним блоком ```html ... ``` без пояснений вне блока.',
+  review:'Ты — ревьюер-агент Nexus Code, строгий техлид. Проверь код: баги в логике, нерабочие или пустые кнопки, сломанный игровой цикл, нет экрана старта или рестарта, нет мобильного управления (свайпы/кнопки), незакрытые скобки, мусор в разметке, недоделанные механики. Если всё хорошо — так и скажи одной строкой. Иначе перечисли конкретные исправления списком с новой строки, без переписывания всего кода.',
   fix:'Ты — Кодер, агент Nexus Code. Примени к коду перечисленные исправления и верни ПОЛНЫЙ исправленный код одним блоком ```html ... ``` без пояснений.'
 };
 let NCODE_CUR='';
@@ -1282,15 +1306,22 @@ function closeRunScr(){$('runScr').classList.remove('on');const f=$('runIframe')
 const NCS2={
   idea:'Ты — идейный директор в бригаде Nexus Code (агент ChatGPT). Придумай яркую и цельную идею по запросу пользователя: что это за игра или приложение, 4-7 ключевых механик или экранов, управление на ПК и телефоне, визуальный стиль. Живой текст, без кода.',
   verify:'Ты — верификатор бригады Nexus Code (агент Open Code). Сверь выданный код с запросом пользователя: сделано ли то, что просили; нет ли критических багов; запустится ли файл в обычном браузере на ПК и телефоне; не пустышка ли это. Если всё хорошо — верни ровно «ПРОВЕРКА ПРОЙДЕНА» без других слов. Иначе верни список конкретных проблем, каждая с новой строки.',
-  refactor:'Ты — мастер рефакторинга в Nexus Code. Перепиши код аккуратнее: осмысленные имена функций и переменных, единый стиль, полезные короткие комментарии. Поведение и функции должны остаться теми же. Верни ПОЛНЫЙ файл одним блоком ```html ... ```.'
+  refactor:'Ты — мастер рефакторинга в Nexus Code. Перепиши код аккуратнее: осмысленные имена функций и переменных, единый стиль, полезные короткие комментарии. Поведение и функции должны остаться теми же. Верни ПОЛНЫЙ файл одним блоком ```html ... ```.',
+  expand:'Ты — Кодер, агент Nexus Code. Расширь этот код до настоящей полноценной игры или приложения: добавь недостающие экраны (старт, победа/проигрыш, рестарт), механики из идеи, мобильное управление, звук и визуальные эффекты — сохранив всё работающее. Никаких TODO и заглушек. Верни ПОЛНЫЙ файл одним блоком ```html ... ``` без пояснений.'
 };
-function qualityCheck(code){
-  const q=[];const sc=String(code||'');
+const GQRE=/игр|game|раннер|змейк|тетрис|шутер|стреля|платформ|аркад|кликер|рейс|гонк/i;
+function qualityCheck(code,task){
+  const q=[];const sc=String(code||'');const tk=String(task||'');
   if(!sc.trim()){q.push('файл пустой');return q}
   if(sc.length<300)q.push('код слишком короткий — похоже, дописался не до конца');
   if(!/<\/html>/i.test(sc))q.push('нет закрывающего </html>');
   if(!/<script/i.test(sc))q.push('нет <script> — интерактивной логики не будет');
   if(/```/.test(sc))q.push('в коде остались markdown-ограждения');
+  if(tk&&GQRE.test(tk)){
+    if(!/<canvas/i.test(sc))q.push('игра без <canvas> — графика получится ненадёжной');
+    if(!/(requestAnimationFrame|setInterval)/.test(sc))q.push('нет игрового цикла (requestAnimationFrame/setInterval)');
+  }
+  if(/TODO|FIXME|заглушк/i.test(sc))q.push('в коде остались заглушки (TODO/FIXME)');
   return q;
 }
 function autoRepair(code){
@@ -1323,12 +1354,18 @@ async function codeBrigade(task,opts){
   if(!code)code=extractCode(await step('Codex — помогает с кодом',ROSTER.codex,NCS.code,ideaTxt));
   if(!code)throw new Error('код не получен');
   code=autoRepair(code);
+  const isGame=GQRE.test(task);
+  if(isGame&&code.length<3000){
+    tell('⚠ Код слишком маленький для игры — Claude расширяет до полноценной');
+    const cX=extractCode(await step('Claude — расширяет код',ROSTER.claude,NCS2.expand,'Запрос: '+task+'\n\nИдея:\n'+idea+'\n\nКод:\n'+code.slice(0,9000)));
+    if(cX)code=autoRepair(cX);
+  }
   const rem=await step('Codex — ревью и обсуждение',ROSTER.codex,NCS.review,'Код:\n'+code.slice(0,9000));
   if(rem){
     const c2=extractCode(await step('Claude — правки по замечаниям',ROSTER.claude,NCS.fix,'Запрос: '+task+'\n\nКод:\n'+code.slice(0,9000)+'\n\nЗамечания:\n'+rem));
     if(c2)code=autoRepair(c2);
   }
-  const qa=qualityCheck(code);
+  const qa=qualityCheck(code,task);
   if(qa.length){
     tell('⚠ Локальная проверка нашла: '+qa.join('; ')+' — Codex чинит');
     const c3=extractCode(await step('Codex — починка',ROSTER.codex,NCS.fix,'Запрос: '+task+'\n\nКод:\n'+code.slice(0,9000)+'\n\nПроблемы:\n'+qa.join('\n')));
@@ -1341,13 +1378,14 @@ async function codeBrigade(task,opts){
     const c4=extractCode(await step('Claude + Codex — переделка',ROSTER.claude.concat(ROSTER.codex),NCS.fix,'Запрос: '+task+'\n\nКод:\n'+code.slice(0,9000)+'\n\nПроблемы:\n'+ver));
     if(c4){code=autoRepair(c4)}else break;
   }
-  const q2=qualityCheck(code);
+  const q2=qualityCheck(code,task);
   tell('Итог: '+code.length+' символов'+(q2.length?'; предупреждения: '+q2.join('; '):'; проблем не найдено'));
   return code;
 }
 
 /* ===== NEXUS CODE IDE — professional coding environment ===== */
-let IDE_ON=false,IDE_CUR=null,IDE_ACT='index.html',IDE_OPEN=['index.html'],IDE_RTE=[],IDEPID=0;
+let IDE_ON=false,IDE_CUR=null,IDE_ACT='index.html',IDE_OPEN=['index.html'],IDE_RTE=[],IDEPID=0,IDE_LASTLN=1;
+const TH=[];let THI=-1;
 let IDEP=[];
 const IKEY='nex_ide_v1';
 function ideLoad(){try{IDEP=JSON.parse(localStorage.getItem(IKEY)||'[]')}catch(e){IDEP=[]}if(!Array.isArray(IDEP))IDEP=[]}
@@ -1376,11 +1414,12 @@ function ideHl(src){
   out+=ideX(src.slice(last));
   return out;
 }
+function ideLnHtml(n,cur){let h='';for(let i2=1;i2<=n;i2++)h+='<span'+(i2===cur?' class="cur"':'')+'>'+i2+'</span>';return h}
 function ideSyncEd(){
   const ta=$('ideTa'),hi=$('ideHi'),ln=$('ideLines');if(!ta)return;
   hi.innerHTML=ideHl(ta.value);
   const n=ta.value.split('\n').length;
-  if(ln)ln.textContent=Array.from({length:n},(_,i)=>String(i+1)).join('\n');
+  if(ln)ln.innerHTML=ideLnHtml(n,IDE_LASTLN);
   const p=ideCur();
   if(p&&p.files[IDE_ACT]!=null){p.files[IDE_ACT]=ta.value;ideTouch()}
   const meta=$('ideFileMeta');
@@ -1512,7 +1551,7 @@ function ideOpenIp(name){
   document.querySelectorAll('.irb').forEach(x=>x.classList.toggle('on',x.getAttribute('data-p')===name));
   const p=$('ip-'+name);if(p)p.classList.add('on');
   if(name==='dash')ideRenderDash();
-  if(name==='files')ideSelectTab(IDE_ACT);
+  if(name==='files'){ideSelectTab(IDE_ACT);setTimeout(()=>{const t3=$('ideTa');if(t3&&IDE_ON){try{t3.focus({preventScroll:true})}catch(e){}}},80);}
   if(name==='lint')ideLint();
 }
 function ideOpen(){
@@ -1591,8 +1630,17 @@ function ideInit(){
   const ta=$('ideTa');
   if(ta){ta.addEventListener('input',ideSyncEd);
     ta.addEventListener('scroll',()=>{const hi=$('ideHi'),ln=$('ideLines');if(hi){hi.scrollTop=ta.scrollTop;hi.scrollLeft=ta.scrollLeft}if(ln)ln.scrollTop=ta.scrollTop});
+    ta.addEventListener('keydown',ev=>{
+      if(ev.key==='Tab'){ev.preventDefault();const st=ta.selectionStart,en=ta.selectionEnd;ta.value=ta.value.slice(0,st)+'  '+ta.value.slice(en);ta.selectionStart=ta.selectionEnd=st+2;ideSyncEd()}
+      else if(ev.key==='Enter'&&(ev.ctrlKey||ev.metaKey)){ev.preventDefault();ideGoRun()}
+      else if((ev.ctrlKey||ev.metaKey)&&String(ev.key).toLowerCase()==='s'){ev.preventDefault();const p=ideCur();if(p){p.files[IDE_ACT]=ta.value;ideTouch()}ideTLog('✔ Сохранено (Ctrl+S)','ok')}
+    });
+    const curUpd=()=>{const r=String(ta.value.slice(0,ta.selectionStart||0)).split('\n').length||1,n=ta.value.split('\n').length;IDE_LASTLN=Math.min(r,n);const l2=$('ideLines');if(l2)l2.innerHTML=ideLnHtml(n,IDE_LASTLN)};
+    ta.addEventListener('keyup',curUpd);
+    ta.addEventListener('click',curUpd);
   }
-  const tf=$('termForm');if(tf)tf.onsubmit=ev=>{ev.preventDefault();const i2=$('termIn');if(i2){runTermCmd(i2.value);i2.value=''}};
+  const tf=$('termForm');if(tf)tf.onsubmit=ev=>{ev.preventDefault();const i2=$('termIn');if(i2){const v2=i2.value.trim();if(v2){TH.push(v2);THI=TH.length}runTermCmd(i2.value);i2.value=''}};
+  const tin=$('termIn');if(tin)tin.addEventListener('keydown',ev=>{if(ev.key==='ArrowUp'){ev.preventDefault();if(TH.length){THI=Math.max(0,THI-1);tin.value=TH[THI]}else ev.preventDefault()}else if(ev.key==='ArrowDown'){ev.preventDefault();THI=Math.min(TH.length,THI+1);tin.value=TH[THI]||''}});
   const run=$('ideRun');if(run)run.onclick=()=>ideGoRun();
   const dl=$('ideDl');if(dl)dl.onclick=()=>{const p=ideCur();if(!p)return;const code=p.files[IDE_ACT]||p.files['index.html']||'';try{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([code],{type:'text/html'}));a.download=((p.name||'nexus-code').replace(/[^\wа-яё\- ]/gi,'').trim()||'nexus-code')+'.html';a.click();ideTLog('✔ Скачали '+a.download,'ok')}catch(e){}};
   const cl=$('ideClose');if(cl)cl.onclick=()=>ideClose();
@@ -1605,6 +1653,7 @@ function ideInit(){
   const ag=$('aiGo');if(ag)ag.onclick=()=>{aiGo()};
   const af=$('aiFix');if(af)af.onclick=()=>{aiFix()};
   const ar=$('aiRef');if(ar)ar.onclick=()=>{aiRef()};
+  const atm=$('aiTask');if(atm)atm.addEventListener('keydown',ev=>{if(ev.key==='Enter'&&(ev.ctrlKey||ev.metaKey)){ev.preventDefault();aiGo()}});
   const ni=$('ideName');if(ni)ni.oninput=()=>{const p=ideCur();if(p){p.name=ni.value||'Проект';ideSave();ideRenderDash()}};
 }
 async function nCodeRespond(cmsg){
