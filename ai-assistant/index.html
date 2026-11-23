@@ -258,6 +258,89 @@ body.codemode{--ind:#B91C1C;--ind2:#EF4444}
 body.codemode .tbtn.has{color:#EF4444;background:rgba(239,68,68,.16)}
 body.codemode .cap.has{border-color:rgba(239,68,68,.55);color:#EF4444;background:rgba(239,68,68,.13)}
 body.codemode #mindPop,body.codemode #plugPop{border-color:rgba(239,68,68,.4)}
+/* ===== NEXUS CODE IDE — premium black/crimson ===== */
+#ideScr{--nx0:#090909;--nx1:#111111;--nxr:#E50925;--nxr2:#FF263F;position:fixed;inset:0;z-index:96;display:none;flex-direction:column;background:var(--nx0);color:#e8e8ec}
+#ideScr.on{display:flex}
+#ideTop{display:flex;align-items:center;gap:10px;padding:9px 14px;background:var(--nx1);border-bottom:1px solid rgba(229,9,37,.4);box-shadow:0 2px 22px rgba(229,9,37,.14)}
+#ideTop b{font-size:15px;color:#FF263F;letter-spacing:1.5px;white-space:nowrap}
+#ideName{background:var(--nx0);border:1px solid #26262a;border-radius:9px;color:#e8e8ec;padding:6px 11px;min-width:150px;font-size:13px}
+#ideName:focus{border-color:var(--nxr);outline:none}
+.idestat{font-size:11.5px;color:#8a8a92;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#ideTop .sp,#ideDashTop .sp{flex:1}
+#ideOcto{width:30px;height:30px;filter:drop-shadow(0 0 6px rgba(229,9,37,.7));animation:octoPulse 2.8s ease-in-out infinite}
+@keyframes octoPulse{0%,100%{filter:drop-shadow(0 0 5px rgba(229,9,37,.55))}50%{filter:drop-shadow(0 0 12px rgba(255,38,63,.95))}}
+#ideOcto .tku{transform-origin:12px 9px;animation:octoWave 2.2s ease-in-out infinite}
+#ideOcto .tku.t2{animation-delay:.18s}#ideOcto .tku.t3{animation-delay:.36s}#ideOcto .tku.t4{animation-delay:.54s}
+#ideOcto .tku.t5{animation-delay:.72s}#ideOcto .tku.t6{animation-delay:.9s}#ideOcto .tku.t7{animation-delay:1.08s}
+@keyframes octoWave{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(4deg)}}
+#ideBody{display:flex;flex:1;min-height:0;position:relative}
+#ideRail{width:54px;background:var(--nx1);border-right:1px solid #1d1d20;display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 6px;flex-shrink:0}
+.irb{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;color:#8a8a92;background:transparent;border:1px solid transparent;cursor:pointer;position:relative}
+.irb:hover{color:#cfd2da;background:#18181c}
+.irb.on{color:#FF263F;background:rgba(229,9,37,.13);border-color:rgba(229,9,37,.45);box-shadow:0 0 14px rgba(229,9,37,.28)}
+#idePanels{flex:1;min-width:0;display:flex;flex-direction:column;position:relative}
+.ip{display:none;flex:1;min-height:0;overflow:auto;padding:14px}
+.ip.on{display:block}
+#ip-files.on,#ip-term.on{display:flex;flex-direction:column}
+#ideScr .mini,#ideScr button.mini{border:1px solid #2a2a30;color:#cfd2da;background:#16161a;border-radius:9px;padding:6px 12px;font-size:12.5px;cursor:pointer}
+#ideScr .mini:hover{border-color:#3a3a42;background:#1c1c22}
+#ideScr .mini.red{color:#fff;background:var(--nxr);border-color:var(--nxr)}
+#ideScr .mini.red:hover{background:#FF263F}
+#ideScr .mini[disabled]{opacity:.55;pointer-events:none}
+#ideDashTop{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+#ideDashTop b{color:#FF263F;font-size:14.5px;letter-spacing:.3px}
+#ideStats{margin-bottom:10px}
+.prj{display:flex;align-items:center;gap:8px;background:#111114;border:1px solid #1d1d21;border-radius:12px;padding:10px 12px;margin-bottom:8px}
+.prj:hover{border-color:rgba(229,9,37,.4)}
+.prjinfo{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.prjinfo b{font-size:13.5px;color:#e8e8ec;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prjinfo span{font-size:11.5px;color:#8a8a92}
+#ideTabs{display:flex;gap:4px;padding:0 14px;background:var(--nx1);border-bottom:1px solid #1d1d20;overflow-x:auto;flex-shrink:0}
+.tab{border:0;background:transparent;color:#8a8a92;font-size:12px;padding:9px 13px;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap}
+.tab.on{color:#FF263F;border-bottom-color:var(--nxr)}
+#ideEdWrap{position:relative;flex:1;min-height:0;font:12.5px/1.55 ui-monospace,Consolas,Monaco,monospace;background:#0b0b0d}
+#ideHi,#ideTa{position:absolute;inset:0;margin:0;padding:12px 12px 12px 48px;white-space:pre;overflow:auto;border:0;font:inherit;letter-spacing:0;tab-size:2}
+#ideHi{color:#cfd2da;pointer-events:none;z-index:0;background:transparent}
+#ideTa{background:transparent;color:transparent;caret-color:#FF263F;resize:none;outline:none;z-index:1}
+#ideHi i{font-style:normal}
+.tk-t{color:#FF263F}.tk-a{color:#FFB3BE}.tk-s{color:#8CE99A}.tk-k{color:#FF9A45}.tk-n{color:#7BD5FF}.tk-c{color:#63636d;font-style:italic}
+#ideLines{position:absolute;left:0;top:0;bottom:0;width:36px;padding:12px 6px 12px 0;z-index:2;pointer-events:none;text-align:right;color:#4a4a52;font:inherit;background:#0b0b0d;border-right:1px solid #16161a;white-space:pre;overflow:hidden}
+#ideEdBar{display:flex;align-items:center;gap:8px;padding:8px 14px;background:var(--nx1);border-top:1px solid #1d1d20;flex-shrink:0}
+#ip-term{padding:0;background:#0b0b0d}
+#termLog{flex:1;overflow:auto;padding:12px 14px;font:12.5px/1.65 ui-monospace,Consolas,monospace}
+#termLog .ln{padding:1px 0;white-space:pre-wrap;word-break:break-word}
+#termLog .ln.err{color:#FF263F}#termLog .ln.ok{color:#8CE99A}#termLog .ln.dim{color:#8a8a92}
+#termForm{display:flex;align-items:center;gap:9px;padding:10px 14px;background:var(--nx1);border-top:1px solid #1d1d20}
+.termP{color:#FF263F;font-family:ui-monospace,monospace}
+#termIn{flex:1;background:var(--nx0);border:1px solid #26262a;border-radius:9px;color:#e8e8ec;padding:7px 11px;font:12.5px ui-monospace,monospace}
+#termIn:focus{border-color:var(--nxr);outline:none}
+#lintBox{flex:1;font-size:13px}
+.lhead{color:#FF263F;font-size:13.5px;font-weight:600;margin-bottom:10px}
+.lrow{padding:6px 10px;border-radius:9px;margin-bottom:6px;background:#111114;border:1px solid #1d1d21}
+.lrow.err{color:#FF263F;border-color:rgba(229,9,37,.35)}
+.lrow.warn{color:#FFB65C}
+.lrow.ok{color:#8CE99A}
+#lintBar{display:flex;align-items:center;gap:10px;padding-top:10px;border-top:1px solid #1d1d21;flex-wrap:wrap}
+#ip-ai b{font-size:14.5px;letter-spacing:.3px;display:block;margin-bottom:6px}
+.aidesc{font-size:12.5px;color:#8a8a92;margin:0 0 12px;line-height:1.55}
+#aiTask{width:100%;min-height:84px;background:#111114;border:1px solid #26262a;border-radius:10px;color:#e8e8ec;padding:10px 12px;font:13px/1.5 inherit;resize:vertical;margin-bottom:10px}
+#aiTask:focus{border-color:var(--nxr);outline:none}
+#aiBtns{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+#aiLog{font-size:12.5px;color:#a9aab2;background:#0d0d10;border:1px solid #1d1d21;border-radius:10px;padding:10px 12px;min-height:60px;max-height:300px;overflow:auto;white-space:pre-wrap;word-break:break-word}
+#idePrev{position:absolute;right:0;bottom:0;width:min(600px,100%);height:46%;display:none;flex-direction:column;background:var(--nx0);border-top:2px solid var(--nxr);box-shadow:0 -10px 34px rgba(0,0,0,.65);z-index:5}
+#idePrev.on{display:flex}
+#idePrevBar{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--nx1);border-bottom:1px solid #1d1d20}
+#idePrevBar b{flex:1;color:#FF263F;font-size:12.5px;letter-spacing:.3px}
+#idePrevIframe{flex:1;border:0;background:#fff;width:100%}
+@media(max-width:720px){
+  #ideBody{flex-direction:column}
+  #ideRail{width:100%;flex-direction:row;justify-content:space-around;padding:6px 4px;border-right:0;border-bottom:1px solid #1d1d20}
+  .irb{width:44px;height:38px}
+  #idePrev{width:100%;height:62%}
+  #ideName{min-width:0;flex:1;width:auto}
+  #ideTop{flex-wrap:wrap;gap:6px}
+  .ip{padding:10px}
+}
 @keyframes voxpulse{0%,100%{box-shadow:0 0 0 0 rgba(99,102,241,.35)}50%{box-shadow:0 0 0 7px rgba(99,102,241,0)}}
 #btnVoice.has{animation:voxpulse 1.6s infinite}
 .tbtn.off{opacity:.5}
@@ -418,6 +501,10 @@ body.codemode #mindPop,body.codemode #plugPop{border-color:rgba(239,68,68,.4)}
 <symbol id="i-code" viewBox="0 0 24 24"><path d="M8.5 7L4 12l4.5 5M15.5 7L20 12l-4.5 5"/></symbol>
 <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="16" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></symbol>
 <symbol id="i-octo" viewBox="0 0 24 24"><path d="M6.2 11.6C5.7 7.6 8.3 4.6 12 4.6s6.3 3 5.8 7"/><path d="M6.2 11.6c0 1.3.5 2.4 1.2 3.3M17.8 11.6c0 1.3-.5 2.4-1.2 3.3"/><path d="M7.4 14.9A5.7 5.7 0 0 0 12 17a5.7 5.7 0 0 0 4.6-2.1"/><path d="M7.5 16.2c-.3 1.5-1.3 2.5-2.9 3M10 17.4c-.2 1.4-1 2.4-2.4 3M14 17.4c.2 1.4 1 2.4 2.4 3M16.5 16.2c.3 1.5 1.3 2.5 2.9 3"/><path d="M12 17v-4.6"/><circle cx="9.9" cy="10.2" r=".75"/><circle cx="14.1" cy="10.2" r=".75"/></symbol>
+<symbol id="i-doc" viewBox="0 0 24 24"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4"/><path d="M9.5 12h5M9.5 15.5h5"/></symbol>
+<symbol id="i-term" viewBox="0 0 24 24"><path d="M4 5.5 9.5 12 4 18.5"/><path d="M12.5 18.5H20"/></symbol>
+<symbol id="i-bug" viewBox="0 0 24 24"><circle cx="12" cy="13" r="4.5"/><path d="M12 8.5V5.5M7.8 9.5 5.5 8M16.2 9.5 18.5 8M7.5 13H4M20 13h-3.5M8 16.5l-2.2 1.4M16 16.5l2.2 1.4"/></symbol>
+<symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3.5 13.8 9l5.5 1.8-5.5 1.8L12 18.2l-1.8-5.6L4.7 10.8 10.2 9z"/></symbol>
 <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></symbol>
 <symbol id="i-flash" viewBox="0 0 24 24"><path d="M13 2.5L4.8 13.2H11l-1 8.3L19.2 10.8H13z"/></symbol>
 <symbol id="i-mind" viewBox="0 0 24 24"><path d="M12 4l1.7 4.6L18.4 10l-4.7 1.7L12 16.4l-1.7-4.7L5.6 10l4.7-1.4z"/><path d="M18.5 16l.8 2.1 2.2.9-2.2.8-.8 2.2-.9-2.2-2.1-.8 2.1-.9z"/></symbol>
@@ -606,6 +693,87 @@ body.codemode #mindPop,body.codemode #plugPop{border-color:rgba(239,68,68,.4)}
       <button class="pc" id="runClose">Закрыть</button>
     </div>
     <iframe id="runIframe" sandbox="allow-scripts allow-pointer-lock allow-modals"></iframe>
+  </div>
+</div>
+
+<div id="ideScr">
+  <div id="ideTop">
+    <svg id="ideOcto" viewBox="0 0 24 24" aria-hidden="true">
+      <defs><radialGradient id="octoG" cx="35%" cy="30%"><stop offset="0%" stop-color="#FF263F"/><stop offset="100%" stop-color="#8d0715"/></radialGradient></defs>
+      <circle cx="12" cy="9.3" r="5" fill="url(#octoG)"/>
+      <circle cx="9.9" cy="10" r=".95" fill="#090909"/><circle cx="14.1" cy="10" r=".95" fill="#090909"/>
+      <g fill="none" stroke="#E50925" stroke-width="1.5" stroke-linecap="round">
+        <path class="tku t1" d="M8.7 13.4c-.5 2.3-1.7 3.5-3.4 4.4"/>
+        <path class="tku t2" d="M10.6 14.6c-.2 2-.9 3.2-2.1 4.2"/>
+        <path class="tku t3" d="M13.4 14.6c.2 2 .9 3.2 2.1 4.2"/>
+        <path class="tku t4" d="M15.3 13.4c.5 2.3 1.7 3.5 3.4 4.4"/>
+        <path class="tku t5" d="M12 15v3.4"/>
+        <path class="tku t6" d="M5.4 12.5c-1.1 1.3-1.5 2.6-1.3 4.2"/>
+        <path class="tku t7" d="M18.6 12.5c1.1 1.3 1.5 2.6 1.3 4.2"/>
+      </g>
+    </svg>
+    <b>NEXUS CODE</b>
+    <input id="ideName" maxlength="40" placeholder="Имя проекта" aria-label="Имя проекта">
+    <span id="ideStat" class="idestat"></span>
+    <span class="sp"></span>
+    <button class="mini red" id="ideRun">▶ Запустить</button>
+    <button class="mini" id="ideDl">⤓ .html</button>
+    <button class="mini" id="ideClose" aria-label="Закрыть IDE">✕</button>
+  </div>
+  <div id="ideBody">
+    <nav id="ideRail" aria-label="Разделы IDE">
+      <button class="irb on" data-p="dash" title="Проекты" aria-label="Проекты"><svg class="ic"><use href="#i-grid"/></svg></button>
+      <button class="irb" data-p="files" title="Файлы и редактор" aria-label="Файлы"><svg class="ic"><use href="#i-doc"/></svg></button>
+      <button class="irb" data-p="term" title="Терминанал" aria-label="Терминанал"><svg class="ic"><use href="#i-term"/></svg></button>
+      <button class="irb" data-p="lint" title="Ошибки и анализ" aria-label="Ошибки"><svg class="ic"><use href="#i-bug"/></svg></button>
+      <button class="irb" data-p="ai" title="ИИ-бригада" aria-label="ИИ-бригада"><svg class="ic"><use href="#i-spark"/></svg></button>
+    </nav>
+    <section id="idePanels">
+      <div class="ip on" id="ip-dash">
+        <div id="ideDashTop"><b>Проекты</b><button class="mini red" id="ideNewPr">+ Новый проект</button></div>
+        <div id="ideStats" class="idestat"></div>
+        <div id="ideProjList"></div>
+      </div>
+      <div class="ip" id="ip-files">
+        <div id="ideTabs"></div>
+        <div id="ideEdWrap">
+          <pre id="ideHi" aria-hidden="true"></pre>
+          <textarea id="ideTa" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Редактор кода"></textarea>
+          <div id="ideLines" aria-hidden="true"></div>
+        </div>
+        <div id="ideEdBar">
+          <button class="mini" id="ideNewFile">+ файл</button>
+          <button class="mini" id="ideDelFile">Удалить файл</button>
+          <button class="mini" id="ideAn">Анализ</button>
+          <span id="ideFileMeta" class="idestat"></span>
+        </div>
+      </div>
+      <div class="ip" id="ip-term">
+        <div id="termLog"></div>
+        <form id="termForm"><span class="termP">›</span><input id="termIn" autocomplete="off" placeholder="help — команды"></form>
+      </div>
+      <div class="ip" id="ip-lint">
+        <div id="lintBox"></div>
+        <div id="lintBar"><button class="mini" id="btnLint">↻ Проверить снова</button>
+        <span class="idestat">Проверки: пустой файл, незакрытые скобки, markdown-ограждения, viewport, ошибки выполнения</span></div>
+      </div>
+      <div class="ip" id="ip-ai">
+        <b>ИИ-бригада Nexus Code</b>
+        <p class="aidesc">ChatGPT — идея → Claude — код → Codex — ревью и помощь → Open Code — сверка с запросом. Если не то что нужно или есть баги — бригада переделывает.</p>
+        <textarea id="aiTask" placeholder="Опиши игру или приложение…"></textarea>
+        <div id="aiBtns">
+          <button class="mini red" id="aiGo">⚡ Собрать проект</button>
+          <button class="mini" id="aiFix">Исправить ошибки</button>
+          <button class="mini" id="aiRef">Рефакторинг</button>
+        </div>
+        <div id="aiLog"></div>
+      </div>
+    </section>
+    <div id="idePrev">
+      <div id="idePrevBar"><b>Песочница — ошибки выполнения попадают на панель «Ошибки»</b>
+        <button class="mini" id="idePrevClose">Скрыть</button></div>
+      <iframe id="idePrevIframe" sandbox="allow-scripts allow-pointer-lock allow-modals" title="Предпросмотр проекта"></iframe>
+    </div>
   </div>
 </div>
 
@@ -1106,45 +1274,353 @@ const ROSTER={
 };
 function openRunScr(code){
   NCODE_CUR=code||'';
-  const f=$('runIframe');if(f)f.srcdoc=NCODE_CUR;
+  const f=$('runIframe');if(f)f.srcdoc=ideBridge(NCODE_CUR);
   $('runScr').classList.add('on');
 }
 function closeRunScr(){$('runScr').classList.remove('on');const f=$('runIframe');if(f)f.srcdoc='';}
+/* ===== NEXUS CODE: auxiliary prompts for the brigade ===== */
+const NCS2={
+  idea:'Ты — идейный директор в бригаде Nexus Code (агент ChatGPT). Придумай яркую и цельную идею по запросу пользователя: что это за игра или приложение, 4-7 ключевых механик или экранов, управление на ПК и телефоне, визуальный стиль. Живой текст, без кода.',
+  verify:'Ты — верификатор бригады Nexus Code (агент Open Code). Сверь выданный код с запросом пользователя: сделано ли то, что просили; нет ли критических багов; запустится ли файл в обычном браузере на ПК и телефоне; не пустышка ли это. Если всё хорошо — верни ровно «ПРОВЕРКА ПРОЙДЕНА» без других слов. Иначе верни список конкретных проблем, каждая с новой строки.',
+  refactor:'Ты — мастер рефакторинга в Nexus Code. Перепиши код аккуратнее: осмысленные имена функций и переменных, единый стиль, полезные короткие комментарии. Поведение и функции должны остаться теми же. Верни ПОЛНЫЙ файл одним блоком ```html ... ```.'
+};
+function qualityCheck(code){
+  const q=[];const sc=String(code||'');
+  if(!sc.trim()){q.push('файл пустой');return q}
+  if(sc.length<300)q.push('код слишком короткий — похоже, дописался не до конца');
+  if(!/<\/html>/i.test(sc))q.push('нет закрывающего </html>');
+  if(!/<script/i.test(sc))q.push('нет <script> — интерактивной логики не будет');
+  if(/```/.test(sc))q.push('в коде остались markdown-ограждения');
+  return q;
+}
+function autoRepair(code){
+  let sc=String(code||'');
+  sc=sc.replace(/^\s*```[a-z]*\s*/i,'').replace(/```\s*$/,'');
+  if(!/<!doctype/i.test(sc))sc='<!doctype html>\n'+sc;
+  return sc;
+}
+/* ===== One brigade run: ChatGPT idea -> Claude code -> Codex review+fix -> quality gate -> Open Code verification loop ===== */
+async function codeBrigade(task,opts){
+  const onLog=(opts&&opts.onLog)||(function(){});
+  const log=[];
+  const tell=m=>{log.push(m);try{onLog(m,log)}catch(e){if(e&&e.message==='остановлено')throw e}};
+  const step=async(name,cands,sys,usr)=>{
+    tell('**'+name+'**: работает…');
+    try{
+      const t=await llmShot(cands,sys,usr);
+      tell('**'+name+'** — готов');
+      return t;
+    }catch(e){
+      tell('**'+name+'**: не смог ('+((e&&e.message)||'ошибка')+') — продолжаю без него');
+      return '';
+    }
+  };
+  tell('🐙 **Nexus Code**: бригада собрана — ChatGPT (идея), Claude (код), Codex (ревью и помощь), Open Code (проверка запроса). Задача: «'+task+'»');
+  const idea=await step('ChatGPT — идея',ROSTER.chatgpt,NCS2.idea,task);
+  const ideaTxt=idea?('Запрос: '+task+'\n\nИдея:\n'+idea):('Запрос: '+task);
+  let raw=await step('Claude — пишет код',ROSTER.claude,NCS.code,ideaTxt);
+  let code=extractCode(raw);
+  if(!code)code=extractCode(await step('Codex — помогает с кодом',ROSTER.codex,NCS.code,ideaTxt));
+  if(!code)throw new Error('код не получен');
+  code=autoRepair(code);
+  const rem=await step('Codex — ревью и обсуждение',ROSTER.codex,NCS.review,'Код:\n'+code.slice(0,9000));
+  if(rem){
+    const c2=extractCode(await step('Claude — правки по замечаниям',ROSTER.claude,NCS.fix,'Запрос: '+task+'\n\nКод:\n'+code.slice(0,9000)+'\n\nЗамечания:\n'+rem));
+    if(c2)code=autoRepair(c2);
+  }
+  const qa=qualityCheck(code);
+  if(qa.length){
+    tell('⚠ Локальная проверка нашла: '+qa.join('; ')+' — Codex чинит');
+    const c3=extractCode(await step('Codex — починка',ROSTER.codex,NCS.fix,'Запрос: '+task+'\n\nКод:\n'+code.slice(0,9000)+'\n\nПроблемы:\n'+qa.join('\n')));
+    if(c3)code=autoRepair(c3);
+  }
+  for(let i2=0;i2<2;i2++){
+    const ver=await step('Open Code — сверка с запросом',ROSTER.opencode,NCS2.verify,'Запрос пользователя: '+task+'\n\nКод:\n'+code.slice(0,9000));
+    if(ver.trim()==='ПРОВЕРКА ПРОЙДЕНА'){tell('✔ Проверка пройдена — результат соответствует запросу');break}
+    tell('✖ Не то что надо или есть баги — бригада переделывает');
+    const c4=extractCode(await step('Claude + Codex — переделка',ROSTER.claude.concat(ROSTER.codex),NCS.fix,'Запрос: '+task+'\n\nКод:\n'+code.slice(0,9000)+'\n\nПроблемы:\n'+ver));
+    if(c4){code=autoRepair(c4)}else break;
+  }
+  const q2=qualityCheck(code);
+  tell('Итог: '+code.length+' символов'+(q2.length?'; предупреждения: '+q2.join('; '):'; проблем не найдено'));
+  return code;
+}
+
+/* ===== NEXUS CODE IDE — professional coding environment ===== */
+let IDE_ON=false,IDE_CUR=null,IDE_ACT='index.html',IDE_OPEN=['index.html'],IDE_RTE=[],IDEPID=0;
+let IDEP=[];
+const IKEY='nex_ide_v1';
+function ideLoad(){try{IDEP=JSON.parse(localStorage.getItem(IKEY)||'[]')}catch(e){IDEP=[]}if(!Array.isArray(IDEP))IDEP=[]}
+function ideSave(){try{localStorage.setItem(IKEY,JSON.stringify(IDEP))}catch(e){}}
+function ideCur(){return IDEP.find(x=>x.id===IDE_CUR)||null}
+function ideTouch(){const p=ideCur();if(p){p.updated=Date.now();ideSave()}}
+function ideNewProject(name,code){
+  const p={id:'p'+Date.now()+'x'+(IDEPID++),name:String(name||'Проект').slice(0,40),files:{'index.html':String(code==null?'':code)},created:Date.now(),updated:Date.now()};
+  IDEP.unshift(p);IDE_CUR=p.id;IDE_OPEN=['index.html'];IDE_ACT='index.html';
+  ideSave();ideRenderDash();ideRenderTabs();
+  return p;
+}
+function ideX(t){return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function ideHl(src){
+  const re=/(<!--[\s\S]*?-->)|(\/\*[\s\S]*?\*\/)|(\/\/[^\n]*)|("(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*'|`(?:[^`\\]|\\.)*`)|(<\/?[a-zA-Z][^>\s]*)|(\b(?:const|let|var|function|return|if|else|for|while|new|class|true|false|null|typeof|await|async|try|catch|switch|case|break|continue|do|in|of|this|import|export)\b)|(\b\d+(?:\.\d+)?\b)/g;
+  let out='',last=0,m;
+  const put=(cls,txt)=>{out+='<i class="'+cls+'">'+ideX(txt)+'</i>'};
+  while((m=re.exec(src))){
+    out+=ideX(src.slice(last,m.index));last=m.index+m[0].length;
+    if(m[1]||m[2]||m[3])put('tk-c',m[0]);
+    else if(m[4])put('tk-s',m[0]);
+    else if(m[5])put('tk-t',m[0]);
+    else if(m[6])put('tk-k',m[0]);
+    else if(m[7])put('tk-n',m[0]);
+  }
+  out+=ideX(src.slice(last));
+  return out;
+}
+function ideSyncEd(){
+  const ta=$('ideTa'),hi=$('ideHi'),ln=$('ideLines');if(!ta)return;
+  hi.innerHTML=ideHl(ta.value);
+  const n=ta.value.split('\n').length;
+  if(ln)ln.textContent=Array.from({length:n},(_,i)=>String(i+1)).join('\n');
+  const p=ideCur();
+  if(p&&p.files[IDE_ACT]!=null){p.files[IDE_ACT]=ta.value;ideTouch()}
+  const meta=$('ideFileMeta');
+  if(meta)meta.textContent=IDE_ACT+' · '+ta.value.length+' симв · '+n+' строк';
+}
+function ideRenderTabs(){
+  const w=$('ideTabs');if(!w)return;w.innerHTML='';
+  IDE_OPEN.forEach(n=>{
+    const b=document.createElement('button');b.className='tab'+(n===IDE_ACT?' on':'');
+    b.textContent=n;
+    b.onclick=()=>{try{hap()}catch(e){};ideSelectTab(n)};
+    w.appendChild(b);
+  });
+}
+function ideSelectTab(name){
+  const p=ideCur();if(!p||!(name in p.files))return;
+  IDE_ACT=name;
+  if(IDE_OPEN.indexOf(name)<0)IDE_OPEN.push(name);
+  const ta=$('ideTa');if(ta)ta.value=p.files[name]||'';
+  ideRenderTabs();ideSyncEd();
+}
+function ideRenderDash(){
+  const box=$('ideProjList');if(!box)return;
+  box.innerHTML='';
+  const st=$('ideStats');
+  if(st)st.textContent='Проектов: '+IDEP.length+(ideCur()?' · открыт: '+ideCur().name:'');
+  const st2=$('ideStat');if(st2)st2.textContent=ideCur()?ideCur().name:'нет проекта';
+  IDEP.slice(0,20).forEach(p=>{
+    const size=Object.keys(p.files||{}).map(k=>String(p.files[k]).length).reduce((a,b)=>a+b,0);
+    const row=document.createElement('div');row.className='prj';
+    const info=document.createElement('div');info.className='prjinfo';
+    info.innerHTML='<b></b><span></span>';
+    info.querySelector('b').textContent=p.name;
+    info.querySelector('span').textContent=Object.keys(p.files||{}).length+' файл(ов) · '+(size>1024?(size/1024).toFixed(1)+' КБ':size+' Б')+' · '+new Date(p.updated).toLocaleDateString('ru-RU');
+    row.appendChild(info);
+    const mk=(t,fn,red)=>{const b=document.createElement('button');b.className='mini'+(red?' red':'');b.textContent=t;b.onclick=fn;return b};
+    row.appendChild(mk('Открыть',()=>{IDE_CUR=p.id;IDE_OPEN=Object.keys(p.files);IDE_ACT=(IDE_OPEN.indexOf('index.html')>=0?'index.html':IDE_OPEN[0])||'index.html';ideSelectTab(IDE_ACT);ideOpenIp('files');ideRenderDash()}));
+    row.appendChild(mk('Запуск',()=>{IDE_CUR=p.id;ideRunSel(p.files['index.html'])}));
+    row.appendChild(mk('Удалить',()=>{IDEP=IDEP.filter(x=>x.id!==p.id);if(IDE_CUR===p.id)IDE_CUR=null;ideSave();ideRenderDash()},true));
+    box.appendChild(row);
+  });
+}
+function ideBridge(code){
+  const inj='<script>(function(){var f=function(t){try{parent.postMessage({__nxsErr:t},"*")}catch(e){}};window.addEventListener("error",function(e){f({msg:(e.message||"ошибка в скрипте"),line:(e.lineno||0),col:(e.colno||0)})});window.addEventListener("unhandledrejection",function(e){var r=e.reason;f({msg:"Promise-ошибка: "+((r&&r.message)||r)})});})();<\/script>';
+  const sc=String(code||'');
+  if(/<head[^>]*>/i.test(sc))return sc.replace(/<head[^>]*>/i,function(m){return m+inj});
+  if(/<html[^>]*>/i.test(sc))return sc.replace(/<html[^>]*>/i,function(m){return m+inj});
+  return inj+sc;
+}
+function ideRunSel(code){
+  const scr=$('ideScr');
+  const pv=$('idePrev'),fr=$('idePrevIframe');
+  if(!scr||!scr.classList.contains('on')||!pv||!fr){openRunScr(code);return}
+  fr.srcdoc=ideBridge(code);pv.classList.add('on');ideOpenIp('term');
+  ideTLog('▶ Проект запущен в песочнице. Панель «Ошибки» покажет проблемы выполнения.','dim');
+}
+function idePreviewClose(){const pv=$('idePrev'),fr=$('idePrevIframe');if(pv)pv.classList.remove('on');if(fr)fr.srcdoc=''}
+function ideTLog(t,cls){
+  const l=$('termLog');if(!l)return;
+  const d=document.createElement('div');d.className='ln '+(cls||'');
+  d.textContent=String(t).replace(/[*#`]/g,'');
+  l.appendChild(d);l.scrollTop=l.scrollHeight;
+  while(l.children.length>400)l.removeChild(l.firstChild);
+}
+function runTermCmd(raw){
+  const sc=String(raw||'').trim();if(!sc)return;
+  ideTLog('› '+sc,'dim');
+  const sp=sc.indexOf(' ');
+  const cmd=(sp<0?sc:sc.slice(0,sp)).toLowerCase();
+  const arg=sp<0?'':sc.slice(sp+1).trim();
+  if(cmd==='help'){['help — список команд','new <имя> — новый проект','files — файлы текущего проекта','ren <имя> — переименовать проект','run — запустить проект в песочнице','stats — анализ текущего файла','clear — очистить терминал','exit — закрыть IDE'].forEach(x=>ideTLog('  '+x,'ok'));return}
+  if(cmd==='new'){const p=ideNewProject(arg||'Проект','');ideTLog('✔ Создан проект «'+p.name+'»','ok');ideOpenIp('files');ideRenderDash();return}
+  if(cmd==='files'){const p=ideCur();if(!p){ideTLog('Нет открытого проекта','err');return}Object.keys(p.files).forEach(n=>ideTLog('  '+n+' — '+String(p.files[n]).length+' симв'));return}
+  if(cmd==='ren'){const p=ideCur();if(!p||!arg){ideTLog('использование: ren <имя>','err');return}p.name=arg;ideSave();ideRenderDash();const ni=$('ideName');if(ni)ni.value=arg;ideTLog('✔ Переименовано в «'+arg+'»','ok');return}
+  if(cmd==='run'){ideGoRun();return}
+  if(cmd==='stats'){ideAnalyze();return}
+  if(cmd==='clear'){const l=$('termLog');if(l)l.innerHTML='';return}
+  if(cmd==='exit'){ideClose();return}
+  ideTLog('Не знаю команду «'+cmd+'». help — список','err');
+}
+function checkStatic(code){
+  const q=[];const sc=String(code||'');
+  if(!sc.trim())return [{lv:'err',msg:'Файл пустой'}];
+  if(sc.length<300)q.push({lv:'err',msg:'Файл слишком короткий (<300 символов) — код мог не дописаться'});
+  if(!/<\/html>/i.test(sc))q.push({lv:'err',msg:'Нет закрывающего </html> — файл обрезан'});
+  if(!/<head[\s>]/i.test(sc))q.push({lv:'warn',msg:'Нет <head> — браузер починит, но лучше добавить'});
+  if(!/<script/i.test(sc))q.push({lv:'warn',msg:'Нет <script> — интерактивной логики не будет'});
+  if(/```/.test(sc))q.push({lv:'err',msg:'В коде остались markdown-ограждения ``` — их надо убрать'});
+  const js=String((sc.split(/<script[^>]*>/i).slice(1).join('<script>')).split(/<\/script>/i)[0]||'');
+  let o=0,c=0;for(const ch of js){if(ch==='{')o++;else if(ch==='}')c++}
+  if(o>c)q.push({lv:'err',msg:'Не закрыто фигурных скобок: '+(o-c)});
+  if(c>o)q.push({lv:'err',msg:'Лишние закрывающие скобки: '+(c-o)});
+  if(!/name=["']?viewport/i.test(sc))q.push({lv:'warn',msg:'Нет viewport meta — на телефоне будет мелко'});
+  return q;
+}
+function ideLint(){
+  const p=ideCur();
+  const box=$('lintBox');if(!box)return;
+  box.innerHTML='';
+  if(!p){const r=document.createElement('div');r.className='lrow';r.textContent='Нет открытого проекта';box.appendChild(r);return}
+  const code=p.files[IDE_ACT]||p.files['index.html']||'';
+  const q=checkStatic(code);
+  const hd=document.createElement('div');hd.className='lhead';
+  hd.textContent='Статический анализ: '+p.name+' / '+IDE_ACT+' — '+(q.length?q.length+' замечаний':'проблем не найдено');
+  box.appendChild(hd);
+  q.forEach(x=>{const r=document.createElement('div');r.className='lrow '+(x.lv==='err'?'err':'warn');r.textContent=(x.lv==='err'?'✖ ':'▲ ')+x.msg;box.appendChild(r)});
+  IDE_RTE.forEach(e=>{const r=document.createElement('div');r.className='lrow err';r.textContent='runtime: '+e.msg+(e.line?' (строка '+e.line+')':'');box.appendChild(r)});
+  if(!q.length&&!IDE_RTE.length){const r=document.createElement('div');r.className='lrow ok';r.textContent='✔ Всё чисто';box.appendChild(r)}
+}
+function ideAnalyze(){
+  const p=ideCur();if(!p){ideTLog('Нет открытого проекта','err');return}
+  const code=p.files[IDE_ACT]||p.files['index.html']||'';
+  const fns=(code.match(/function\s+[A-Za-z_$][\w$]*/g)||[]).length;
+  const urls=(code.match(/https?:\/\/[^\s'"<)]+/g)||[]).length;
+  const btns=(code.match(/<button\b/gi)||[]).length;
+  const todos=(code.match(/TODO|FIXME/g)||[]).length;
+  const errs=checkStatic(code).filter(x=>x.lv==='err').length;
+  ideTLog('Анализ «'+IDE_ACT+'»: строк '+(code.split('\n').length)+', симв '+code.length+', функций '+fns+', кнопок '+btns+', внешних ссылок '+urls+', TODO '+todos+', ошибок статики '+errs,'ok');
+}
+function ideRtErr(d){
+  IDEA_RTE_GUARD();
+  IDE_RTE.unshift(d);IDE_RTE=IDE_RTE.slice(0,50);
+  ideTLog('runtime: '+(d.msg||'?')+(d.line?' (строка '+d.line+')':''),'err');
+  if(document.getElementById('ideScr')&&document.getElementById('ideScr').classList.contains('on'))ideLint();
+}
+function IDEA_RTE_GUARD(){}
+function ideOpenIp(name){
+  document.querySelectorAll('.ip').forEach(x=>x.classList.remove('on'));
+  document.querySelectorAll('.irb').forEach(x=>x.classList.toggle('on',x.getAttribute('data-p')===name));
+  const p=$('ip-'+name);if(p)p.classList.add('on');
+  if(name==='dash')ideRenderDash();
+  if(name==='files')ideSelectTab(IDE_ACT);
+  if(name==='lint')ideLint();
+}
+function ideOpen(){
+  IDE_ON=true;
+  const scr=$('ideScr');if(scr)scr.classList.add('on');
+  if(!ideCur())ideNewProject('Проект '+(IDEP.length+1),'');
+  const p=ideCur();
+  const ni=$('ideName');if(ni)ni.value=p.name;
+  ideRenderDash();ideOpenIp('dash');
+  ideTLog('Nexus Code IDE готов. help — список команд','');
+}
+function ideClose(){
+  IDE_ON=false;
+  idePreviewClose();
+  try{closeRunScr()}catch(e){}
+  const scr=$('ideScr');if(scr)scr.classList.remove('on');
+}
+function ideGoRun(){
+  const p=ideCur();if(!p){ideTLog('Нет открытого проекта','err');return}
+  const code=p.files[IDE_ACT]||p.files['index.html']||'';
+  if(!code.trim()){ideTLog('Файл пуст — нечего запускать','err');return}
+  ideRunSel(code);
+}
+async function aiGo(){
+  const task=(($('aiTask')||{}).value||'');
+  if(!task.trim()){ideTLog('Опиши, что построить, в поле задачи','err');return}
+  const ta0=$('aiTask');if(ta0)ta0.value='';
+  const btn=$('aiGo');btn.disabled=true;const os=btn.textContent;btn.textContent='Бригада работает…';
+  const p=ideNewProject(task.slice(0,28),'');
+  ideTLog('Создан проект «'+p.name+'». Бригада: ChatGPT — идея, Claude — код, Codex — ревью, Open Code — проверка.','dim');
+  const al=$('aiLog');if(al)al.innerHTML='';
+  try{
+    const code=await codeBrigade(task,{onLog:function(m,log){
+      ideTLog(m);
+      const al2=$('aiLog');
+      if(al2){const d=document.createElement('div');d.textContent=String(m).replace(/[*#]/g,'');al2.appendChild(d);al2.scrollTop=al2.scrollHeight}
+    }});
+    p.files['index.html']=code;p.updated=Date.now();ideSave();
+    ideSelectTab('index.html');ideOpenIp('files');ideLint();
+    const ni=$('ideName');if(ni)ni.value=p.name;
+    ideTLog('✔ Проект собран: '+code.length+' символов. Можно смотреть в «Файлах» или запускать.','ok');
+  }catch(e){
+    ideTLog('Собрать не удалось: '+((e&&e.message)||'ошибка')+'. Попробуй ещё раз или опиши задачу иначе','err');
+  }
+  btn.disabled=false;btn.textContent=os;
+}
+async function aiFix(){
+  const p=ideCur();if(!p){ideTLog('Нет открытого проекта','err');return}
+  const code=p.files[IDE_ACT]||p.files['index.html']||'';
+  if(!code.trim()){ideTLog('Файл пуст — исправлять нечего','err');return}
+  const issues=checkStatic(code).map(x=>(x.lv==='err'?'ОШИБКА: ':'внимание: ')+x.msg)
+    .concat(IDE_RTE.slice(0,10).map(e=>'runtime: '+e.msg));
+  const btn=$('aiFix');btn.disabled=true;const os=btn.textContent;btn.textContent='Чиню…';
+  try{
+    const fixed=extractCode(await llmShot(ROSTER.codex.concat(ROSTER.opencode),NCS.fix,'Запрос: исправь все перечисленные ошибки в коде, ничего не удаляя лишнего.\n\nКод:\n'+code.slice(0,9000)+'\n\nПроблемы:\n'+(issues.join('\n')||'—')));
+    if(!fixed)ideTLog('Агент не вернул код — попробуй ещё раз','err');
+    else{p.files[IDE_ACT]=autoRepair(fixed);p.updated=Date.now();ideSave();ideSelectTab(IDE_ACT);IDE_RTE=[];ideLint();ideTLog('✔ Код исправлен бригадой','ok')}
+  }catch(e){ideTLog('Не получилось: '+((e&&e.message)||'ошибка'),'err')}
+  btn.disabled=false;btn.textContent=os;
+}
+async function aiRef(){
+  const p=ideCur();if(!p){ideTLog('Нет открытого проекта','err');return}
+  const code=p.files[IDE_ACT]||p.files['index.html']||'';
+  if(!code.trim()){ideTLog('Файл пуст — рефакторить нечего','err');return}
+  const btn=$('aiRef');btn.disabled=true;const os=btn.textContent;btn.textContent='Рефакторю…';
+  try{
+    const better=extractCode(await llmShot(ROSTER.opencode.concat(ROSTER.chatgpt),NCS2.refactor,'Код:\n'+code.slice(0,9000)));
+    if(!better)ideTLog('Агент не вернул код','err');
+    else{p.files[IDE_ACT]=autoRepair(better);p.updated=Date.now();ideSave();ideSelectTab(IDE_ACT);ideLint();ideTLog('✔ Код отрефакторен: '+better.length+' символов','ok')}
+  }catch(e){ideTLog('Не получилось: '+((e&&e.message)||'ошибка'),'err')}
+  btn.disabled=false;btn.textContent=os;
+}
+function ideInit(){
+  ideLoad();
+  document.querySelectorAll('.irb').forEach(b=>{b.onclick=()=>ideOpenIp(b.getAttribute('data-p'))});
+  const ta=$('ideTa');
+  if(ta){ta.addEventListener('input',ideSyncEd);
+    ta.addEventListener('scroll',()=>{const hi=$('ideHi'),ln=$('ideLines');if(hi){hi.scrollTop=ta.scrollTop;hi.scrollLeft=ta.scrollLeft}if(ln)ln.scrollTop=ta.scrollTop});
+  }
+  const tf=$('termForm');if(tf)tf.onsubmit=ev=>{ev.preventDefault();const i2=$('termIn');if(i2){runTermCmd(i2.value);i2.value=''}};
+  const run=$('ideRun');if(run)run.onclick=()=>ideGoRun();
+  const dl=$('ideDl');if(dl)dl.onclick=()=>{const p=ideCur();if(!p)return;const code=p.files[IDE_ACT]||p.files['index.html']||'';try{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([code],{type:'text/html'}));a.download=((p.name||'nexus-code').replace(/[^\wа-яё\- ]/gi,'').trim()||'nexus-code')+'.html';a.click();ideTLog('✔ Скачали '+a.download,'ok')}catch(e){}};
+  const cl=$('ideClose');if(cl)cl.onclick=()=>ideClose();
+  const btnNew=$('ideNewPr');if(btnNew)btnNew.onclick=()=>{ideNewProject('Проект '+(IDEP.length+1),'');ideOpenIp('files')};
+  const btnAddF=$('ideNewFile');if(btnAddF)btnAddF.onclick=()=>{const p=ideCur();if(!p)return;const n='file'+Object.keys(p.files).length+'.html';p.files[n]='';p.updated=Date.now();ideSave();ideSelectTab(n);ideRenderDash()};
+  const btnRmF=$('ideDelFile');if(btnRmF)btnRmF.onclick=()=>{const p=ideCur();if(!p)return;if(Object.keys(p.files).length<2){ideTLog('Нельзя удалить последний файл','err');return}if(IDE_ACT==='index.html'){ideTLog('index.html удалять нельзя','err');return}delete p.files[IDE_ACT];IDE_OPEN=IDE_OPEN.filter(x=>x!==IDE_ACT);IDE_ACT='index.html';ideSave();ideSelectTab(IDE_ACT);ideRenderDash()};
+  const bl=$('btnLint');if(bl)bl.onclick=()=>{IDE_RTE=[];ideLint();ideTLog('Проверка выполнена','ok')};
+  const pw=$('idePrevClose');if(pw)pw.onclick=()=>idePreviewClose();
+  const an=$('ideAn');if(an)an.onclick=()=>{ideAnalyze();ideOpenIp('term')};
+  const ag=$('aiGo');if(ag)ag.onclick=()=>{aiGo()};
+  const af=$('aiFix');if(af)af.onclick=()=>{aiFix()};
+  const ar=$('aiRef');if(ar)ar.onclick=()=>{aiRef()};
+  const ni=$('ideName');if(ni)ni.oninput=()=>{const p=ideCur();if(p){p.name=ni.value||'Проект';ideSave();ideRenderDash()}};
+}
 async function nCodeRespond(cmsg){
-  busy=true;userStop=false;
+  busy=true;userStop=false;ctrl=null;
   const btn=$('send');btn.classList.add('stop');btn.textContent='■';
   const chat=$('chat');
   const{bub,el}=addMsgEl('assistant');
   bub.innerHTML='<span class="typing"><i></i><i></i><i></i></span>';
   chat.appendChild(el);chat.scrollTop=chat.scrollHeight;
-  const log=[];
-  const show=()=>{bub.innerHTML=md(log.join('\n\n'));chat.scrollTop=chat.scrollHeight};
-  const step=async(name,cands,sys,usr)=>{
-    log.push('**'+name+'**: работает…');show();
-    try{
-      const t=await llmShot(cands,sys,usr);
-      if(userStop)throw new Error('остановлено');
-      log[log.length-1]='**'+name+'** — готов';show();
-      return t;
-    }catch(e){
-      log[log.length-1]='**'+name+'**: не смог ('+((e&&e.message)||'ошибка')+') — продолжаю без него';show();
-      return '';
-    }
-  };
   let code=null;
   try{
     const task=cmsg.plug&&cmsg.plug.task||cmsg.text;
-    log.push('🐙 **Nexus Code**: созываю бригаду — ChatGPT (план), Codex (код), Claude (ревью), Open Code (тесты). Задача: «'+task+'»');show();
-    const plan=await step('ChatGPT',ROSTER.chatgpt,NCS.plan,task);
-    if(userStop)throw new Error('остановлено');
-    const c=await step('Codex',ROSTER.codex,NCS.code,task+(plan?'\n\nПлан:\n'+plan:''));
-    code=extractCode(c);
-    if(!code)throw new Error('код не получен');
-    const r1=await step('Claude — ревью',ROSTER.claude,NCS.review,task+'\n\nКод:\n'+code.slice(0,9000));
-    if(r1)code=extractCode(await step('Codex — исправление',ROSTER.codex,NCS.fix,'Задача: '+task+'\n\nКод:\n'+code.slice(0,9000)+'\n\nЗамечания:\n'+r1))||code;
-    if(userStop)throw new Error('остановлено');
-    const r2=await step('Open Code — ревью',ROSTER.opencode,NCS.review+' Если критических багов нет — верни ровно «ОК».',task+'\n\nКод:\n'+code.slice(0,9000));
-    if(r2&&r2.trim()!=='ОК')code=extractCode(await step('Open Code — фикс',ROSTER.opencode,NCS.fix,'Задача: '+task+'\n\nКод:\n'+code.slice(0,9000)+'\n\nЗамечания:\n'+r2))||code;
+    code=await codeBrigade(task,{onLog:function(m,log){
+      if(userStop)throw new Error('остановлено');
+      bub.innerHTML=md(log.join('\n\n'));chat.scrollTop=chat.scrollHeight;
+    }});
   }catch(e){
     const stopped=userStop;
     const ft=stopped?'⏹ Остановлено.':'Плагин «Nexus Code»: '+((e&&e.message)||'ошибка')+'. Попробуй ещё раз или проверь интернет.';
@@ -1155,23 +1631,26 @@ async function nCodeRespond(cmsg){
     busy=false;ctrl=null;btn.classList.remove('stop');btn.textContent='➤';
     return;
   }
-  bub.innerHTML=md('**Nexus Code: готово!**\n\n'+log.join('\n\n')+'\n\nИтог: ChatGPT составил план, Codex написал код, Claude и Open Code проверили и улучшили его. Дальше — карточка: запуск в песочнице, копирование или скачивание файла.');
+  const done='**Nexus Code: готово!**\n\nКак работала бригада: ChatGPT придумал идею → Claude написал код игры → Codex сделал ревью и помог поправить → Open Code сверил результат с твоим запросом; при замечаниях бригада переделывает код.';
+  bub.innerHTML=md(done);
   const card=document.createElement('div');card.className='ncard';
   const mk=(txt,fn)=>{const b=document.createElement('button');b.className='mini';b.textContent=txt;b.onclick=ev=>{ev.stopPropagation();fn()};return b};
   card.appendChild(mk('▶ Запустить',()=>openRunScr(code)));
-  card.appendChild(mk('⧉ Копировать',()=>{const tt=m=>{window.nxsToast&&window.nxsToast(m)};try{navigator.clipboard.writeText(code).then(()=>tt('Код скопирован'),()=>tt('Не скопировалось'))}catch(e){tt('Не скопировалось')}}));
+  card.appendChild(mk('IDE',()=>{ideNewProject('Проект из чата',code);ideOpen();ideOpenIp('files')}));
+  card.appendChild(mk('⧉ Копировать',()=>{const tt2=m=>{window.nxsToast&&window.nxsToast(m)};try{navigator.clipboard.writeText(code).then(()=>tt2('Код скопирован'),()=>tt2('Не скопировалось'))}catch(e){tt2('Не скопировалось')}}));
   card.appendChild(mk('⤓ Скачать .html',()=>{
     const a=document.createElement('a');
     a.href=URL.createObjectURL(new Blob([code],{type:'text/html'}));
     a.download='nexus-code.html';a.click();
   }));
   el.querySelector('.body').appendChild(card);
-  MSGS.push({role:'assistant',text:'Nexus Code собрал код бригадой (ChatGPT + Codex + Claude + Open Code) по задаче «'+(cmsg.plug&&cmsg.plug.task||'')+'». Карточка ниже: запуск / копия / скачивание.'});
+  MSGS.push({role:'assistant',text:'Nexus Code собрал код бригадой (ChatGPT — идея, Claude — код, Codex — ревью, Open Code — сверка с запросом) по задаче «'+(cmsg.plug&&cmsg.plug.task||'')+'». Карточка ниже: запуск / IDE / копия / скачивание.'});
   saveChat();
   try{window.nxsSpeak&&window.nxsSpeak('Код готов')}catch(e2){}
   chat.scrollTop=chat.scrollHeight;
   busy=false;ctrl=null;btn.classList.remove('stop');btn.textContent='➤';
 }
+
 let VIDBLOB=null,VIDBUSY=false,VSTOP=false;
 function vidPlaceholder(x,W,H,title,sub){
   const g=x.createLinearGradient(0,0,W,H);
@@ -1328,7 +1807,12 @@ $('runDl').onclick=()=>{
   a.href=URL.createObjectURL(new Blob([NCODE_CUR],{type:'text/html'}));
   a.download='nexus-code.html';a.click();
 };
-window.nxPlug={runPlug,plugOn,togglePlug,PLUGINS,extractCode,openRunScr,closeRunScr,openVideoStudio,setCodeMode};
+ideInit();
+window.addEventListener('message',e=>{
+  const d=e&&e.data;
+  if(d&&d.__nxsErr)ideRtErr(d.__nxsErr);
+});
+window.nxPlug={runPlug,plugOn,togglePlug,PLUGINS,extractCode,openRunScr,closeRunScr,openVideoStudio,setCodeMode,ideOpen,ideClose,ideNewProject,ideCur,checkStatic,runTermCmd,ideHl,codeBrigade,qualityCheck,autoRepair};
 
 function headers(){
   const h={'Content-Type':'application/json'};
@@ -1507,7 +1991,10 @@ function setCodeMode(on){
   if(CODEMODE){IMGMODE=false;const ab=$('btnArt');if(ab)ab.classList.remove('has');}
   const ta=$('ta');if(ta)ta.placeholder=CODEMODE?'Nexus Code: опиши игру или приложение…':'Спросите что угодно…';
 }
-$('btnCode').onclick=()=>{hap();setCodeMode(!CODEMODE);};
+$('btnCode').onclick=()=>{hap();
+  if(IDE_ON){ideClose();setCodeMode(false);return;}
+  setCodeMode(true);ideOpen();
+};
 function fmtSize(n){return n>1048576?(n/1048576).toFixed(1)+' МБ':Math.round(n/1024)+' КБ'}
 function readImg(file){
   return new Promise((res,rej)=>{
@@ -1967,7 +2454,9 @@ async function init(){
           if(p.flow==='video'){openVideoStudio($('ta').value.trim());}
           else if(p.flow==='code'){
             setCodeMode(true);
-            window.nxsToast&&window.nxsToast('Режим Nexus Code включён — опиши в поле, что написать');
+            ideNewProject('Новый проект','');
+            ideOpen();
+            window.nxsToast&&window.nxsToast('Nexus Code IDE открыт: опиши задачу на панели ИИ или начни с нуля');
           }
         };
       }else{
