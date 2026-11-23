@@ -156,6 +156,10 @@ body.noanim #heroMark i{animation:none}
 .mini{border:none;border-radius:8px;background:rgba(255,255,255,.06);color:var(--dim);font-size:12px;
   padding:5px 10px;cursor:pointer;transition:.15s}
 .mini:hover{color:var(--txt);background:rgba(255,255,255,.1)}
+.wsrc{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.wsrc a{font-size:11.5px;color:#93C5FD;text-decoration:none;border:1px solid rgba(147,197,253,.25);border-radius:999px;padding:3px 9px;max-width:230px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wsrc a:hover{background:rgba(147,197,253,.12)}
+.fup{flex-wrap:wrap}
 .chip{display:inline-block;font-size:10.5px;color:var(--mut);background:rgba(255,255,255,.05);
   border:1px solid var(--line);border-radius:6px;padding:2px 7px;margin-bottom:6px}
 .typing{display:inline-flex;gap:4px;padding:4px 0}
@@ -694,7 +698,7 @@ function stripTags(t){return String(t||'').replace(/<\/?think>/g,'')}
 function cleanOut(t){return stripTags(t).replace(/^[\s\uFEFF]+|[\s]+$/g,'')}
 function buildCtx(){
   const tail=MSGS.slice(-14);
-  return [{role:'system',content:SYS+memSys()},
+  const ctx=[{role:'system',content:SYS+memSys()},
     ...tail.map((m,i)=>{
       const last=i===tail.length-1;
       if(m.img&&last&&m.full)
@@ -703,7 +707,38 @@ function buildCtx(){
       if(m.img)return {role:m.role,content:m.text+' [к сообщению приложено фото]'};
       return {role:m.role,content:m.text};
     })];
+  const wi=(()=>{for(let i=tail.length-1;i>=0;i--){const m=tail[i];if(m.role==='user'&&m.web&&m.web.length)return i}return -1})();
+  if(wi>=0){
+    const w=tail[wi].web;
+    ctx.push({role:'system',content:'Свежие результаты веб-поиска по запросу «'+tail[wi].text+
+      '». Опирайся на них как на актуальные факты и в конце ответа добавь строку «Источники:» со ссылками.'+
+      '\n'+w.map((r,i)=>'['+(i+1)+'] '+r.title+'. '+r.snip+' ('+r.url+')').join('\n')});
+  }
+  return ctx;
 }
+async function webSearch(q){
+  const wiki=async host=>{
+    const u='https://'+host+'/w/api.php?action=query&format=json&origin=*&generator=search&gsrsearch='+
+      encodeURIComponent(q)+'&gsrlimit=3&prop=extracts&exintro=1&explaintext=1';
+    const ctl=new AbortController();const tm=setTimeout(()=>ctl.abort(),8000);
+    try{
+      const r=await fetch(u,{signal:ctl.signal});
+      if(!r.ok)throw new Error('wiki '+r.status);
+      const j=await r.json();
+      const pg=(j&&j.query&&j.query.pages)||{};
+      return Object.values(pg).map(x=>({
+        title:x.title||'',
+        url:'https://'+host+'/wiki/'+encodeURIComponent(String(x.title||'').replace(/ /g,'_')),
+        snip:String(x.extract||'').replace(/\s+/g,' ').slice(0,320)
+      })).filter(r=>r.snip);
+    }finally{clearTimeout(tm)}
+  };
+  let out=[];
+  try{out=await wiki('ru.wikipedia.org')}catch(e){}
+  if(!out.length){try{out=await wiki('en.wikipedia.org')}catch(e){}}
+  return out;
+}
+
 function headers(){
   const h={'Content-Type':'application/json'};
   if(SETS.key)h['Authorization']='Bearer '+SETS.key;
@@ -833,6 +868,25 @@ async function respond(){
   }
   bub.innerHTML=md(finalText);
   MSGS.push({role:'assistant',text:finalText});saveChat();
+  const lu=(()=>{let i=MSGS.length-1;while(i>=0&&MSGS[i].role!=='user')i--;return i>=0?MSGS[i]:null})();
+  if(lu&&lu.web&&lu.web.length&&ok){
+    const row=document.createElement('div');row.className='wsrc';
+    lu.web.forEach((r,i)=>{
+      const a=document.createElement('a');a.href=r.url;a.target='_blank';a.rel='noopener';
+      a.textContent='['+(i+1)+'] '+r.title;
+      row.appendChild(a);
+    });
+    el.querySelector('.body').appendChild(row);
+  }
+  if(ok&&!offline){
+    const fu=document.createElement('div');fu.className='acts fup';
+    for(const ft of ['Объясни проще','Подробнее','Приведи примеры']){
+      const b=document.createElement('button');b.className='mini';b.textContent=ft;
+      b.onclick=()=>{if(busy)return;$('ta').value=ft;send();};
+      fu.appendChild(b);
+    }
+    el.querySelector('.body').appendChild(fu);
+  }
   const acts=document.createElement('div');acts.className='acts';
   const rg=document.createElement('button');rg.className='mini';rg.textContent='↻ ещё раз';
   rg.onclick=()=>{if(busy)return;
@@ -1040,7 +1094,7 @@ function render(){
   }
 }
 function localNote(text){
-  const ta=$('ta');ta.value='';ta.style.height='auto';
+  const ta=$('ta');ta.value='';ta.style.height='auto';try{localStorage.removeItem('nexus_draft')}catch(e){}
   const note=text.replace(/^запомни[,:]??\s*/i,'').trim();
   const dup=getMem().some(m=>m.toLowerCase()===note.toLowerCase());
   addMem(note);
@@ -1057,26 +1111,31 @@ async function send(){
     if(/^запомни[,:]??\s*(.+)/.test(lm)){localNote(text);return;}
     if(/^(забудь всё|забудь всё что помнишь|забудь меня|сотри память|очисти память)$/.test(lm)){
       try{localStorage.setItem(MEM_KEY,'[]')}catch(e){}
-      ta.value='';ta.style.height='auto';
+      ta.value='';ta.style.height='auto';try{localStorage.removeItem('nexus_draft')}catch(e){}
       MSGS.push({role:'user',text});saveChat();
       MSGS.push({role:'assistant',text:'🧠 Память очищена — начинаем с чистого листа!'});saveChat();render();
       hap();return;}
     if(/^(что ты помнишь|что ты обо мне знаешь|покажи память)$/.test(lm)){
       const mem=getMem();
-      ta.value='';ta.style.height='auto';
+      ta.value='';ta.style.height='auto';try{localStorage.removeItem('nexus_draft')}catch(e){}
       MSGS.push({role:'user',text});saveChat();
       MSGS.push({role:'assistant',text:mem.length?'🧠 Я помню:\n'+mem.map((m,i)=>(i+1)+'. '+m).join('\n'):'🧠 Пока ничего не запомнил. Скажи «запомни …» — сохраню навсегда.'});
       saveChat();render();return;}
     const nm=text.match(/меня зовут\s+([A-ZА-ЯЁ][а-яёa-z\-]{1,20})/i);
     if(nm&&addMem('Имя пользователя: '+nm[1].trim()))window.nxsToast&&window.nxsToast('Приятно познакомиться, '+nm[1].trim()+'! Запомнил 👋');
   }
-  if(IMGMODE&&text){ta.value='';ta.style.height='auto';drawImg(text);return;}
+  if(IMGMODE&&text){ta.value='';ta.style.height='auto';try{localStorage.removeItem('nexus_draft')}catch(e){}drawImg(text);return;}
   const mImg=text.match(/^\/(?:img|рисунок|картинк[аи])\s+(.+)/i);
-  if(mImg){ta.value='';ta.style.height='auto';drawImg(mImg[1]);return;}
-  if(WEB)MODEL_QUEUE=['searchgpt'].concat(MODEL_QUEUE.filter(m=>m!=='searchgpt'));
+  if(mImg){ta.value='';ta.style.height='auto';try{localStorage.removeItem('nexus_draft')}catch(e){}drawImg(mImg[1]);return;}
   const msg={role:'user',text:text||('Опиши, что на фото'+(PEND?' «'+PEND.name+'»':''))};
   if(PEND){msg.img=true;msg.thumb=PEND.thumb;msg.full=PEND.full;msg.name=PEND.name}
-  ta.value='';ta.style.height='auto';hap();
+  if(WEB&&text){
+    try{
+      const rs=await webSearch(text);
+      if(rs.length){msg.web=rs;toast('Найдено источников: '+rs.length)}
+    }catch(e){}
+  }
+  ta.value='';ta.style.height='auto';try{localStorage.removeItem('nexus_draft')}catch(e){}hap();
   MSGS.push(msg);saveChat();
   const hero=$('hero');if(hero)hero.remove();
   addUserMsg(msg);
@@ -1241,7 +1300,8 @@ async function init(){
   render();netDot();syncMindLbl();rebuildQueue();drawSess();drawPrompts();syncLooks();
   $('apiKey').value=SETS.key;
   const ta=$('ta');
-  ta.addEventListener('input',()=>{ta.style.height='auto';ta.style.height=Math.min(ta.scrollHeight,150)+'px'});
+  ta.addEventListener('input',()=>{ta.style.height='auto';ta.style.height=Math.min(ta.scrollHeight,150)+'px';try{localStorage.setItem('nexus_draft',ta.value)}catch(e){}});
+  ta.value=(()=>{try{return localStorage.getItem('nexus_draft')||''}catch(e){return ''}})();
   ta.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}});
   $('send').onclick=()=>{busy?stopGen():send();};
   $('btnMind').onclick=e=>{e.stopPropagation();$('mindPop').classList.toggle('on');$('promptPop').classList.remove('on');};
@@ -1447,7 +1507,7 @@ async function init(){
         }else if(t.split(' ').length<=4){
           handled=voiceCmd(t);
         }
-        if(handled){ta.value='';ta.style.height='auto';chain=Math.min(chain+1,6);}
+        if(handled){ta.value='';ta.style.height='auto';try{localStorage.removeItem('nexus_draft')}catch(e){}chain=Math.min(chain+1,6);}
         else{
           chain=0;
           if(LOOP&&ta.value.trim()){setTimeout(()=>{if(LOOP&&!busy&&ta.value.trim())send()},250);}

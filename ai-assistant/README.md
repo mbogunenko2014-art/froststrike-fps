@@ -11,7 +11,10 @@ Dark glassmorphism interface over an atmospheric SVG scenery (wooden hut, slate 
 - Request cascade (stream → JSON per queued model → GET fallback → offline engine), 35 s per-attempt timeout — no hangs, no missing answers
 - Offline fallback engine: math evaluation, date/time, coin/dice, persistent notes («запомни…»), small talk
 - Settings screen («Внешний вид и данные»): provider status cards with key check, background animation toggle, background brightness slider, double-confirm history wipe
-- Prompt library (▤), chat sessions with search, web-search capsule (searchgpt model first, graceful fallback), regenerate, stop generation, TXT export
+- Prompt library (▤), chat sessions with search, web-search capsule, regenerate, stop generation, TXT export
+- Real web answers: when web-search is on, NEXUS looks the query up via the Wikipedia API (ru → en fallback) and injects the found extracts into the model context; source links appear under the answer
+- Follow-up chips under each answer («Объясни проще» / «Подробнее» / «Приведи примеры») — one tap continues the dialogue
+- Input draft: unsent text is autosaved and restored after reload
 - Markdown-lite rendering with code blocks, chat history in localStorage, fully responsive
 - Mobile (phones): bottom navigation bar (new chat / chats / prompts / settings), settings as a bottom-sheet, voice input (ru-RU) via SpeechRecognition, popups repositioned above the nav bar, reduced blur cost
 - Voice control: wake word «Нексус» — opens sites in a new tab (YouTube, Google, Wikipedia, GitHub, mail, weather…, any domain, or a Google search fallback), plus app commands (new chat, clear history, settings, chats, prompts, web search on/off, mind flash/smart/deep/ultra, scroll, fullscreen, close, help); if the popup blocker interferes, an inline «Открыть» action bar appears
