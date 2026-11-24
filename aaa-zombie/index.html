@@ -1,0 +1,1906 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>ZOMBIE 300K — ультра-реалистичный 3D-зомби</title>
+<style>
+:root {
+  --bg0: #090707;
+  --bg1: #120d0d;
+  --panel: rgba(14, 10, 10, 0.8);
+  --panel-line: rgba(190, 82, 60, 0.18);
+  --txt: #d8d0c2;
+  --dim: #a89588;
+  --mut: #76635a;
+  --gold: #a8432d;
+  --gold2: #e2d4c0;
+  --tox: #c04a32;
+  --em1: #742a1c;
+  --blood: #8a1d12;
+  --rads: 10px;
+  --rads2: 16px;
+  --font: "Segoe UI", Roboto, "Helvetica Neue", system-ui, -apple-system, sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; }
+body {
+  background: radial-gradient(120% 90% at 50% 8%, #181010 0%, #100b0b 42%, var(--bg0) 100%);
+  color: var(--txt);
+  font-family: var(--font);
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
+  touch-action: none;
+}
+/* лёгкая „пыль“ сцены поверх фона */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(90% 60% at 70% 20%, rgba(190, 60, 40, 0.05), transparent 60%),
+    radial-gradient(70% 50% at 20% 80%, rgba(120, 70, 50, 0.04), transparent 65%);
+}
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(120% 120% at 50% 45%, transparent 55%, rgba(0, 0, 0, 0.55) 100%);
+}
+#gl {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  cursor: grab;
+}
+#gl.grabbing { cursor: grabbing; }
+
+/* ---------- загрузчик ---------- */
+#boot {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  background: var(--bg0);
+  transition: opacity 0.6s ease;
+}
+#boot.off { opacity: 0; pointer-events: none; }
+#bootTitle {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 34px;
+  letter-spacing: 0.22em;
+  color: var(--gold2);
+  text-shadow: 0 0 26px rgba(212, 169, 78, 0.35);
+}
+#bootSub { font-size: 12.5px; color: var(--mut); letter-spacing: 0.14em; text-transform: uppercase; }
+#bootBarWrap {
+  width: min(420px, 74vw);
+  height: 3px;
+  border-radius: 999px;
+  background: #141d16;
+  overflow: hidden;
+  margin-top: 8px;
+}
+#bootBar {
+  width: 0%;
+  height: 100%;
+  background: linear-gradient(90deg, var(--em1), var(--tox));
+  transition: width 0.15s ease;
+}
+#bootMsg { font-size: 12px; color: var(--dim); min-height: 16px; }
+
+/* ---------- HUD ---------- */
+#plaque {
+  position: fixed;
+  top: 16px;
+  left: 18px;
+  z-index: 10;
+  padding: 10px 16px 11px;
+  background: var(--panel);
+  border: 1px solid var(--panel-line);
+  border-radius: var(--rads2);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  user-select: none;
+}
+#plaque h1 {
+  font-family: Georgia, serif;
+  font-size: 19px;
+  font-weight: 400;
+  letter-spacing: 0.3em;
+  color: var(--gold2);
+  white-space: nowrap;
+}
+#plaque small { display: block; margin-top: 3px; font-size: 10.5px; letter-spacing: 0.18em; color: var(--mut); text-transform: uppercase; }
+
+#actBar {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.abtn {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 10px 14px;
+  background: var(--panel);
+  border: 1px solid var(--panel-line);
+  border-radius: 12px;
+  color: var(--dim);
+  font: 500 12.5px var(--font);
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: border-color 0.15s, color 0.15s, transform 0.08s;
+  user-select: none;
+}
+.abtn:hover { color: var(--txt); border-color: rgba(190, 82, 60, 0.45); }
+.abtn:active { transform: scale(0.97); }
+.abtn.on {
+  color: var(--gold2);
+  border-color: rgba(190, 82, 56, 0.6);
+  background: rgba(40, 15, 11, 0.85);
+}
+.abtn svg { width: 15px; height: 15px; fill: currentColor; flex: none; }
+
+#stats {
+  position: fixed;
+  left: 18px;
+  bottom: 18px;
+  z-index: 10;
+  min-width: 208px;
+  padding: 12px 15px;
+  background: var(--panel);
+  border: 1px solid var(--panel-line);
+  border-radius: var(--rads2);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  font-size: 12px;
+  color: var(--dim);
+  user-select: none;
+}
+#stats b { color: var(--gold2); font-weight: 600; font-variant-numeric: tabular-nums; }
+#stats .row { display: flex; justify-content: space-between; gap: 18px; padding: 2.5px 0; }
+#stats .row span:last-child { font-variant-numeric: tabular-nums; }
+#stTri { color: var(--gold2); }
+
+#hint {
+  position: fixed;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+  z-index: 9;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: var(--panel);
+  border: 1px solid var(--panel-line);
+  color: var(--mut);
+  font-size: 11.5px;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  user-select: none;
+  transition: opacity 0.6s;
+}
+#hint.gone { opacity: 0; }
+
+/* ---------- WebGL недоступен / ошибки ---------- */
+#glfail, #gkBootFail {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+#glfail.on, #gkBootFail.on { display: flex; }
+#glfail .box, #gkBootFail .box {
+  max-width: 560px;
+  padding: 26px 28px;
+  background: #140b0b;
+  border: 1px solid #8a1d12;
+  border-radius: var(--rads2);
+  font-size: 13.5px;
+  line-height: 1.65;
+  color: var(--txt);
+}
+#glfail .box h2, #gkBootFail .box h2 { font-size: 17px; color: #e05545; margin-bottom: 10px; letter-spacing: 0.03em; }
+#gkBootFail { background: rgba(6, 9, 7, 0.94); z-index: 60; }
+#gkBootFail pre { white-space: pre-wrap; background: #1d0d0d; border: 1px solid #8a1d12; border-radius: 8px; padding: 12px; margin-top: 10px; font-size: 12px; }
+
+/* ---------- тосты ---------- */
+#ztToasts {
+  position: fixed;
+  right: 16px;
+  bottom: 76px;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+}
+.toast {
+  padding: 9px 14px;
+  background: var(--panel);
+  border: 1px solid var(--panel-line);
+  border-left: 3px solid var(--tox);
+  border-radius: 10px;
+  font-size: 12.5px;
+  color: var(--txt);
+  animation: tin 0.25s ease;
+  backdrop-filter: blur(10px);
+}
+.toast.gd { border-left-color: var(--gold); }
+@keyframes tin { from { opacity: 0; transform: translateY(8px); } }
+
+@media (max-width: 640px) {
+  #plaque { top: 12px; left: 12px; padding: 8px 12px 9px; }
+  #plaque h1 { font-size: 15px; }
+  #plaque small { font-size: 9px; }
+  #actBar { top: auto; bottom: 64px; right: 12px; }
+  .abtn { padding: 9px 12px; font-size: 11.5px; }
+  #stats { left: 12px; bottom: 64px; min-width: 0; font-size: 11px; padding: 10px 12px; }
+  #hint { display: none; }
+  #bootTitle { font-size: 24px; }
+}
+@media (max-width: 400px) {
+  #stats { bottom: 12px; }
+  #actBar { bottom: 12px; }
+  .abtn span { display: none; }
+  .abtn svg { width: 17px; height: 17px; }
+}
+</style>
+</head>
+<body>
+<canvas id="gl" aria-label="3D-зомби — тяни, чтобы вращать, колесо/щипок — зум"></canvas>
+
+<div id="plaque">
+  <h1>ZOMBIE · 300K</h1>
+  <small>процедурный монстр · честные полигоны</small>
+</div>
+
+<div id="actBar">
+  <button class="abtn on" id="btnSpin" title="Автоповорот">
+    <svg viewBox="0 0 24 24"><path d="M12 4V1L8 5l4 4V6a6 6 0 1 1-6 6H4a8 8 0 1 0 8-8z"/></svg><span>Поворот</span>
+  </button>
+  <button class="abtn on" id="btnAnim" title="Сменить анимацию">
+    <svg viewBox="0 0 24 24"><path d="M12 4V1L8 5l4 4V6a6 6 0 0 1 5.7 7.8l1.6 1.1A8 8 0 0 0 12 4zM3 12a8 8 0 0 0 14.5 4.7l-1.7-1A6 6 0 0 1 6 12H3z"/></svg><span>Анимация</span>
+  </button>
+  <button class="abtn on" id="btnPlay" title="Пауза / продолжить">
+    <svg viewBox="0 0 24 24"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg><span>Пауза</span>
+  </button>
+  <button class="abtn" id="btnWire" title="Каркас: показать полигоны">
+    <svg viewBox="0 0 24 24"><path d="M12 2 2 7.5l10 5.5 10-5.5L12 2zM4.2 7.5 12 3.2l7.8 4.3L12 11.8 4.2 7.5zM3 9.2v7L11 20.7v-7L3 9.2zm18 0-8 4.4v7l8-4.4v-7z"/></svg><span>Каркас</span>
+  </button>
+  <button class="abtn" id="btnLight" title="Схема освещения">
+    <svg viewBox="0 0 24 24"><path d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.1V17h6v-.2c0-.8.4-1.6 1-2.1A7 7 0 0 0 12 2z"/></svg><span>Свет</span>
+  </button>
+  <button class="abtn" id="btnShot" title="Скриншот PNG">
+    <svg viewBox="0 0 24 24"><path d="M9 3 7.2 5H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3.2L15 3H9zm3 5a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/></svg><span>Скриншот</span>
+  </button>
+  <button class="abtn" id="btnReset" title="Сбросить камеру">
+    <svg viewBox="0 0 24 24"><path d="M12 5V2L8 6l4 4V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7z"/></svg><span>Камера</span>
+  </button>
+</div>
+
+<div id="stats">
+  <div class="row"><span>треугольники</span><b id="stTri">…</b></div>
+  <div class="row"><span>вершины</span><span id="stVert">…</span></div>
+  <div class="row"><span>деталей</span><span id="stParts">…</span></div>
+  <div class="row"><span>кадров/с</span><span id="stFps">…</span></div>
+  <div class="row"><span>анимация</span><b id="stAnim">…</b></div>
+  <div class="row"><span>полигонов · цель</span><span>250 000+</span></div>
+</div>
+
+<div id="hint">тяни мышью — вращай во все стороны · колесо — зум · на сенсоре: палец и щипок</div>
+
+<div id="glfail">
+  <div class="box">
+    <h2>WebGL недоступен</h2>
+    Зомби рисуется через WebGL, а этот браузер (или встроенный просмотрщик) его не даёт.<br><br>
+    Скачай файл и открой его локально в свежем Chrome, Firefox или Edge — там всё заведётся.
+  </div>
+</div>
+
+<div id="ztToasts"></div>
+
+<div id="boot">
+  <div id="bootTitle">ZOMBIE</div>
+  <div id="bootSub">собираем зомби · 250 000+ полигонов</div>
+  <div id="bootBarWrap"><div id="bootBar"></div></div>
+  <div id="bootMsg">готовим мастерскую…</div>
+</div>
+
+<script>
+window.__ZTerrs = [];
+window.addEventListener("error", function (e) {
+  window.__ZTerrs.push(String((e && e.message) || e) + (e && e.filename ? " @" + String(e.lineno) : ""));
+});
+window.addEventListener("unhandledrejection", function (e) {
+  window.__ZTerrs.push("promise: " + String((e && e.reason && e.reason.message) || e.reason));
+});
+</script>
+
+<script>
+"use strict";
+/* ============================================================
+   ZOMBIE 300K — геометрическое ядро: человеческая анатомия,
+   19-костный скелет, процедурные поверхности с весами костей
+   ============================================================ */
+
+const TAU = Math.PI * 2;
+function clamp01(x) { return x < 0 ? 0 : x > 1 ? 1 : x; }
+function smooth(e0, e1, x) { const t = clamp01((x - e0) / (e1 - e0)); return t * t * (3 - 2 * t); }
+function mulberry(seed) {
+  let s = seed >>> 0;
+  return function () {
+    s |= 0; s = (s + 0x6D2B79F5) | 0;
+    let t = Math.imul(s ^ (s >>> 15), 1 | s);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function vhash(x, y) { return mulberry(((x * 374761393 + y * 668265263) >>> 0) ^ 0x9E3779B9)(); }
+function vnoise(x, y) {
+  const xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi;
+  const u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf);
+  const a = vhash(xi, yi), b = vhash(xi + 1, yi), c = vhash(xi, yi + 1), d = vhash(xi + 1, yi + 1);
+  return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+}
+function fbm(x, y, o) {
+  let s = 0, a = 0.5, f = 1;
+  for (let i = 0; i < (o || 4); i++) { s += a * (vnoise(x * f, y * f) * 2 - 1); f *= 2; a *= 0.5; }
+  return s;
+}
+
+const V = {
+  add: (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]],
+  sub: (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]],
+  scl: (a, k) => [a[0] * k, a[1] * k, a[2] * k],
+  dot: (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2],
+  cross: (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]],
+  len: (a) => Math.hypot(a[0], a[1], a[2]),
+  norm: (a) => { const l = Math.hypot(a[0], a[1], a[2]) || 1; return [a[0] / l, a[1] / l, a[2] / l]; },
+};
+const MX = (p) => [-p[0], p[1], p[2]]; /* зеркалим на правую сторону */
+
+/* ---------- бакет с весами костей ---------- */
+function makeBucket() { return { pos: [], nrm: [], tan: [], uv: [], sk: [], idx: [] }; }
+
+/* ---------- универсальная параметрическая поверхность ----------
+   F(u,v)->[x,y,z]; опции: sk(u,v,p)->[b0,b1,b2,w1,w2] или bone:int,
+   uWrap (замкнутая по u), uScale/vScale для UV шейдера */
+function surfGrid(out, F, nu, nv, uWrap, uScale, vScale, opt) {
+  opt = opt || {};
+  const e = 0.002;
+  const C = (uu, vv) => F(clamp01(uu), clamp01(vv)); /* сэмплы не выходят за домен (анти-NaN) */
+  const base = out.pos.length / 3;
+  const bone = opt.bone || 0;
+  const w = nu + 1;
+  for (let j = 0; j <= nv; j++) {
+    const v = j / nv;
+    for (let i = 0; i <= nu; i++) {
+      let u = i / nu;
+      if (uWrap && i === nu) u = 0;
+      const p = C(u, v);
+      const pu = C(u + e / nu, v), pu2 = C(u - e / nu, v);
+      const pv = C(u, v + e / nv), pv2 = C(u, v - e / nv);
+      const du = V.sub(pu, pu2), dv = V.sub(pv, pv2);
+      let n = V.cross(du, dv);
+      let ln = V.len(n);
+      if (ln < 1e-12) { n = [0, 1, 0]; ln = 1; }
+      let tx = du, ltx = V.len(tx);
+      if (ltx < 1e-12) { tx = [1, 0, 0]; ltx = 1; }
+      out.pos.push(p[0], p[1], p[2]);
+      out.nrm.push(n[0] / ln, n[1] / ln, n[2] / ln);
+      out.tan.push(tx[0] / ltx, tx[1] / ltx, tx[2] / ltx);
+      out.uv.push(u * (uScale || 1), v * (vScale || 1));
+      const s = opt.sk ? opt.sk(u, v, p) : [bone, bone, bone, 0, 0];
+      out.sk.push(s[0], s[1], s[2], s[3], s[4]);
+    }
+  }
+  for (let j = 0; j < nv; j++) {
+    for (let i = 0; i < nu; i++) {
+      const i0 = base + j * w + i;
+      const i1 = base + (j + 1) * w + i;
+      const i3 = (uWrap && i === nu - 1) ? (base + j * w) : (base + j * w + i + 1);
+      const i2 = (uWrap && i === nu - 1) ? (base + (j + 1) * w) : (base + (j + 1) * w + i + 1);
+      out.idx.push(i0, i2, i1, i0, i3, i2);
+    }
+  }
+  return out;
+}
+
+/* ---------- Catmull-Rom вдоль ломаной ---------- */
+function crSample(pts, t) {
+  const n = pts.length - 1;
+  const f = clamp01(t) * n;
+  const i = Math.min(n - 1, Math.floor(f));
+  const fr = f - i;
+  const p0 = pts[Math.max(0, i - 1)], p1 = pts[i], p2 = pts[Math.min(n, i + 1)], p3 = pts[Math.min(n, i + 2)];
+  return [
+    0.5 * ((2 * p1[0]) + (-p0[0] + p2[0]) * fr + (2 * p0[0] - 5 * p1[0] + 4 * p2[0] - p3[0]) * fr * fr + (-p0[0] + 3 * p1[0] - 3 * p2[0] + p3[0]) * fr * fr * fr),
+    0.5 * ((2 * p1[1]) + (-p0[1] + p2[1]) * fr + (2 * p0[1] - 5 * p1[1] + 4 * p2[1] - p3[1]) * fr * fr + (-p0[1] + 3 * p1[1] - 3 * p2[1] + p3[1]) * fr * fr * fr),
+    0.5 * ((2 * p1[2]) + (-p0[2] + p2[2]) * fr + (2 * p0[2] - 5 * p1[2] + 4 * p2[2] - p3[2]) * fr * fr + (-p0[2] + 3 * p1[2] - 3 * p2[2] + p3[2]) * fr * fr * fr),
+  ];
+}
+
+/* ---------- труба по кривой (конечности, торс, зубы, пальцы) ----------
+   radiusFn(t, a); opt: zs (сплющивание по up2), up, rough, uvS, vS, sk/bone */
+function tube(out, pts, radiusFn, rings, radial, opt) {
+  opt = opt || {};
+  const zs = opt.zs || 1;
+  const up = opt.up || [0, 0, 1];
+  const rr = opt.rough || 0;
+  const uvS = opt.uvS || 1, vS = opt.vS || 1;
+  const bone = opt.bone || 0;
+  const base = out.pos.length / 3;
+  const P = [];
+  for (let k = 0; k < rings; k++) P.push(crSample(pts, k / (rings - 1)));
+  for (let k = 0; k < rings; k++) {
+    const t = k / (rings - 1);
+    const p = P[k];
+    const pa = crSample(pts, Math.min(1, t + 0.002)), pb = crSample(pts, Math.max(0, t - 0.002));
+    let T = V.sub(pa, pb);
+    const lt = V.len(T);
+    if (lt < 1e-9) T = [0, 1, 0]; else T = [T[0] / lt, T[1] / lt, T[2] / lt];
+    let side = V.cross(T, up);
+    const ls = V.len(side);
+    if (ls < 1e-6) side = V.norm(V.cross(T, [1, 0, 0])); else side = [side[0] / ls, side[1] / ls, side[2] / ls];
+    const up2 = V.cross(side, T);
+    for (let j = 0; j < radial; j++) {
+      const a = (j / radial) * TAU;
+      const ca = Math.cos(a), sa = Math.sin(a);
+      const yz = sa * zs;
+      const dir = [side[0] * ca + up2[0] * yz, side[1] * ca + up2[1] * yz, side[2] * ca + up2[2] * yz];
+      let R = radiusFn(t, a);
+      if (rr) R = Math.max(0.0005, R * (1 + fbm(ca * 3 + t * 9, sa * 3 + t * 7, 3) * rr));
+      const pos = [p[0] + dir[0] * R, p[1] + dir[1] * R, p[2] + dir[2] * R];
+      const nx = ca, nz = sa / Math.max(zs, 0.01);
+      const nl = Math.hypot(nx, nz) || 1;
+      const N = [side[0] * (nx / nl) + up2[0] * (nz / nl), side[1] * (nx / nl) + up2[1] * (nz / nl), side[2] * (nx / nl) + up2[2] * (nz / nl)];
+      out.pos.push(pos[0], pos[1], pos[2]);
+      out.nrm.push(N[0], N[1], N[2]);
+      out.tan.push(T[0], T[1], T[2]);
+      out.uv.push((j / radial) * uvS, t * vS);
+      const s = opt.sk ? opt.sk(t, a, pos) : [bone, bone, bone, 0, 0];
+      out.sk.push(s[0], s[1], s[2], s[3], s[4]);
+    }
+  }
+  for (let k = 0; k < rings - 1; k++) {
+    for (let j = 0; j < radial; j++) {
+      const i0 = base + k * radial + j;
+      const i3 = base + k * radial + (j + 1 === radial ? 0 : j + 1);
+      const i1 = base + (k + 1) * radial + j;
+      const i2 = base + (k + 1) * radial + (j + 1 === radial ? 0 : j + 1);
+      out.idx.push(i0, i2, i1, i0, i3, i2);
+    }
+  }
+  return out;
+}
+
+/* ---------- блоб (череп, кисти, нос, глаза…) ---------- */
+function blob(out, center, ax, deform, nu, nv, opt) {
+  opt = opt || {};
+  const pw = opt.pow || 2.2, bone = opt.bone || 0;
+  const vTop = opt.vMax || 1;
+  const F = function (u, v) {
+    const a = u * TAU, ph = v * vTop * Math.PI;
+    const sp = Math.sin(ph), cp = Math.cos(ph);
+    const e = 2 / pw;
+    const dir = [
+      Math.sign(Math.cos(a)) * Math.pow(Math.abs(Math.cos(a)), e) * sp,
+      cp,
+      Math.sign(Math.sin(a)) * Math.pow(Math.abs(Math.sin(a)), e) * sp,
+    ];
+    const p = [center[0] + dir[0] * ax[0], center[1] + dir[1] * ax[1], center[2] + dir[2] * ax[2]];
+    if (deform) return deform(p, u, v, dir, center);
+    return p;
+  };
+  return surfGrid(out, F, nu, nv, true, opt.uvS || 1, opt.vS || 1, opt);
+}
+
+/* смесь костей: собственная кость + родительская по параметру m */
+function mixSk(own, other, m) { return [own, other, own, m, 0]; }
+
+/* ---------- скелет: 19 костей, точки вращения и родитель ---------- */
+const BONES = [
+  { n: "root", p: [0, 0.95, 0], parent: -1 },
+  { n: "spine", p: [0, 1.0, 0.005], parent: 0 },
+  { n: "chest", p: [0, 1.18, 0.02], parent: 1 },
+  { n: "neck", p: [0, 1.42, 0.01], parent: 2 },
+  { n: "head", p: [0, 1.52, 0.01], parent: 3 },
+  { n: "jaw", p: [0, 1.508, 0.02], parent: 4 },
+  { n: "armL", p: [0.185, 1.38, 0.01], parent: 2 },
+  { n: "elbowL", p: [0.205, 1.11, 0.045], parent: 6 },
+  { n: "wristL", p: [0.212, 0.885, 0.07], parent: 7 },
+  { n: "armR", p: [-0.185, 1.38, 0.01], parent: 2 },
+  { n: "elbowR", p: [-0.205, 1.11, 0.045], parent: 9 },
+  { n: "wristR", p: [-0.212, 0.885, 0.07], parent: 10 },
+  { n: "thighL", p: [0.098, 0.9, 0], parent: 0 },
+  { n: "kneeL", p: [0.107, 0.5, 0.015], parent: 12 },
+  { n: "ankleL", p: [0.103, 0.075, -0.005], parent: 13 },
+  { n: "thighR", p: [-0.098, 0.9, 0], parent: 0 },
+  { n: "kneeR", p: [-0.107, 0.5, 0.015], parent: 15 },
+  { n: "ankleR", p: [-0.103, 0.075, -0.005], parent: 16 },
+];
+const BN = {};
+BONES.forEach((b, i) => { BN[b.n] = i; });
+
+/* ---------- реестр деталей ---------- */
+const PARTS = [];
+function part(name, opts, build) {
+  PARTS.push({ name, opts: opts || {}, build });
+}
+
+/* ---------- анатомические опорные точки ---------- */
+const HEAD_C = [0, 1.578, 0.004];
+const HEAD_AX = [0.096, 0.117, 0.107];
+const SHOULDER = [0.185, 1.38, 0.01];
+const ELBOW = [0.205, 1.11, 0.045];
+const WRIST = [0.212, 0.885, 0.07];
+const HIP = [0.098, 0.9, 0];
+const KNEE = [0.107, 0.5, 0.015];
+const ANKLE = [0.103, 0.075, -0.005];
+
+/* ---------- ТОРС (кожа под рваной рубашкой) ---------- */
+part("торс", { mat: 0 }, function (out) {
+  const pts = [
+    [0, 0.885, 0], [0, 0.98, 0.005], [0, 1.1, 0.015], [0, 1.24, 0.02], [0, 1.36, 0.015], [0, 1.44, 0.01],
+  ];
+  const R = function (t, a) {
+    const base = [0.148, 0.126, 0.15, 0.152, 0.14, 0.125, 0.11];
+    const i = t * (base.length - 1);
+    const i0 = Math.floor(i), fr = i - i0;
+    let r = base[Math.min(base.length - 1, i0)] * (1 - fr) + base[Math.min(base.length - 1, i0 + 1)] * fr;
+    r *= 1 + 0.03 * Math.sin(a * 2 + 1.2);   /* асимметрия грудной клетки */
+    r += 0.012 * Math.exp(-Math.pow((t - 0.32) * 6, 2)); /* живот*/
+    return r;
+  };
+  tube(out, pts, R, 260, 90, {
+    zs: 0.62, rough: 0.035, uvS: 2,
+    sk: function (t, a, p) { const m = smooth(1.0, 1.22, p[1]); return mixSk(BN.chest, BN.spine, m); },
+  });
+});
+
+/* ---------- ШЕЯ ---------- */
+part("шея", { mat: 0 }, function (out) {
+  tube(out, [[0, 1.425, 0.01], [0, 1.47, 0.008], [0, 1.5, 0.004]], function (t) {
+    return 0.058 - 0.009 * t;
+  }, 40, 26, {
+    uvS: 2, vS: 3, rough: 0.03,
+    sk: function (t, a, p) { const m = smooth(1.45, 1.5, p[1]); return mixSk(BN.head, BN.chest, m); },
+  });
+});
+
+/* ---------- ЧЕРЕП ---------- */
+part("череп", { mat: 0 }, function (out) {
+  const g = function (dx, dy, dz, cx, cy, cz, r) {
+    const dd = (dx - cx) * (dx - cx) + (dy - cy) * (dy - cy) + (dz - cz) * (dz - cz);
+    return Math.exp(-dd / (r * r));
+  };
+  blob(out, HEAD_C, HEAD_AX, function (p, u, v, d) {
+    const dx = p[0] - HEAD_C[0], dy = p[1] - HEAD_C[1], dz = p[2] - HEAD_C[2];
+    let push = 0;
+    push += 0.011 * g(dx, dy, dz, 0.022, 0.012, 0.092, 0.03);    /* надбровная дуга L */
+    push += 0.011 * g(dx, dy, dz, -0.022, 0.012, 0.092, 0.03);   /* надбровная дуга R */
+    push -= 0.0045 * g(dx, dy, dz, 0.038, -0.005, 0.088, 0.023); /* глазница L */
+    push -= 0.0045 * g(dx, dy, dz, -0.038, -0.005, 0.088, 0.023);
+    push -= 0.004 * g(dx, dy, dz, 0.062, -0.028, 0.058, 0.03);   /* впалая щека L */
+    push -= 0.004 * g(dx, dy, dz, -0.062, -0.028, 0.058, 0.03);
+    push -= 0.003 * g(dx, dy, dz, 0.074, 0.028, 0.004, 0.026);   /* висок L */
+    push -= 0.003 * g(dx, dy, dz, -0.074, 0.028, 0.004, 0.026);
+    push += 0.005 * g(dx, dy, dz, 0.004, -0.098, 0.046, 0.032);  /* подбородок */
+    push += 0.004 * g(dx, dy, dz, 0.058, -0.06, 0.012, 0.04);    /* углы челюсти */
+    push += 0.004 * g(dx, dy, dz, -0.058, -0.06, 0.012, 0.04);
+    push += 0.005 * g(dx, dy, dz, 0, 0.01, -0.105, 0.05);        /* затылок */
+    push += 0.003 * g(dx, dy, dz, 0, -0.038, 0.1, 0.02);         /* нос */
+    push += fbm(dx * 30 + 7, dy * 30 + 3, 3) * 0.0028;           /* неровности кожи */
+    push += 0.0022 * Math.sin(u * TAU * 3 + 2);                  /* асимметрия */
+    return [p[0] + d[0] * push, p[1] + d[1] * push, p[2] + d[2] * push];
+  }, 220, 130, {
+    uvS: 2, vS: 2,
+    sk: function (u, v, p) { const m = smooth(1.45, 1.5, p[1]); return mixSk(BN.head, BN.neck, m); },
+  });
+});
+
+/* ---------- НИЖНЯЯ ЧЕЛЮСТЬ ---------- */
+part("челюсть", { mat: 0 }, function (out) {
+  blob(out, [0, 1.508, 0.012], [0.077, 0.06, 0.082], function (p, u, v, d) {
+    const dy = p[1] - 1.508;
+    let push = 0;
+    push += 0.004 * Math.exp(-Math.pow((dy + 0.052) * 22, 2)) * Math.exp(-Math.pow((p[0]) * 18, 2)); /* подбородок вперёд */
+    push += 0.003 * fbm(p[0] * 40, dy * 40 + 5, 3);
+    if (dy > 0.005) p[1] -= (dy - 0.005) * 0.25;    /* верх прижат — под черепом */
+    return [p[0] + d[0] * push, p[1] + d[1] * push, p[2] + d[2] * push * 0.6];
+  }, 80, 54, {
+    pow: 2.5, uvS: 2, vS: 2,
+    sk: function (u, v, p) { const m = smooth(1.53, 1.548, p[1]); return mixSk(BN.jaw, BN.head, m); },
+  });
+});
+
+/* ---------- ГЛАЗА (мутные), ВЕКИ, УШИ, НОС ---------- */
+part("глаз Л", { mat: 1, aux: [0.038, 1.572, 0.09] }, function (out) {
+  blob(out, [0.038, 1.572, 0.09], [0.0135, 0.0135, 0.0135], null, 30, 24, { pow: 2.0, bone: BN.head, uvS: 1, vS: 1 });
+});
+part("глаз П", { mat: 1, aux: [-0.038, 1.572, 0.09] }, function (out) {
+  blob(out, [-0.038, 1.572, 0.09], [0.0135, 0.0135, 0.0135], null, 30, 24, { pow: 2.0, bone: BN.head, uvS: 1, vS: 1 });
+});
+part("веки", { mat: 0 }, function (out) {
+  for (let s = 0; s < 2; s++) {
+    const x = s === 0 ? 0.038 : -0.038;
+    blob(out, [x, 1.583, 0.088], [0.017, 0.007, 0.013], function (p) {
+      const dy = p[1] - 1.583;
+      if (dy < -0.002) p[1] += (dy + 0.002) * 0.6;  /* нижний край подтянут */
+      return p;
+    }, 22, 16, { pow: 2.2, bone: BN.head, uvS: 2, vS: 2 });
+  }
+});
+part("уши", { mat: 0 }, function (out) {
+  for (let s = 0; s < 2; s++) {
+    const x = s === 0 ? 0.094 : -0.094;
+    blob(out, [x, 1.575, 0.002], [0.007, 0.023, 0.015], function (p) {
+      const dz = p[2] - 0.002;
+      p[2] -= Math.sign(dz) * Math.exp(-dz * dz * 500) * 0.25 * 0.004; /* впадина раковины */
+      return p;
+    }, 24, 18, { pow: 2.3, bone: BN.head, uvS: 2, vS: 2 });
+  }
+});
+part("нос", { mat: 0 }, function (out) {
+  blob(out, [0, 1.548, 0.096], [0.021, 0.031, 0.019], function (p, u, v) {
+    const dy = p[1] - 1.548;
+    if (dy < -0.012) p[2] -= (Math.abs(dy) - 0.012) * 0.8;  /* крылья ноздрей */
+    return p;
+  }, 32, 24, { pow: 2.1, bone: BN.head, uvS: 2, vS: 2 });
+});
+
+/* ---------- ПОЛОСТЬ РТА, ЗУБЫ, ЯЗЫК ---------- */
+part("полость рта", { mat: 8 }, function (out) {
+  blob(out, [0, 1.5, 0.068], [0.03, 0.028, 0.037], null, 26, 20, { pow: 2.1, bone: BN.jaw });
+});
+function toothArc(out, y, bone, dirY) {
+  const N = 12;
+  for (let i = 0; i < N; i++) {
+    const a = -0.72 + (i / (N - 1)) * 1.44;
+    const bx = Math.sin(a) * 0.047, bz = 0.028 + Math.cos(a) * 0.047;
+    const canin = (i === 3 || i === 8);
+    const scale = canin ? 1.5 : 1;
+    tube(out, [[bx, y, bz], [bx * 1.06, y + dirY * 0.011 * scale, bz * 1.06], [bx * 1.1, y + dirY * 0.02 * scale, bz * 1.1]],
+      function (t) { return (0.0052 - 0.003 * t) * scale; }, 10, 8, { bone, uvS: 1, vS: 1 });
+  }
+}
+part("зубы верх", { mat: 2 }, function (out) { toothArc(out, 1.516, BN.head, 1); });
+part("зубы низ", { mat: 2 }, function (out) { toothArc(out, 1.489, BN.jaw, -1); });
+part("язык", { mat: 3 }, function (out) {
+  tube(out, [[0, 1.487, 0.05], [0, 1.483, 0.08], [0, 1.478, 0.092]], function (t, a) {
+    return 0.014 * (1 - 0.35 * t) * (1 - 0.25 * Math.pow(Math.abs(Math.sin(a)), 4));
+  }, 26, 16, { bone: BN.jaw, zs: 0.45, up: [0, 1, 0], uvS: 2, vS: 2 });
+});
+
+/* ---------- ВОЛОСЫ (сальные пряди) ---------- */
+part("волосы", { mat: 9 }, function (out) {
+  blob(out, [0, 1.583, -0.004], [HEAD_AX[0] * 1.035, HEAD_AX[1] * 1.035, HEAD_AX[2] * 1.035], function (p, u, v) {
+    p[2] += fbm(u * 22, v * 12, 3) * 0.004;   /* клочья */
+    return p;
+  }, 70, 40, {
+    pow: 2.0, vMax: 0.42, bone: BN.head, uvS: 3, vS: 2,
+  });
+});
+
+/* ---------- РУКИ: плечо→локоть→кисть→пальцы ---------- */
+function armSide(sfx, sgn) {
+  const S = sgn > 0 ? SHOULDER : MX(SHOULDER);
+  const E = sgn > 0 ? ELBOW : MX(ELBOW);
+  const W = sgn > 0 ? WRIST : MX(WRIST);
+  const bArm = sgn > 0 ? BN.armL : BN.armR;
+  const bElb = sgn > 0 ? BN.elbowL : BN.elbowR;
+  const bWri = sgn > 0 ? BN.wristL : BN.wristR;
+  part("плечо " + sfx, { mat: 0 }, function (out) {
+    tube(out, [S, [sgn * 0.198, 1.24, 0.03], E], function (t) {
+      return 0.054 - 0.009 * t + 0.004 * Math.exp(-Math.pow((t - 0.1) * 7, 2));
+    }, 120, 36, {
+      rough: 0.03, uvS: 2, vS: 3,
+      sk: function (t) { const m = smooth(0, 0.2, t); return mixSk(bArm, BN.chest, m); },
+    });
+  });
+  part("предплечье " + sfx, { mat: 0 }, function (out) {
+    tube(out, [E, [sgn * 0.21, 0.98, 0.06], W], function (t) {
+      return 0.045 - 0.011 * t + 0.004 * Math.exp(-Math.pow((t - 0.3) * 6, 2));
+    }, 110, 32, {
+      rough: 0.035, uvS: 2, vS: 3,
+      sk: function (t) { const m = smooth(0, 0.15, t); return mixSk(bElb, bArm, m); },
+    });
+  });
+  part("кисть " + sfx, { mat: 0 }, function (out) {
+    const PX = sgn * 0.216;
+    /* ладонь */
+    blob(out, [PX, 0.828, 0.075], [0.028, 0.047, 0.017], function (p) {
+      const dy = p[1] - 0.828;
+      if (dy > 0.02) p[2] += (dy - 0.02) * 0.5; /* запястье круглее */
+      return p;
+    }, 36, 28, { pow: 2.4, bone: bWri, uvS: 2, vS: 2 });
+    /* пальцы: указательный, средний, безымянный, мизинец — согнуты */
+    const FING = [
+      [sgn * 0.197, 0.788, 0.086, 0.011, 0.105],
+      [sgn * 0.213, 0.784, 0.088, 0.0115, 0.113],
+      [sgn * 0.229, 0.786, 0.087, 0.0105, 0.104],
+      [sgn * 0.243, 0.795, 0.084, 0.009, 0.082],
+    ];
+    for (let f = 0; f < 4; f++) {
+      const fp = FING[f];
+      const L = fp[4];
+      tube(out, [
+        [fp[0], fp[1], fp[2]],
+        [fp[0] + sgn * 0.002, fp[1] - L * 0.45, fp[2] + 0.004],
+        [fp[0] + sgn * 0.004, fp[1] - L * 0.8, fp[2] + 0.013],
+        [fp[0] + sgn * 0.005, fp[1] - L, fp[2] + 0.024],
+      ], function (t) { return fp[3] * (1 - 0.3 * t); }, 16, 10, { bone: bWri, vS: 2, uvS: 1 });
+    }
+    /* большой палец */
+    tube(out, [
+      [sgn * 0.19, 0.822, 0.104],
+      [sgn * 0.176, 0.795, 0.112],
+      [sgn * 0.166, 0.765, 0.113],
+    ], function (t) { return 0.012 * (1 - 0.3 * t); }, 14, 10, { bone: bWri, vS: 2, uvS: 1 });
+  });
+  part("ногти " + sfx, { mat: 10 }, function (out) {
+    const FING = [
+      [sgn * 0.197, 0.788, 0.086, 0.0062, 0.105],
+      [sgn * 0.213, 0.784, 0.088, 0.0065, 0.113],
+      [sgn * 0.229, 0.786, 0.087, 0.006, 0.104],
+      [sgn * 0.243, 0.795, 0.084, 0.0052, 0.082],
+    ];
+    for (let f = 0; f < 4; f++) {
+      const fp = FING[f], L = fp[4];
+      blob(out, [fp[0] + sgn * 0.004, fp[1] - L * 0.93, fp[2] + 0.0235], [fp[3] * 0.25, fp[3] * 0.25, fp[3] * 0.25],
+        null, 14, 10, { pow: 2.2, bone: bWri });
+    }
+    blob(out, [sgn * 0.166 - sgn * 0.002, 0.763, 0.1125], [0.0075, 0.0075, 0.0075], null, 14, 10, { pow: 2.2, bone: bWri });
+  });
+}
+armSide("Л", 1);
+armSide("П", -1);
+
+/* ---------- НОГИ: бедро→голень→ступня→пальцы ног ---------- */
+function legSide(sfx, sgn) {
+  const H = sgn > 0 ? HIP : MX(HIP);
+  const K = sgn > 0 ? KNEE : MX(KNEE);
+  const A = sgn > 0 ? ANKLE : MX(ANKLE);
+  const bThi = sgn > 0 ? BN.thighL : BN.thighR;
+  const bKne = sgn > 0 ? BN.kneeL : BN.kneeR;
+  const bAnk = sgn > 0 ? BN.ankleL : BN.ankleR;
+  part("бедро " + sfx, { mat: 0 }, function (out) {
+    tube(out, [H, [sgn * 0.102, 0.7, 0.005], K], function (t) {
+      return 0.088 - 0.03 * t + 0.005 * Math.exp(-Math.pow((t - 0.85) * 6, 2));
+    }, 130, 40, {
+      rough: 0.03, uvS: 2, vS: 3,
+      sk: function (t) { const m = smooth(0, 0.2, t); return mixSk(bThi, BN.root, m); },
+    });
+  });
+  part("голень " + sfx, { mat: 0 }, function (out) {
+    tube(out, [K, [sgn * 0.112, 0.34, 0.015], A], function (t) {
+      return 0.058 + 0.017 * Math.exp(-Math.pow((t - 0.3) * 5, 2)) - 0.028 * t;
+    }, 130, 36, {
+      rough: 0.035, uvS: 2, vS: 3,
+      sk: function (t) { const m = smooth(0, 0.15, t); return mixSk(bKne, bThi, m); },
+    });
+  });
+  part("ступня " + sfx, { mat: 0 }, function (out) {
+    tube(out, [
+      [A[0], 0.085, -0.015],
+      [sgn * 0.105, 0.05, 0.05],
+      [sgn * 0.106, 0.042, 0.15],
+      [sgn * 0.107, 0.05, 0.2],
+    ], function (t, a) {
+      let r = 0.036 - 0.014 * t;
+      r += 0.004 * Math.exp(-Math.pow((t - 0.85) * 8, 2));  /* подушечка пальцев */
+      return r;
+    }, 16, 26, { up: [0, 1, 0], uvS: 2, vS: 2, rough: 0.03, sk: function (t, a, p) { return mixSk(bAnk, bKne, 0); } });
+    /* пальцы ног */
+    const TX = [sgn * 0.125, sgn * 0.117, sgn * 0.109, sgn * 0.1, sgn * 0.091];
+    for (let f = 0; f < 5; f++) {
+      const r0 = f === 0 ? 0.011 : 0.009 - f * 0.001;
+      const tzn = 0.042;
+      tube(out, [
+        [TX[f], 0.043, 0.2],
+        [TX[f], 0.041, 0.2 + tzn * 0.5],
+        [TX[f], 0.042, 0.2 + tzn],
+      ], function (t) { return r0 * (1 - 0.25 * t); }, 10, 8, { bone: bAnk, vS: 2, uvS: 1 });
+    }
+  });
+}
+legSide("Л", 1);
+legSide("П", -1);
+
+/* ---------- ОДЕЖДА: рваная рубашка ---------- */
+part("рубашка", { mat: 4 }, function (out) {
+  const pts = [
+    [0, 0.94, 0.004], [0, 1.04, 0.01], [0, 1.16, 0.017], [0, 1.3, 0.017], [0, 1.4, 0.012], [0, 1.435, 0.01],
+  ];
+  const R = function (t, a) {
+    const base = [0.152, 0.132, 0.156, 0.16, 0.146, 0.126];
+    const i = t * (base.length - 1);
+    const i0 = Math.floor(i), fr = i - i0;
+    let r = base[Math.min(5, i0)] * (1 - fr) + base[Math.min(5, i0 + 1)] * fr;
+    r += 0.013; /* свободнее тела */
+    /* рваный низ: острые клочья */
+    const jag = vnoise(t * 68, 3.7);
+    const jag2 = vnoise(t * 68, 11.3);
+    if (t < 0.09) r -= (0.09 - t) * 0.25 * (jag > 0.35 ? 1.3 : 0.35);
+    /* протёртости по кромке воротника (верх) */
+    if (t > 0.93 && jag2 > 0.25) r -= (t - 0.93) * 0.5 * (jag2 > 0.8 ? 2.2 : 0.8);
+    r += fbm(Math.cos(a) * 4 + t * 8, Math.sin(a) * 4 + t * 6, 3) * 0.004; /* складки */
+    return Math.max(0.02, r);
+  };
+  tube(out, pts, R, 240, 88, {
+    zs: 0.68, rough: 0.03, uvS: 3, vS: 4,
+    sk: function (t, a, p) { const m = smooth(1.0, 1.22, p[1]); return mixSk(BN.chest, BN.spine, m); },
+  });
+});
+part("рукава", { mat: 4 }, function (out) {
+  for (let sgn = 1; sgn >= -1; sgn -= 2) {
+    const S = sgn > 0 ? SHOULDER : MX(SHOULDER);
+    const E = sgn > 0 ? ELBOW : MX(ELBOW);
+    const bArm = sgn > 0 ? BN.armL : BN.armR;
+    tube(out, [S, [sgn * 0.2, 1.26, 0.033], [sgn * 0.205, 1.17, 0.037]], function (t, a) {
+      let r = 0.058 - 0.004 * t;
+      const jag = vnoise(t * 50, 8.1);
+      if (t > 0.85 && jag > 0.3) r -= (t - 0.85) * 0.25 * (jag > 0.85 ? 2.5 : 1); /* рваная кромка рукава */
+      return Math.max(0.02, r);
+    }, 60, 30, {
+      rough: 0.03, uvS: 2, vS: 3,
+      sk: function (t) { const m = smooth(0, 0.15, t); return mixSk(bArm, BN.chest, m); },
+    });
+  }
+});
+
+/* ---------- ОДЕЖДА: потёртые брюки ---------- */
+part("брюки·таз", { mat: 5 }, function (out) {
+  tube(out, [[0, 0.975, 0.004], [0, 0.93, 0.002], [0, 0.875, 0]], function (t, a) {
+    let r = 0.156 - 0.006 * t;
+    r += fbm(Math.cos(a) * 4 + t * 8, Math.sin(a) * 4 + t * 6, 3) * 0.004;
+    return r;
+  }, 30, 80, { zs: 0.68, uvS: 3, vS: 2, sk: function () { return mixSk(BN.root, BN.thighL, 0); } });
+});
+function trouserLeg(out, sfx, sgn) {
+  const H = sgn > 0 ? HIP : MX(HIP);
+  const K = sgn > 0 ? KNEE : MX(KNEE);
+  const A = sgn > 0 ? ANKLE : MX(ANKLE);
+  const bThi = sgn > 0 ? BN.thighL : BN.thighR;
+  const bKne = sgn > 0 ? BN.kneeL : BN.kneeR;
+  const bAnk = sgn > 0 ? BN.ankleL : BN.ankleR;
+  tube(out,
+    [[sgn * 0.099, 0.94, 0], [sgn * 0.104, 0.7, 0.005], [sgn * 0.108, 0.52, 0.013], [sgn * 0.109, 0.2, 0.005], [sgn * 0.104, 0.11, -0.002]],
+    function (t, a) {
+      let r = 0.09 - 0.052 * t;
+      r += fbm(Math.cos(a) * 3 + t * 10, Math.sin(a) * 3 + t * 8, 3) * 0.005; /* мешковатость */
+      const jag = vnoise(t * 60, 21.7);
+      if (t > 0.93 && jag > 0.25) r -= (t - 0.93) * 0.3 * (jag > 0.85 ? 2 : 0.8); /* рваная кромка */
+      return Math.max(0.02, r);
+    }, 90, 40, {
+      rough: 0.03, uvS: 2, vS: 4,
+      sk: function (t) {
+        const m1 = smooth(0, 0.15, t), m2 = smooth(0.5, 0.7, t);
+        if (t < 0.5) return mixSk(bThi, BN.root, m1);
+        return mixSk(bKne, bThi, m2);
+      },
+    });
+}
+part("брюки·бедро Л", { mat: 5 }, function (out) { trouserLeg(out, "Л", 1); });
+part("брюки·бедро П", { mat: 5 }, function (out) { trouserLeg(out, "П", -1); });
+
+/* ---------- РЕМЕНЬ ---------- */
+part("ремень", { mat: 6 }, function (out) {
+  const pts = [], R0 = 0.162, ZS = 0.68;
+  for (let i = 0; i <= 8; i++) {
+    const a = (i / 8) * TAU;
+    pts.push([Math.cos(a) * R0, 0.962, Math.sin(a) * R0 * ZS]);
+  }
+  pts.push(pts[0].slice());
+  tube(out, pts, function () { return 0.009; }, 30, 10, { bone: BN.root, uvS: 4, vS: 1 });
+});
+
+/* ---------- ОБУВЬ ---------- */
+part("ботинки", { mat: 6 }, function (out) {
+  for (let sgn = 1; sgn >= -1; sgn -= 2) {
+    const A = sgn > 0 ? ANKLE : MX(ANKLE);
+    const bAnk = sgn > 0 ? BN.ankleL : BN.ankleR;
+    tube(out, [
+      [A[0], 0.088, -0.018],
+      [sgn * 0.105, 0.052, 0.05],
+      [sgn * 0.106, 0.045, 0.15],
+      [sgn * 0.107, 0.052, 0.2],
+    ], function (t, a) {
+      let r = 0.042 - 0.012 * t;
+      r += 0.004 * Math.exp(-Math.pow((t - 0.85) * 8, 2));
+      return r;
+    }, 16, 26, { up: [0, 1, 0], uvS: 2, vS: 2, rough: 0.03, sk: function (t, a, p) { return mixSk(bAnk, BN.kneeL, 0); } });
+  }
+});
+
+/* ---------- ЗЕМЛЯ: бетонная плита ---------- */
+part("плита", { mat: 7 }, function (out) {
+  surfGrid(out, function (u, v) {
+    const a = u * TAU, r = v * 1.5;
+    return [Math.cos(a) * r, 0.004, Math.sin(a) * r];
+  }, 64, 40, true, 6, 1, { bone: 0 });
+});
+</script>
+
+<script>
+"use strict";
+/* ============================================================
+   ZOMBIE 300K — WebGL-рендер: скелетная анимация (19 костей),
+   процедурные PBR-материалы, орбит-камера, HUD, запуск
+   ============================================================ */
+
+const canvas = document.getElementById("gl");
+let gl = null;
+try {
+  gl = canvas.getContext("webgl", { antialias: true, alpha: true, preserveDrawingBuffer: true }) || canvas.getContext("experimental-webgl", { antialias: true, alpha: true, preserveDrawingBuffer: true });
+} catch (e) {
+  gl = null;
+}
+
+const NB = BONES.length;
+
+/* ---------- вершинный шейдер: взвешенный скелетинг ---------- */
+const VS = `
+attribute vec3 aP;
+attribute vec3 aN;
+attribute vec3 aT;
+attribute vec2 aUV;
+attribute vec3 aB;
+attribute vec2 aW;
+uniform mat4 uVP;
+uniform mat4 uRoot;
+uniform mat4 uB[18];
+varying vec3 vP;
+varying vec3 vMP;
+varying vec3 vN;
+varying vec3 vT;
+varying vec2 vUV;
+void main() {
+  mat4 M = uB[int(aB.x + 0.5)] * (1.0 - aW.x - aW.y)
+         + uB[int(aB.y + 0.5)] * aW.x
+         + uB[int(aB.z + 0.5)] * aW.y;
+  mat4 MM = uRoot * M;
+  vec4 wp = MM * vec4(aP, 1.0);
+  vP = wp.xyz;
+  vMP = aP;
+  vN = (MM * vec4(aN, 0.0)).xyz;
+  vT = (MM * vec4(aT, 0.0)).xyz;
+  vUV = aUV;
+  gl_Position = uVP * wp;
+}`;
+
+/* ---------- фрагментный шейдер: кожа с SSS, ткани, раны ---------- */
+const FS = `
+precision highp float;
+varying vec3 vP;
+varying vec3 vMP;
+varying vec3 vN;
+varying vec3 vT;
+varying vec2 vUV;
+uniform int uMat;
+uniform vec3 uEyeP;
+uniform vec3 uEyeC;
+uniform vec3 uKey;
+uniform vec3 uCk;
+uniform vec3 uCf;
+uniform vec3 uCr;
+uniform vec3 uAmb;
+uniform vec3 uW0;
+uniform vec3 uW1;
+uniform vec3 uW2;
+uniform vec3 uW3;
+uniform vec4 uWr;
+uniform float uWire;
+
+float hash12(vec2 p) {
+  vec3 p3 = fract(vec3(p.xyx) * 0.1031);
+  p3 += dot(p3, p3.yzx + 33.33);
+  return fract((p3.x + p3.y) * p3.z);
+}
+float vnoise(vec2 p) {
+  vec2 i = floor(p);
+  vec2 f = fract(p);
+  f = f * f * (3.0 - 2.0 * f);
+  float a = hash12(i);
+  float b = hash12(i + vec2(1.0, 0.0));
+  float c = hash12(i + vec2(0.0, 1.0));
+  float d = hash12(i + vec2(1.0, 1.0));
+  return a + (b - a) * f.x + (c - a) * f.y + (a - b - c + d) * f.x * f.y;
+}
+float fbm2(vec2 p) {
+  return vnoise(p) * 0.55 + vnoise(p * 2.3) * 0.25 + vnoise(p * 5.1) * 0.13;
+}
+/* псевдо-3D шум для деталей кожи */
+float skN(vec3 p) {
+  return vnoise(p.xz * 240.0 + p.yy * 175.0) + 0.5 * vnoise(p.xy * 150.0 + p.z * 95.0)
+       + (fbm2(p.xz * 15.0 + p.y * 6.0) - 0.5) * 1.4;
+}
+/* пятна гнили */
+float rot(vec3 p) {
+  return fbm2(p.xz * 5.5 + p.y * 4.0 + 17.0);
+}
+float segDist(vec3 p, vec3 a, vec3 b) {
+  vec3 pa = p - a, ba = b - a;
+  float h = clamp(dot(pa, ba) / max(dot(ba, ba), 1e-6), 0.0, 1.0);
+  return length(pa - ba * h);
+}
+
+void main() {
+  if (uWire > 0.5) {
+    gl_FragColor = vec4(0.62, 0.2, 0.16, 0.9);
+    return;
+  }
+  vec3 N = normalize(vN);
+  if (!gl_FrontFacing) N = -N;
+  vec3 Vv = normalize(uEyeC - vP);
+  vec3 alb = vec3(0.6, 0.62, 0.53);
+  float rough = 0.5;
+  float spec = 0.5;
+  float sss = 0.0;
+  float alpha = 1.0;
+  float bump = 0.0;
+
+  if (uMat == 0) {
+    /* ---- КОЖА: бледная, нездоровая ---- */
+    float mottle = fbm2(vMP.xz * 6.5 + vMP.y * 4.2);
+    alb = mix(vec3(0.5, 0.54, 0.44), vec3(0.66, 0.67, 0.6), mottle * 0.5 + 0.5);
+    alb = mix(alb, vec3(0.42, 0.5, 0.34), smoothstep(0.25, 0.6, fbm2(vMP.xz * 2.2 + vMP.y * 1.8)) * 0.5);
+    /* вены */
+    float vv = fbm2(vMP.xz * 15.0 + vMP.y * 10.0 + 4.0) - 0.5;
+    float vein = smoothstep(0.045, 0.005, abs(vv));
+    alb = mix(alb, vec3(0.3, 0.34, 0.42), vein * 0.25);
+    /* раны-кратеры */
+    float wm = 0.0;
+    vec3 blood = vec3(0.24, 0.025, 0.015);
+    wm = max(wm, smoothstep(uWr.x, uWr.x * 0.3, length(vMP - uW0)));
+    wm = max(wm, smoothstep(uWr.y, uWr.y * 0.3, length(vMP - uW1)));
+    wm = max(wm, smoothstep(uWr.z, uWr.z * 0.3, length(vMP - uW2)));
+    wm = max(wm, smoothstep(uWr.w, uWr.w * 0.3, length(vMP - uW3)));
+    alb = mix(alb, blood, wm * 0.25);
+    alb = mix(alb, vec3(0.55, 0.34, 0.26), smoothstep(uWr.x * 1.9, uWr.x, length(vMP - uW0)) * 0.25);
+    alb = mix(alb, vec3(0.55, 0.34, 0.26), smoothstep(uWr.y * 1.9, uWr.y, length(vMP - uW1)) * 0.25);
+    alb = mix(alb, vec3(0.55, 0.34, 0.26), smoothstep(uWr.z * 1.9, uWr.z, length(vMP - uW2)) * 0.25);
+    alb = mix(alb, vec3(0.55, 0.34, 0.26), smoothstep(uWr.w * 1.9, uWr.w, length(vMP - uW3)) * 0.25);
+    /* шрамы */
+    float sc1 = smoothstep(0.007, 0.002, segDist(vMP, vec3(-0.012, 1.06, 0.082), vec3(0.012, 1.19, 0.074)));
+    float sc2 = smoothstep(0.006, 0.002, segDist(vMP, vec3(-0.055, 1.62, 0.045), vec3(-0.02, 1.585, 0.06)));
+    alb = mix(alb, vec3(0.7, 0.6, 0.52), max(sc1, sc2) * 0.6);
+    /* гниль-пятна */
+    float rt = smoothstep(0.42, 0.6, rot(vMP));
+    alb = mix(alb, vec3(0.3, 0.34, 0.22), rt * 0.5);
+    sss = 1.0;
+    rough = 0.62 - 0.3 * smoothstep(0.2, 0.8, vnoise(vMP.xz * 25.0 + vMP.y * 12.0));
+    spec = 0.35;
+    bump = 1.4;
+  } else if (uMat == 1) {
+    /* ---- ГЛАЗ: мутный белок + радужка ---- */
+    vec3 dir = normalize(vMP - uEyeP);
+    float facing = dot(dir, vec3(0.0, 0.0, 1.0));
+    vec3 white = vec3(0.6, 0.6, 0.58) * (0.85 + 0.3 * vnoise(vMP.xz * 200.0 + vMP.y * 140.0));
+    float veil = smoothstep(0.86, 0.99, vnoise(vMP.xz * 60.0 + vMP.y * 50.0));
+    white = mix(white, vec3(0.5, 0.52, 0.5), veil * 0.5);
+    float red = smoothstep(0.2, 0.0, abs(fbm2(vMP.xz * 25.0 + vMP.y * 20.0) - 0.5));
+    white = mix(white, vec3(0.5, 0.15, 0.12), red * 0.4);
+    float iris = smoothstep(0.86, 0.94, facing);
+    float pupil = smoothstep(0.975, 0.995, facing);
+    vec3 irisC = mix(vec3(0.55, 0.34, 0.2), vec3(0.2, 0.12, 0.08), vnoise(vec2(atan(dir.y, dir.x) * 7.0)));
+    alb = mix(white, irisC, iris);
+    alb = mix(alb, vec3(0.02, 0.01, 0.01), pupil);
+    rough = 0.08; spec = 1.6;
+  } else if (uMat == 2) {
+    /* ---- ЗУБЫ: желтоватая кость ---- */
+    alb = mix(vec3(0.82, 0.78, 0.62), vec3(0.6, 0.55, 0.4), vnoise(vUV * vec2(30.0, 12.0)) * 0.7);
+    rough = 0.25; spec = 1.0;
+  } else if (uMat == 3) {
+    /* ---- ЯЗЫК ---- */
+    alb = mix(vec3(0.42, 0.13, 0.11), vec3(0.55, 0.2, 0.15), vnoise(vUV * vec2(40.0, 14.0)));
+    rough = 0.3; spec = 0.8;
+  } else if (uMat == 4) {
+    /* ---- РУБАШКА: ветхая ткань ---- */
+    float weave = sin(vUV.x * 220.0) * sin(vUV.y * 260.0);
+    alb = vec3(0.24, 0.26, 0.29) * (0.85 + 0.15 * weave);
+    float dirt = fbm2(vUV * vec2(14.0, 9.0));
+    alb = mix(alb, vec3(0.3, 0.26, 0.18), smoothstep(0.2, 0.7, dirt) * 0.6);
+    float stain = smoothstep(0.55, 0.75, fbm2(vUV * vec2(5.0, 4.0) + 7.0));
+    alb = mix(alb, vec3(0.25, 0.06, 0.04), stain * 0.7);
+    float blood = smoothstep(0.62, 0.78, fbm2(vUV * vec2(7.0, 6.0) + 19.0));
+    alb = mix(alb, vec3(0.2, 0.03, 0.02), blood * 0.7);
+    rough = 0.9; spec = 0.08; bump = 0.5;
+  } else if (uMat == 5) {
+    /* ---- БРЮКИ ---- */
+    float weave = sin(vUV.x * 260.0) * sin(vUV.y * 300.0);
+    alb = vec3(0.19, 0.21, 0.19) * (0.85 + 0.15 * weave);
+    float dirt = fbm2(vUV * vec2(10.0, 6.0) + 3.0);
+    alb = mix(alb, vec3(0.27, 0.24, 0.15), smoothstep(0.25, 0.7, dirt) * 0.55);
+    float mud = smoothstep(0.2, 0.6, (1.0 - vUV.y)) * vnoise(vUV * 30.0);
+    alb = mix(alb, vec3(0.24, 0.2, 0.12), mud * 0.5);
+    rough = 0.92; spec = 0.06; bump = 0.5;
+  } else if (uMat == 6) {
+    /* ---- ОБУВЬ/РЕМЕНЬ: потёртая кожа ---- */
+    alb = mix(vec3(0.1, 0.09, 0.08), vec3(0.19, 0.16, 0.12), vnoise(vUV * vec2(40.0, 18.0)));
+    float dirt2 = smoothstep(0.3, 0.7, fbm2(vUV * vec2(9.0, 5.0) + 5.0));
+    alb = mix(alb, vec3(0.25, 0.2, 0.12), dirt2 * 0.25);
+    rough = 0.55; spec = 0.5;
+  } else if (uMat == 7) {
+    /* ---- БЕТОННАЯ ПЛИТА ---- */
+    float d = length(vP.xz);
+    float shade = smoothstep(0.2, 1.5, d) * 0.7 + 0.3;
+    float fade = smoothstep(1.2, 1.5, v * 1.5);
+    alb = mix(vec3(0.13), vec3(0.2, 0.2, 0.21), shade);
+    alb *= 0.8 + 0.4 * vnoise(vP.xz * 12.0);
+    alpha = 1.0 - fade;
+    N = vec3(0.0, 1.0, 0.0);
+    rough = 0.95; spec = 0.04;
+  } else if (uMat == 8) {
+    /* ---- ПОЛОСТЬ РТА: тьма ---- */
+    alb = vec3(0.05, 0.025, 0.02);
+    rough = 0.8; spec = 0.1;
+  } else if (uMat == 9) {
+    /* ---- ВОЛОСЫ: сальные пряди ---- */
+    float strand = vnoise(vec2(vUV.x * 160.0, vUV.y * 8.0));
+    strand = strand * 0.6 + vnoise(vec2(vUV.x * 300.0, vUV.y * 18.0)) * 0.4;
+    alb = mix(vec3(0.05, 0.045, 0.04), vec3(0.14, 0.12, 0.1), strand);
+    float grease = smoothstep(0.4, 0.9, fbm2(vUV * vec2(10.0, 3.0)));
+    rough = 0.7 - grease * 0.25; spec = 0.5 + grease * 0.25;
+  } else {
+    /* ---- НОГТИ ---- */
+    alb = mix(vec3(0.6, 0.58, 0.5), vec3(0.5, 0.44, 0.34), vnoise(vUV * 30.0));
+    rough = 0.3; spec = 1.0;
+  }
+
+  /* ---- рельеф кожи/ткани через тангенс ---- */
+  if (bump > 0.0) {
+    vec3 Tg = normalize(vT);
+    vec3 Bg = normalize(cross(N, Tg));
+    float e2 = 0.006;
+    float h0 = skN(vMP);
+    float hx = skN(vMP + Tg * e2);
+    float hy = skN(vMP + Bg * e2);
+    N = normalize(N + (h0 - hx) * Tg * bump + (h0 - hy) * Bg * bump);
+  }
+
+  /* ---- свет ---- */
+  vec3 L1 = normalize(uKey);
+  vec3 L2 = normalize(vec3(-0.5, 0.25, -0.7));
+  vec3 L3 = normalize(vec3(0.2, 0.15, -1.0));
+  float dif1;
+  if (sss > 0.5) {
+    dif1 = (dot(N, L1) + 0.55) / 1.55;   /* wrap-освещение кожи */
+  } else {
+    dif1 = max(dot(N, L1), 0.0);
+  }
+  float dif2 = max(dot(N, L2), 0.0);
+  float dif3 = max(dot(N, L3), 0.0);
+  vec3 H1 = normalize(L1 + Vv);
+  float sp1 = pow(max(dot(N, H1), 0.0), mix(96.0, 8.0, rough)) * spec;
+  float aoY = 0.7 + 0.3 * smoothstep(-0.6, 0.7, N.y);
+
+  vec3 col = uAmb * alb;
+  col += uCk * dif1 * alb * 1.05;
+  col += uCf * dif2 * alb * 0.8;
+  col += uCr * dif3 * alb * 0.5;
+  col += uCk * sp1 * 0.25;
+
+  if (sss > 0.5) {
+    /* просвет кожи под поверхностью — красный на контровом свете */
+    float trans = pow(max(dot(Vv, -L1), 0.0), 3.0);
+    col += vec3(0.5, 0.08, 0.04) * trans * 0.35 * dif1;
+  }
+
+  float fr = pow(1.0 - max(dot(N, Vv), 0.0), 3.0);
+  col += fr * vec3(0.2, 0.2, 0.22) * 0.25 * (1.0 - rough);
+
+  col = col / (col + vec3(0.9)) * 1.55;
+  col = pow(col, vec3(0.9));
+  gl_FragColor = vec4(col, alpha);
+}`
+  /* 4 точки ран (модельные координаты) подставим юниформами */;
+
+function compile(type, src) {
+  const sh = gl.createShader(type);
+  gl.shaderSource(sh, src);
+  gl.compileShader(sh);
+  if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) throw new Error("shader: " + gl.getShaderInfoLog(sh));
+  return sh;
+}
+
+let prog = null;
+const loc = {};
+
+/* ---------- матрицы (column-major, как в DRACO) ---------- */
+function mPersp(fov, asp, n, f) {
+  const t = 1 / Math.tan(fov / 2);
+  return [t / asp, 0, 0, 0, 0, t, 0, 0, 0, 0, (f + n) / (n - f), -1, 0, 0, (2 * f * n) / (n - f), 0];
+}
+function mLook(eye, ctr, up) {
+  const z = V.norm(V.sub(eye, ctr));
+  const x = V.norm(V.cross(up, z));
+  const y = V.cross(z, x);
+  return [
+    x[0], y[0], z[0], 0,
+    x[1], y[1], z[1], 0,
+    x[2], y[2], z[2], 0,
+    -V.dot(x, eye), -V.dot(y, eye), -V.dot(z, eye), 1,
+  ];
+}
+function mMul(a, b) {
+  const o = new Array(16);
+  for (let c = 0; c < 4; c++)
+    for (let r = 0; r < 4; r++)
+      o[c * 4 + r] = a[r] * b[c * 4] + a[4 + r] * b[c * 4 + 1] + a[8 + r] * b[c * 4 + 2] + a[12 + r] * b[c * 4 + 3];
+  return o;
+}
+function mIdent() { return [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]; }
+function mRot(e) {
+  /* Rx*Ry*Rz (column-major) */
+  const cx = Math.cos(e[0]), sx = Math.sin(e[0]);
+  const cy = Math.cos(e[1]), sy = Math.sin(e[1]);
+  const cz = Math.cos(e[2]), sz = Math.sin(e[2]);
+  return mMul(mMul(
+    [1, 0, 0, 0, 0, cx, sx, 0, 0, -sx, cx, 0, 0, 0, 0, 1],
+    [cy, 0, -sy, 0, 0, 1, 0, 0, sy, 0, cy, 0, 0, 0, 0, 1]),
+    [cz, sz, 0, 0, -sz, cz, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
+}
+function mFromRT(p, e) {
+  /* T(p) * R(e) * T(-p) */
+  const M = mRot(e);
+  const Ti = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -p[0], -p[1], -p[2], 1];
+  const To = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, p[0], p[1], p[2], 1];
+  return mMul(To, mMul(M, Ti));
+}
+
+/* ---------- камера ---------- */
+const cam = {
+  yaw: 0.5,
+  pitch: 0.12,
+  dist: 3.4,
+  target: [0, 0.95, 0],
+  auto: true,
+};
+let wire = false;
+let lightPreset = 1;
+
+/* свет: направление ключа + цвета (честные пресеты) */
+const LIGHT_PRESETS = [
+  { name: "Лунная ночь", key: [-0.4, 0.7, -0.4], ck: [0.4, 0.5, 0.7], cf: [0.08, 0.1, 0.16], cr: [0.12, 0.2, 0.34], amb: [0.05, 0.06, 0.09] },
+  { name: "Морг", key: [0.4, 1.0, 0.5], ck: [1.1, 1.15, 1.2], cf: [0.14, 0.2, 0.26], cr: [0.16, 0.2, 0.26], amb: [0.1, 0.11, 0.12] },
+  { name: "Адское зарево", key: [-0.6, 0.4, 0.6], ck: [1.2, 0.34, 0.12], cf: [0.3, 0.06, 0.02], cr: [0.5, 0.12, 0.03], amb: [0.11, 0.04, 0.02] },
+  { name: "Сумерки", key: [0.7, 0.5, 0.6], ck: [0.85, 0.6, 0.4], cf: [0.12, 0.12, 0.2], cr: [0.3, 0.2, 0.12], amb: [0.08, 0.07, 0.08] },
+];
+
+/* ---------- анимации (процедурные позы) ---------- */
+function ss(a, b, x) { return smooth(a, b, x); }
+const ANIMS = [
+  { name: "Дыхание", dur: 5, loop: true, f: function (t) {
+    const b = {};
+    b[BN.chest] = [0.02 + 0.013 * Math.sin(t * 1.8), 0, 0];
+    b[BN.spine] = [0.006 * Math.sin(t * 1.8), 0, 0];
+    b[BN.neck] = [0, 0.06 * Math.sin(t * 0.5), 0];
+    b[BN.head] = [0.05 * Math.sin(t * 0.8), 0.14 * Math.sin(t * 0.5 + 0.7), 0];
+    b[BN.armL] = [0.05 * Math.sin(t * 1.8 + 1), 0, 0.08];
+    b[BN.armR] = [0.05 * Math.sin(t * 1.8 + 1.4), 0, -0.08];
+    b[BN.jaw] = [0.02 + 0.025 * Math.max(0, Math.sin(t * 0.7)), 0, 0];
+    return { b, off: [0, 0.006 * Math.sin(t * 1.8), 0], rot: [0, 0, 0] };
+  } },
+  { name: "Ходьба", dur: 1.6, loop: true, f: function (t) {
+    const w = TAU / 1.6, wt = t * w;
+    const b = {};
+    b[BN.thighL] = [0.5 * Math.sin(wt), 0, 0];
+    b[BN.kneeL] = [-0.28 - 0.5 * Math.max(0, Math.sin(wt + 2.3)), 0, 0];
+    b[BN.ankleL] = [0.12 * Math.sin(wt + 0.8), 0, 0];
+    b[BN.thighR] = [0.5 * Math.sin(wt + Math.PI), 0, 0];
+    b[BN.kneeR] = [-0.28 - 0.5 * Math.max(0, Math.sin(wt + 2.3 + Math.PI)), 0, 0];
+    b[BN.ankleR] = [0.12 * Math.sin(wt + 0.8 + Math.PI), 0, 0];
+    b[BN.armL] = [-0.42 * Math.sin(wt), 0, 0.08];
+    b[BN.armR] = [-0.42 * Math.sin(wt + Math.PI), 0, -0.08];
+    b[BN.elbowL] = [-0.3 - 0.15 * Math.max(0, Math.sin(wt)), 0, 0];
+    b[BN.elbowR] = [-0.3 - 0.15 * Math.max(0, Math.sin(wt + Math.PI)), 0, 0];
+    b[BN.spine] = [0.06, 0.09 * Math.sin(wt), 0];
+    b[BN.head] = [0.03, -0.06 * Math.sin(wt), 0];
+    b[BN.jaw] = [0.05 + 0.03 * Math.sin(wt * 2), 0, 0];
+    return { b, off: [0, -0.025 + 0.03 * Math.abs(Math.sin(wt)), 0], rot: [0, 0, 0] };
+  } },
+  { name: "Хромота", dur: 2.4, loop: true, f: function (t) {
+    const w = TAU / 2.4, wt = t * w;
+    const b = {};
+    /* левая нога не гнётся — волочится */
+    b[BN.thighL] = [0.22 * Math.sin(wt), 0, 0];
+    b[BN.kneeL] = [-0.14, 0, 0];
+    b[BN.ankleL] = [0.05 * Math.sin(wt), 0, 0];
+    b[BN.thighR] = [0.42 * Math.sin(wt + Math.PI), 0, 0];
+    b[BN.kneeR] = [-0.25 - 0.55 * Math.max(0, Math.sin(wt + 2.1 + Math.PI)), 0, 0];
+    b[BN.ankleR] = [0.14 * Math.sin(wt + 0.7 + Math.PI), 0, 0];
+    b[BN.armL] = [-0.28 * Math.sin(wt), 0, 0.15];
+    b[BN.armR] = [-0.3 * Math.sin(wt + Math.PI), 0, -0.1];
+    b[BN.elbowL] = [-0.5, 0, 0];
+    b[BN.elbowR] = [-0.28, 0, 0];
+    b[BN.chest] = [0.08, 0.05 * Math.sin(wt), 0.06 * Math.sin(wt)];
+    b[BN.head] = [0.06, 0.08 * Math.sin(wt + 1), 0.05 * Math.sin(wt)];
+    b[BN.jaw] = [0.06 + 0.03 * Math.sin(wt * 1.5), 0, 0];
+    return { b, off: [0, -0.035 - 0.045 * Math.max(0, Math.sin(wt + 2.6)), 0], rot: [0.04, 0, 0.02 * Math.sin(wt)] };
+  } },
+  { name: "Бег", dur: 0.85, loop: true, f: function (t) {
+    const w = TAU / 0.85, wt = t * w;
+    const b = {};
+    b[BN.thighL] = [0.85 * Math.sin(wt), 0, 0];
+    b[BN.kneeL] = [-0.35 - 0.85 * Math.max(0, Math.sin(wt + 2.2)), 0, 0];
+    b[BN.ankleL] = [0.25 * Math.sin(wt + 1.0), 0, 0];
+    b[BN.thighR] = [0.85 * Math.sin(wt + Math.PI), 0, 0];
+    b[BN.kneeR] = [-0.35 - 0.85 * Math.max(0, Math.sin(wt + 2.2 + Math.PI)), 0, 0];
+    b[BN.ankleR] = [0.25 * Math.sin(wt + 1.0 + Math.PI), 0, 0];
+    b[BN.armL] = [-0.85 * Math.sin(wt), 0, 0.15];
+    b[BN.armR] = [-0.85 * Math.sin(wt + Math.PI), 0, -0.15];
+    b[BN.elbowL] = [-1.35, 0, 0];
+    b[BN.elbowR] = [-1.35, 0, 0];
+    b[BN.spine] = [0.22, 0.08 * Math.sin(wt), 0];
+    b[BN.chest] = [0.08, 0.05 * Math.sin(wt), 0];
+    b[BN.head] = [-0.12, 0.04 * Math.sin(wt), 0];
+    b[BN.jaw] = [0.1 + 0.05 * Math.sin(wt * 2), 0, 0];
+    return { b, off: [0, 0.045 * Math.max(0, Math.sin(2 * wt)) - 0.05, 0], rot: [0.06, 0, 0] };
+  } },
+  { name: "Поворот головы", dur: 3, loop: true, f: function (t) {
+    const ph = (t % 3) / 3;
+    const ry = 0.75 * Math.sin(ph * TAU);
+    const b = {};
+    b[BN.head] = [0.03 * Math.sin(ph * 2 * TAU), ry, 0.04 * ry];
+    b[BN.neck] = [0, ry * 0.25, 0];
+    b[BN.chest] = [0, ry * 0.12, 0];
+    return { b, off: [0, 0, 0], rot: [0, 0, 0] };
+  } },
+  { name: "Осматривается", dur: 5, loop: true, f: function (t) {
+    const ph = (t % 5) / 5;
+    const b = {};
+    b[BN.head] = [0.22 * Math.sin(ph * TAU * 1.5 + 0.8), 0.55 * Math.sin(ph * TAU), 0];
+    b[BN.neck] = [0.08 * Math.sin(ph * TAU * 1.5 + 0.8), 0.18 * Math.sin(ph * TAU + 0.4), 0];
+    return { b, off: [0, 0.004 * Math.sin(t * 1.8), 0], rot: [0, 0, 0] };
+  } },
+  { name: "Атака", dur: 1.3, loop: true, f: function (t) {
+    const ph = (t % 1.3) / 1.3;
+    const s = ss(0, 0.3, ph) * (1 - ss(0.72, 1, ph));
+    const lunge = ss(0.25, 0.5, ph) * (1 - ss(0.52, 0.88, ph));
+    const b = {};
+    b[BN.armL] = [2.35 * s, 0, 0.25 * s];
+    b[BN.armR] = [2.55 * s, 0, -0.2 * s];
+    b[BN.elbowL] = [-0.45 * s, 0, 0];
+    b[BN.elbowR] = [-0.28 * s, 0, 0];
+    b[BN.chest] = [0.16 * s + 0.02, 0, 0];
+    b[BN.jaw] = [0.5 * s, 0, 0];
+    return { b, off: [0, 0.02 * s, 0.34 * lunge], rot: [0.05 * s, 0, 0] };
+  } },
+  { name: "Падение", dur: 1.6, loop: false, f: function (t) {
+    const ph = Math.min(t / 1.6, 1);
+    const r = 1.62 * Math.pow(ph, 1.7);
+    const b = {};
+    b[BN.armL] = [0.5 * (1 - ph) * Math.sin(t * 16), 0, 0.3];
+    b[BN.armR] = [-0.4 * (1 - ph) * Math.sin(t * 16 + 2), 0, -0.3];
+    b[BN.kneeL] = [-0.5 * Math.sin(ph * Math.PI), 0, 0];
+    b[BN.kneeR] = [-0.5 * Math.sin(ph * Math.PI + 0.7), 0, 0];
+    b[BN.jaw] = [0.25 * Math.sin(ph * Math.PI), 0, 0];
+    return { b, off: [0, -0.84 * Math.pow(ph, 1.4), 0.05 * ph], rot: [r, 0, 0.02 * Math.sin(t * 9) * (1 - ph)] };
+  } },
+  { name: "Подъём", dur: 2.8, loop: false, f: function (t) {
+    const ph = Math.min(t / 2.8, 1);
+    let k = 1 - ss(0.12, 0.88, ph);
+    k += 0.06 * Math.sin(ph * 22) * (1 - ss(0.55, 1, ph)); /* судорожные рывки */
+    const r = 1.62 * Math.max(0, k);
+    const b = {};
+    b[BN.kneeL] = [-0.9 * (1 - ss(0.1, 0.6, ph)), 0, 0];
+    b[BN.kneeR] = [-0.75 * (1 - ss(0.15, 0.65, ph)), 0, 0];
+    b[BN.armL] = [0.5 * (1 - ph), 0, 0.25];
+    b[BN.armR] = [0.5 * (1 - ph), 0, -0.25];
+    b[BN.jaw] = [0.3 * Math.sin(ph * Math.PI * 3), 0, 0];
+    return { b, off: [0, -0.84 * (r / 1.62), 0.05 * (r / 1.62)], rot: [r, 0, 0] };
+  } },
+];
+let animIdx = 0;
+let playing = true;
+let playT = 0;
+let animStart = 0;
+
+function eyePos() {
+  const cp = Math.cos(cam.pitch), sp = Math.sin(cam.pitch);
+  return [
+    cam.target[0] + cam.dist * cp * Math.sin(cam.yaw),
+    cam.target[1] + cam.dist * sp,
+    cam.target[2] + cam.dist * cp * Math.cos(cam.yaw),
+  ];
+}
+
+/* ---------- меши ---------- */
+const meshes = [];
+function uploadPart(name, mat, b, aux) {
+  const num = b.pos.length / 3;
+  if (!num) return;
+  const glp = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, glp);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(b.pos), gl.STATIC_DRAW);
+  const gln = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, gln);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(b.nrm), gl.STATIC_DRAW);
+  const glt = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, glt);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(b.tan), gl.STATIC_DRAW);
+  const gluv = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, gluv);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(b.uv), gl.STATIC_DRAW);
+  const glsb = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, glsb);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(b.sk), gl.STATIC_DRAW);
+  const gli = gl.createBuffer();
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, gli);
+  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(b.idx), gl.STATIC_DRAW);
+  meshes.push({ name, mat, aux, glp, gln, glt, gluv, glsb, gli, tri: b.idx.length / 3, vert: num, wireBuf: null, idxSrc: b.idx });
+}
+
+function buildWire(m) {
+  if (m.wireBuf) return;
+  const seen = new Set();
+  const src = m.idxSrc;
+  const idxArr = new Uint32Array(m.tri * 6);
+  let w = 0;
+  for (let t = 0; t < src.length; t += 3) {
+    const e = [[src[t], src[t + 1]], [src[t + 1], src[t + 2]], [src[t + 2], src[t]]];
+    for (let k = 0; k < 3; k++) {
+      const a = e[k][0], b = e[k][1];
+      const key = a < b ? a * 524288 + b : b * 524288 + a;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      idxArr[w++] = a;
+      idxArr[w++] = b;
+    }
+  }
+  const g = gl.createBuffer();
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, g);
+  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, idxArr.subarray(0, w), gl.STATIC_DRAW);
+  m.wireBuf = g;
+  m.wireCount = w;
+}
+
+/* ---------- ввод: орбита ---------- */
+let dragging = false;
+let lastX = 0, lastY = 0;
+let pinchD = 0;
+canvas.addEventListener("mousedown", (e) => {
+  dragging = true;
+  cam.auto = false;
+  syncSpin();
+  lastX = e.clientX;
+  lastY = e.clientY;
+  canvas.classList.add("grabbing");
+  hideHint();
+});
+window.addEventListener("mousemove", (e) => {
+  if (!dragging) return;
+  const dx = e.clientX - lastX, dy = e.clientY - lastY;
+  lastX = e.clientX;
+  lastY = e.clientY;
+  cam.yaw -= dx * 0.0055;
+  cam.pitch = Math.max(-1.35, Math.min(1.45, cam.pitch + dy * 0.0045));
+});
+window.addEventListener("mouseup", () => {
+  dragging = false;
+  canvas.classList.remove("grabbing");
+});
+canvas.addEventListener("wheel", (e) => {
+  e.preventDefault();
+  hideHint();
+  cam.dist = Math.max(1.2, Math.min(12, cam.dist * (e.deltaY > 0 ? 1.09 : 0.92)));
+}, { passive: false });
+canvas.addEventListener("touchstart", (e) => {
+  hideHint();
+  if (e.touches.length === 1) {
+    dragging = true;
+    cam.auto = false;
+    syncSpin();
+    lastX = e.touches[0].clientX;
+    lastY = e.touches[0].clientY;
+  } else if (e.touches.length >= 2) {
+    dragging = false;
+    pinchD = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+  }
+}, { passive: true });
+canvas.addEventListener("touchmove", (e) => {
+  e.preventDefault();
+  if (e.touches.length === 1 && dragging) {
+    const dx = e.touches[0].clientX - lastX, dy = e.touches[0].clientY - lastY;
+    lastX = e.touches[0].clientX;
+    lastY = e.touches[0].clientY;
+    cam.yaw -= dx * 0.007;
+    cam.pitch = Math.max(-1.35, Math.min(1.45, cam.pitch + dy * 0.005));
+  } else if (e.touches.length >= 2) {
+    const d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+    if (pinchD > 0) cam.dist = Math.max(1.2, Math.min(12, cam.dist * (pinchD / d)));
+    pinchD = d;
+  }
+}, { passive: false });
+window.addEventListener("keydown", (e) => {
+  if (e.key === "ArrowLeft") cam.yaw += 0.12;
+  if (e.key === "ArrowRight") cam.yaw -= 0.12;
+  if (e.key === "ArrowUp") cam.pitch = Math.min(1.45, cam.pitch + 0.08);
+  if (e.key === "ArrowDown") cam.pitch = Math.max(-1.35, cam.pitch - 0.08);
+  if (e.key === "+" || e.key === "=") cam.dist = Math.max(1.2, cam.dist * 0.93);
+  if (e.key === "-") cam.dist = Math.min(12, cam.dist * 1.07);
+});
+let hintHidden = false;
+function hideHint() {
+  if (hintHidden) return;
+  hintHidden = true;
+  const h = document.getElementById("hint");
+  if (h) setTimeout(() => h.classList.add("gone"), 1200);
+}
+
+/* ---------- HUD ---------- */
+const el = (id) => document.getElementById(id);
+function toast(msg, cls) {
+  const box = document.getElementById("ztToasts");
+  if (!box) return;
+  const t = document.createElement("div");
+  t.className = "toast" + (cls ? " " + cls : "");
+  t.textContent = msg;
+  box.appendChild(t);
+  setTimeout(() => t.remove(), 2800);
+}
+function syncSpin() {
+  const b = el("btnSpin");
+  if (b) b.classList.toggle("on", cam.auto);
+}
+el("btnSpin").onclick = () => {
+  cam.auto = !cam.auto;
+  syncSpin();
+  toast(cam.auto ? "Автоповорот включён" : "Автоповорот выключен", "gd");
+};
+el("btnAnim").onclick = () => {
+  animIdx = (animIdx + 1) % ANIMS.length;
+  playT = 0;
+  playing = true;
+  el("btnPlay").classList.remove("on");
+  el("stAnim").textContent = ANIMS[animIdx].name;
+  toast("Анимация: " + ANIMS[animIdx].name, "gd");
+  hideHint();
+};
+el("btnPlay").onclick = () => {
+  playing = !playing;
+  el("btnPlay").classList.toggle("on", playing);
+  toast(playing ? "Анимация идёт" : "Пауза", "gd");
+};
+el("btnWire").onclick = () => {
+  wire = !wire;
+  el("btnWire").classList.toggle("on", wire);
+  if (wire) {
+    toast("Лепим каркас из рёбер (может занять пару секунд)…");
+    setTimeout(() => {
+      try {
+        meshes.forEach(buildWire);
+        toast("Каркас: " + meshes.reduce((s, m) => s + ((m.wireCount || 0) / 2), 0) + " рёбер", "gd");
+      } catch (e) {
+        toast("Каркас не удалось собрать: " + (e && e.message), "");
+        wire = false;
+        el("btnWire").classList.remove("on");
+      }
+    }, 30);
+  }
+};
+el("btnLight").onclick = () => {
+  lightPreset = (lightPreset + 1) % LIGHT_PRESETS.length;
+  toast("Свет: " + LIGHT_PRESETS[lightPreset].name + " (" + (lightPreset + 1) + "/4)", "gd");
+};
+el("btnReset").onclick = () => {
+  cam.yaw = 0.5;
+  cam.pitch = 0.12;
+  cam.dist = 3.4;
+  toast("Камера сброшена", "gd");
+};
+el("btnShot").onclick = () => {
+  try {
+    const url = canvas.toDataURL("image/png");
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "zombie-aaa.png";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    toast("Скриншот сохранён", "gd");
+  } catch (e) {
+    toast("Браузер не дал сохранить PNG", "");
+  }
+};
+
+/* ---------- скелет на CPU ---------- */
+const boneFlat = new Float32Array(NB * 16);
+function computeBones(pose) {
+  const mats = new Array(NB);
+  for (let i = 0; i < NB; i++) {
+    const bi = BONES[i];
+    const e = pose.b ? pose.b[i] : null;
+    const L = e ? mFromRT(bi.p, e) : mFromRT(bi.p, [0, 0, 0]);
+    mats[i] = bi.parent >= 0 ? mMul(mats[bi.parent], L) : L;
+  }
+  /* корневая матрица: смещение + падение/подъём вокруг пояса */
+  const pv = [0, 0.9, 0];
+  const R = pose.rot ? mRot(pose.rot) : mIdent();
+  const off = pose.off || [0, 0, 0];
+  const root = mMul(
+    [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, off[0], off[1], off[2], 1],
+    mMul(mMul([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, pv[0], pv[1], pv[2], 1], R), [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -pv[0], -pv[1], -pv[2], 1])
+  );
+  for (let i = 0; i < NB; i++) {
+    const m = root;
+    const w = mats[i];
+    const mm = mMul(m, w);
+    for (let k = 0; k < 16; k++) boneFlat[i * 16 + k] = mm[k];
+  }
+  return root;
+}
+
+/* ---------- цикл ---------- */
+let frames = 0, fpsT = 0;
+let lastT = 0;
+function frame(t) {
+  if (!gl) return;
+  const dt = lastT ? Math.min(0.05, (t - lastT) / 1000) : 0.016;
+  lastT = t;
+  if (cam.auto && !dragging) cam.yaw += dt * 0.25;
+
+  const a = ANIMS[animIdx];
+  if (playing) playT += dt;
+  if (!a.loop && playT > a.dur) playT = a.dur; /* одиночные — держим финал */
+
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  const w = Math.floor(canvas.clientWidth * dpr), h = Math.floor(canvas.clientHeight * dpr);
+  if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
+  gl.viewport(0, 0, w, h);
+  gl.clearColor(0, 0, 0, 0);
+  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+  const eye = eyePos();
+  const proj = mPersp(0.85, w / Math.max(1, h), 0.05, 40);
+  const view = mLook(eye, cam.target, [0, 1, 0]);
+  const vp = mMul(proj, view);
+
+  const pose = ANIMS[animIdx].f(playT);
+  const root = computeBones(pose);
+
+  gl.useProgram(prog);
+  gl.uniformMatrix4fv(loc.uVP, false, new Float32Array(vp));
+  gl.uniformMatrix4fv(loc.uRoot, false, new Float32Array(root));
+  gl.uniformMatrix4fv(loc.uB, false, boneFlat);
+  gl.uniform3f(loc.uEyeC, eye[0], eye[1], eye[2]);
+  const lp = LIGHT_PRESETS[lightPreset];
+  gl.uniform3f(loc.uKey, lp.key[0], lp.key[1], lp.key[2]);
+  gl.uniform3f(loc.uCk, lp.ck[0], lp.ck[1], lp.ck[2]);
+  gl.uniform3f(loc.uCf, lp.cf[0], lp.cf[1], lp.cf[2]);
+  gl.uniform3f(loc.uCr, lp.cr[0], lp.cr[1], lp.cr[2]);
+  gl.uniform3f(loc.uAmb, lp.amb[0], lp.amb[1], lp.amb[2]);
+  gl.uniform1f(loc.uWire, wire ? 1 : 0);
+
+  gl.enable(gl.DEPTH_TEST);
+  gl.depthFunc(gl.LEQUAL);
+  gl.enable(gl.BLEND);
+  gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+
+  for (const m of meshes) {
+    if (m.mat === 7 && wire) continue;
+    if (m.mat === 7) gl.depthMask(false);
+    gl.uniform1i(loc.uMat, m.mat);
+    if (m.mat === 1 && m.aux) gl.uniform3f(loc.uEyeP, m.aux[0], m.aux[1], m.aux[2]);
+    gl.bindBuffer(gl.ARRAY_BUFFER, m.glp);
+    gl.enableVertexAttribArray(loc.aP);
+    gl.vertexAttribPointer(loc.aP, 3, gl.FLOAT, false, 0, 0);
+    gl.bindBuffer(gl.ARRAY_BUFFER, m.gln);
+    gl.enableVertexAttribArray(loc.aN);
+    gl.vertexAttribPointer(loc.aN, 3, gl.FLOAT, false, 0, 0);
+    gl.bindBuffer(gl.ARRAY_BUFFER, m.glt);
+    gl.enableVertexAttribArray(loc.aT);
+    gl.vertexAttribPointer(loc.aT, 3, gl.FLOAT, false, 0, 0);
+    gl.bindBuffer(gl.ARRAY_BUFFER, m.gluv);
+    gl.enableVertexAttribArray(loc.aUV);
+    gl.vertexAttribPointer(loc.aUV, 2, gl.FLOAT, false, 0, 0);
+    gl.bindBuffer(gl.ARRAY_BUFFER, m.glsb);
+    gl.enableVertexAttribArray(loc.aB);
+    gl.vertexAttribPointer(loc.aB, 3, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(loc.aW);
+    /* aW — второй кусок того же буфера (b:3 float, w:2 float) */
+    gl.vertexAttribPointer(loc.aW, 2, gl.FLOAT, false, 20, 12);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, wire && m.wireBuf ? m.wireBuf : m.gli);
+    if (wire && m.wireBuf) {
+      gl.lineWidth(1.0);
+      gl.drawElements(gl.LINES, m.wireCount, gl.UNSIGNED_INT, 0);
+    } else {
+      gl.drawElements(gl.TRIANGLES, m.tri * 3, gl.UNSIGNED_INT, 0);
+    }
+    if (m.mat === 7) gl.depthMask(true);
+  }
+
+  frames++;
+  if (t - fpsT > 500) {
+    el("stFps").textContent = String(Math.round((frames * 1000) / (t - fpsT)));
+    fpsT = t;
+    frames = 0;
+  }
+  requestAnimationFrame(frame);
+}
+
+function startRender() {
+  el("bootMsg").textContent = "включаем свет…";
+  el("boot").classList.add("off");
+  el("stTri").textContent = meshes.reduce((s, m) => s + m.tri, 0).toLocaleString("ru");
+  el("stVert").textContent = meshes.reduce((s, m) => s + m.vert, 0).toLocaleString("ru");
+  el("stParts").textContent = String(meshes.length);
+  el("stAnim").textContent = ANIMS[animIdx].name;
+  requestAnimationFrame(frame);
+}
+
+function boot() {
+  if (!gl) {
+    document.getElementById("glfail").classList.add("on");
+    document.getElementById("boot").classList.add("off");
+    return;
+  }
+  const vs = compile(gl.VERTEX_SHADER, VS);
+  const fs = compile(gl.FRAGMENT_SHADER, FS);
+  prog = gl.createProgram();
+  gl.attachShader(prog, vs);
+  gl.attachShader(prog, fs);
+  gl.linkProgram(prog);
+  if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error("link: " + gl.getProgramInfoLog(prog));
+  loc.aP = gl.getAttribLocation(prog, "aP");
+  loc.aN = gl.getAttribLocation(prog, "aN");
+  loc.aT = gl.getAttribLocation(prog, "aT");
+  loc.aUV = gl.getAttribLocation(prog, "aUV");
+  loc.aB = gl.getAttribLocation(prog, "aB");
+  loc.aW = gl.getAttribLocation(prog, "aW");
+  loc.uVP = gl.getUniformLocation(prog, "uVP");
+  loc.uRoot = gl.getUniformLocation(prog, "uRoot");
+  loc.uB = gl.getUniformLocation(prog, "uB");
+  loc.uMat = gl.getUniformLocation(prog, "uMat");
+  loc.uEyeC = gl.getUniformLocation(prog, "uEyeC");
+  loc.uKey = gl.getUniformLocation(prog, "uKey");
+  loc.uCk = gl.getUniformLocation(prog, "uCk");
+  loc.uCf = gl.getUniformLocation(prog, "uCf");
+  loc.uCr = gl.getUniformLocation(prog, "uCr");
+  loc.uAmb = gl.getUniformLocation(prog, "uAmb");
+  loc.uW0 = gl.getUniformLocation(prog, "uW0");
+  loc.uW1 = gl.getUniformLocation(prog, "uW1");
+  loc.uW2 = gl.getUniformLocation(prog, "uW2");
+  loc.uW3 = gl.getUniformLocation(prog, "uW3");
+  loc.uWr = gl.getUniformLocation(prog, "uWr");
+  loc.uWire = gl.getUniformLocation(prog, "uWire");
+  loc.uEyeP = gl.getUniformLocation(prog, "uEyeP");
+  const OES32 = gl.getExtension("OES_element_index_uint");
+  if (!OES32) throw new Error("32-битные индексы не поддерживаются — 250к треугольников не собрать");
+
+  /* раны (модельные координаты: гниль двигается с телом) */
+  gl.useProgram(prog);
+  gl.uniform3f(loc.uW0, 0.035, 1.2, 0.088);      /* грудь */
+  gl.uniform3f(loc.uW1, -0.062, 1.565, 0.06);    /* щека */
+  gl.uniform3f(loc.uW2, -0.208, 1.02, 0.06);     /* предплечье правой? (зеркальное) */
+  gl.uniform3f(loc.uW3, -0.05, 1.02, 0.068);     /* живот */
+  gl.uniform4f(loc.uWr, 0.035, 0.022, 0.03, 0.045);
+
+  let i = 0;
+  const bar = el("bootBar");
+  function step() {
+    if (i >= PARTS.length) {
+      startRender();
+      return;
+    }
+    const p = PARTS[i];
+    el("bootMsg").textContent = "деталь: " + p.name;
+    try {
+      const o = makeBucket();
+      p.build(o);
+      uploadPart(p.name, p.opts.mat || 0, o, p.opts.aux);
+    } catch (e) {
+      window.__ZTerrs.push("part " + p.name + ": " + (e && e.message));
+    }
+    i++;
+    bar.style.width = Math.round((i / PARTS.length) * 100) + "%";
+    setTimeout(step, 10);
+  }
+  step();
+}
+
+function buildDry() {
+  let tri = 0, vert = 0;
+  const mn = [1e9, 1e9, 1e9], mx = [-1e9, -1e9, -1e9];
+  const parts = [];
+  for (const p of PARTS) {
+    const o = makeBucket();
+    p.build(o);
+    const t = o.idx.length / 3;
+    const v = o.pos.length / 3;
+    tri += t;
+    vert += v;
+    for (let k = 0; k < o.pos.length; k++) {
+      const x = o.pos[k];
+      if (!isFinite(x)) throw new Error("не-числовая координата в " + p.name);
+    }
+    for (let k = 0; k < o.pos.length; k += 3) {
+      for (let c = 0; c < 3; c++) {
+        const x = o.pos[k + c];
+        if (x < mn[c]) mn[c] = x;
+        if (x > mx[c]) mx[c] = x;
+      }
+    }
+    if (o.sk.length !== (o.pos.length / 3) * 5) throw new Error("веса костей не сходятся в " + p.name);
+    for (let k = 0; k < o.sk.length; k += 5) {
+      for (let q = 0; q < 3; q++) if (o.sk[k + q] < 0 || o.sk[k + q] >= NB) throw new Error("плохой индекс кости в " + p.name);
+    }
+    parts.push({ name: p.name, tri: t, vert: v });
+  }
+  return { tri, vert, parts, min: mn, max: mx };
+}
+
+window.ZB = {
+  v: "1.0",
+  meshes,
+  PARTS,
+  BONES,
+  ANIMS,
+  BN,
+  buildDry,
+  cam,
+  animIdxObj: { get i() { return animIdx; } },
+  get triCount() { return meshes.reduce((s, m) => s + m.tri, 0); },
+  get glOk() { return !!gl; },
+  boot,
+  toast,
+};
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", boot);
+} else {
+  boot();
+}
+</script>
+
+<!-- сторож запуска: отдельный скрипт — живёт, даже если главный скрипт упал -->
+<script>
+(function () {
+  var tries = 0;
+  var iv = null;
+  function check() {
+    try {
+      if (window.ZB) {
+        if (iv) clearInterval(iv);
+        return;
+      }
+      var errs = window.__ZTerrs || [];
+      var d = document.createElement("div");
+      d.setAttribute("style", "position:fixed;inset:0;z-index:2147483647;background:#090707;color:#dde8d2;font:13px/1.6 monospace;padding:26px;overflow:auto");
+      d.innerHTML =
+        '<div style="max-width:700px;margin:0 auto"><div style="color:#e05545;font-weight:700;font-size:20px;margin-bottom:10px">ZOMBIE — ошибка запуска</div><div style="white-space:pre-wrap;background:#1d0d0d;border:1px solid #8a1d12;border-radius:8px;padding:12px">' +
+        String(errs.join("\n") || "скрипт не выполнился (старый браузер или встроенный просмотрщик)") +
+        '</div><div style="margin-top:12px;color:#9fb391">Скачай файл и открой локально в свежем Chrome / Firefox / Edge.</div></div>';
+      document.body.appendChild(d);
+    } catch (e) {}
+    if (++tries >= 4 && iv) clearInterval(iv);
+  }
+  function start() {
+    iv = setInterval(check, 2200);
+  }
+  if (document.readyState === "complete") setTimeout(start, 2200);
+  else window.addEventListener("load", start);
+})();
+</script>
+</body>
+</html>
