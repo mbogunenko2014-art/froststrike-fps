@@ -1,0 +1,1757 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0a0f0a">
+<meta name="description" content="ZombieTub — зомби-вьюер видео: живой поиск по реальному ютубу без рекламы, подписки и история локально.">
+<title>ZombieTub — зомби-ютуб без рекламы</title>
+<style>
+/* ============================================================
+   ZOMBIETUB v1.0 — design system
+   гнилая зелень #8fbc3f · токсик #4f7a28 · кровь #7a0d0d
+   тухлый фон #0a0f0a · кость #d9d3b8
+   ============================================================ */
+:root {
+  --z0: #0a0f0a;
+  --z1: #10170f;
+  --z2: #16210f;
+  --z3: #1d2b16;
+  --line: #2a3a20;
+  --line2: #3a5230;
+  --txt: #dde4d2;
+  --dim: #9aa88c;
+  --mut: #63756b;
+  --tox: #8fbc3f;
+  --tox2: #a9d54f;
+  --toxd: #4f7a28;
+  --blood: #7a0d0d;
+  --blood2: #b31414;
+  --bone: #d9d3b8;
+  --rot: #5c6b3f;
+  --rads: 8px;
+  --radm: 12px;
+  --radl: 18px;
+  --font: "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
+  --hd: 58px;
+  --sid: 232px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  background: var(--z0);
+  color: var(--txt);
+  font: 15px/1.5 var(--font);
+  overflow-x: hidden;
+}
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(760px 420px at 85% -8%, rgba(143, 188, 63, 0.07), transparent 60%),
+    radial-gradient(680px 460px at 8% 106%, rgba(122, 13, 13, 0.09), transparent 62%),
+    var(--z0);
+}
+/* грязная текстура */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.5;
+  background-image:
+    radial-gradient(rgba(143, 188, 63, 0.035) 1px, transparent 1.4px),
+    radial-gradient(rgba(122, 13, 13, 0.03) 1px, transparent 1.4px);
+  background-size: 37px 29px, 53px 41px;
+  background-position: 0 0, 19px 23px;
+}
+button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+input, select, textarea { font: inherit; color: inherit; }
+a { color: var(--tox2); text-decoration: none; }
+svg.ic { width: 20px; height: 20px; fill: currentColor; flex: none; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: var(--z3); border-radius: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::selection { background: rgba(143, 188, 63, 0.35); }
+
+/* ---------- кнопки/поля ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  border-radius: var(--rads);
+  background: var(--z3);
+  border: 1px solid var(--line2);
+  color: var(--txt);
+  font-weight: 600;
+  font-size: 13.5px;
+  transition: background 0.15s, transform 0.1s, border-color 0.15s;
+}
+.btn:hover { background: #24351c; border-color: var(--toxd); }
+.btn:active { transform: scale(0.97); }
+.btn.tox { background: linear-gradient(135deg, #56922c, #3c6b1e); border-color: #6fae39; color: #eaffdd; }
+.btn.tox:hover { background: linear-gradient(135deg, #649f33, #477a24); }
+.btn.blood { background: linear-gradient(135deg, #8f1616, #5f0d0d); border-color: #b31414; color: #ffd9d9; }
+.btn.ghost { background: transparent; }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.ipt {
+  background: var(--z1);
+  border: 1px solid var(--line2);
+  border-radius: var(--rads);
+  padding: 10px 13px;
+  color: var(--txt);
+  outline: none;
+  width: 100%;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.ipt:focus { border-color: var(--toxd); box-shadow: 0 0 0 3px rgba(143, 188, 63, 0.15); }
+.ipt::placeholder { color: var(--mut); }
+
+/* ---------- шапка ---------- */
+#headBar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--hd);
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 14px;
+  background: rgba(10, 15, 10, 0.88);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
+}
+#burger { display: none; width: 40px; height: 40px; border-radius: 8px; align-items: center; justify-content: center; }
+#burger:hover { background: var(--z3); }
+#brand { display: flex; align-items: center; gap: 9px; flex: none; cursor: pointer; }
+#brand .zlogo { width: 34px; height: 34px; flex: none; }
+#brand b { font-size: 19px; letter-spacing: 0.5px; color: var(--tox2); text-shadow: 0 0 14px rgba(143, 188, 63, 0.5); white-space: nowrap; }
+#brand b i { font-style: normal; color: var(--blood2); text-shadow: 0 0 12px rgba(179, 20, 20, 0.6); }
+#brand small { display: block; font-size: 9.5px; color: var(--mut); letter-spacing: 2px; text-transform: uppercase; }
+#searchWrap { flex: 1; max-width: 620px; margin: 0 auto; display: flex; gap: 8px; }
+#searchForm { display: flex; flex: 1; gap: 8px; }
+#searchIn { flex: 1; }
+#btnSearchGo { flex: none; width: 46px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #56922c, #3c6b1e); border-color: #6fae39; color: #eaffdd; }
+#headActs { display: flex; align-items: center; gap: 8px; flex: none; }
+.hbtn { width: 40px; height: 40px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; color: var(--dim); position: relative; }
+.hbtn:hover { background: var(--z3); color: var(--tox2); }
+.hbtn .dot { position: absolute; top: 6px; right: 6px; width: 8px; height: 8px; border-radius: 50%; background: var(--blood2); box-shadow: 0 0 6px var(--blood2); }
+
+/* ---------- сайдбар ---------- */
+#side {
+  position: fixed;
+  top: var(--hd);
+  bottom: 0;
+  left: 0;
+  width: var(--sid);
+  z-index: 50;
+  background: var(--z1);
+  border-right: 1px solid var(--line);
+  padding: 12px 8px;
+  overflow-y: auto;
+  transition: transform 0.22s ease;
+}
+.sgroup { margin-bottom: 14px; }
+.slabel { font-size: 10.5px; letter-spacing: 1.6px; text-transform: uppercase; color: var(--mut); padding: 4px 12px 8px; }
+.sitem {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  color: var(--dim);
+  font-size: 14px;
+  text-align: left;
+  transition: background 0.12s, color 0.12s;
+}
+.sitem:hover { background: var(--z3); color: var(--txt); }
+.sitem.on { background: linear-gradient(90deg, rgba(143, 188, 63, 0.16), transparent); color: var(--tox2); }
+.sitem.on svg { color: var(--tox2); }
+.scnt { margin-left: auto; font-size: 11px; color: var(--mut); }
+#sideShade { position: fixed; inset: 0; z-index: 49; background: rgba(0, 0, 0, 0.55); display: none; }
+
+/* ---------- основной Layout ---------- */
+#main {
+  position: relative;
+  z-index: 1;
+  padding: calc(var(--hd) + 16px) 20px 40px calc(var(--sid) + 20px);
+  min-height: 100vh;
+}
+.screen { display: none; }
+.screen.on { display: block; animation: scrin 0.25s ease-out; }
+@keyframes scrin { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+/* ---------- сетка видео ---------- */
+.vgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(268px, 1fr)); gap: 18px 16px; }
+.vcard { cursor: pointer; border-radius: var(--radm); overflow: hidden; }
+.vthumb { position: relative; aspect-ratio: 16/9; background: #0d120c; border-radius: var(--radm); overflow: hidden; }
+.vthumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.vthumb img.err { opacity: 0; }
+.vthumb .vdur { position: absolute; right: 7px; bottom: 7px; background: rgba(5, 8, 5, 0.85); color: var(--bone); font-size: 11.5px; font-weight: 600; padding: 2px 7px; border-radius: 6px; }
+.vthumb .vbadge { position: absolute; left: 7px; top: 7px; background: var(--blood); color: #ffd9d9; font-size: 10px; font-weight: 700; letter-spacing: 1px; padding: 2px 8px; border-radius: 6px; }
+.vmeta { display: flex; gap: 10px; padding: 10px 4px 2px; }
+.vmeta img { width: 34px; height: 34px; border-radius: 50%; flex: none; background: var(--z3); }
+.vmtitle { font-size: 14px; font-weight: 600; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.vmch { font-size: 12.5px; color: var(--dim); margin-top: 3px; }
+.vmx { font-size: 12px; color: var(--mut); }
+.vmacts { display: flex; gap: 4px; margin-left: auto; }
+.vmacts button { width: 28px; height: 28px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; color: var(--mut); }
+.vmacts button:hover { background: var(--z3); color: var(--tox2); }
+.vmacts .on { color: var(--tox2); }
+
+/* ---------- страница просмотра ---------- */
+#scrWatch .wbox { display: flex; gap: 24px; align-items: flex-start; }
+.watchmain { flex: 1; min-width: 0; }
+#playerWrap { position: relative; aspect-ratio: 16/9; background: #050705; border-radius: var(--radl); overflow: hidden; border: 1px solid var(--line); }
+#playerWrap iframe, #playerWrap video { width: 100%; height: 100%; border: 0; display: block; }
+#fbNote { position: absolute; left: 10px; bottom: 10px; background: rgba(122, 13, 13, 0.9); color: #ffd9d9; font-size: 11px; padding: 4px 9px; border-radius: 6px; display: none; }
+#fbNote.on { display: block; }
+.wtitle { font-size: 19px; font-weight: 700; margin: 14px 0 4px; line-height: 1.35; }
+.wsub { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 10px 0 4px; }
+.wchava { width: 42px; height: 42px; border-radius: 50%; background: var(--z3); }
+.wchname { font-weight: 700; font-size: 14.5px; cursor: pointer; }
+.wchname:hover { color: var(--tox2); }
+.wchsub { font-size: 12px; color: var(--mut); }
+.wstats { color: var(--dim); font-size: 13px; }
+.wacts { display: flex; gap: 8px; flex-wrap: wrap; margin-left: auto; }
+.wacts .btn { padding: 8px 13px; font-size: 13px; }
+.wacts .btn.on { background: rgba(143, 188, 63, 0.2); border-color: var(--tox); color: var(--tox2); }
+.wdesc { background: var(--z1); border: 1px solid var(--line); border-radius: var(--radm); padding: 12px 14px; margin-top: 12px; font-size: 13.5px; color: var(--dim); white-space: pre-wrap; max-height: 160px; overflow-y: auto; }
+.wtags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.wtags span { font-size: 11.5px; color: var(--tox2); background: rgba(143, 188, 63, 0.1); border-radius: 999px; padding: 3px 10px; cursor: pointer; }
+.sidevir { width: 344px; flex: none; }
+.svgrid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+.svrow { display: flex; gap: 10px; cursor: pointer; border-radius: 10px; padding: 4px; transition: background 0.12s; }
+.svrow:hover { background: var(--z2); }
+.svrow .vthumb { width: 160px; flex: none; border-radius: 8px; }
+.svrow .vmtitle { font-size: 13px; }
+.svrow .vmeta { padding: 0; flex-direction: column; gap: 0; }
+
+/* ---------- комментарии ---------- */
+#cbox { margin-top: 22px; }
+.crow { display: flex; gap: 11px; padding: 10px 0; border-bottom: 1px solid rgba(42, 58, 32, 0.5); }
+.crow img { width: 34px; height: 34px; border-radius: 50%; flex: none; background: var(--z3); }
+.cuth { font-size: 12.5px; color: var(--dim); }
+.ctext { font-size: 13.5px; margin-top: 2px; white-space: pre-wrap; word-break: break-word; }
+.clikes { font-size: 11.5px; color: var(--mut); margin-top: 4px; }
+
+/* ---------- прочие экраны ---------- */
+.ph1 { font-size: 22px; font-weight: 800; margin: 6px 0 4px; display: flex; align-items: center; gap: 10px; }
+.ph1 .zug { color: var(--blood2); }
+.psub { color: var(--mut); font-size: 13px; margin-bottom: 18px; }
+.chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+.chip { padding: 7px 14px; border-radius: 999px; background: var(--z2); border: 1px solid var(--line2); color: var(--dim); font-size: 13px; transition: all 0.13s; }
+.chip:hover { color: var(--txt); border-color: var(--toxd); }
+.chip.on { background: linear-gradient(135deg, #56922c, #3c6b1e); border-color: #6fae39; color: #eaffdd; font-weight: 700; }
+.rowlist { display: grid; gap: 10px; }
+.subrow { display: flex; align-items: center; gap: 12px; background: var(--z1); border: 1px solid var(--line); border-radius: var(--radm); padding: 10px 14px; cursor: pointer; }
+.subrow img { width: 44px; height: 44px; border-radius: 50%; background: var(--z3); }
+.subrow .nm { font-weight: 700; font-size: 14px; }
+.subrow .ds { font-size: 12px; color: var(--mut); }
+.empty { text-align: center; color: var(--mut); padding: 46px 10px; }
+.empty b { color: var(--dim); display: block; font-size: 16px; margin-bottom: 6px; }
+.skel { background: linear-gradient(90deg, var(--z2) 25%, var(--z3) 50%, var(--z2) 75%); background-size: 200% 100%; animation: skm 1.1s infinite; border-radius: var(--rads); }
+@keyframes skm { to { background-position: -200% 0; } }
+.skel.th { aspect-ratio: 16/9; }
+.sklgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(268px, 1fr)); gap: 16px; }
+.sklgrid > div { display: grid; gap: 8px; }
+
+/* ---------- статус/тосты ---------- */
+#ztToasts { position: fixed; right: 16px; bottom: 16px; z-index: 200; display: flex; flex-direction: column; gap: 8px; }
+.toast { background: var(--z2); border: 1px solid var(--toxd); border-left: 4px solid var(--tox); color: var(--txt); border-radius: 10px; padding: 10px 14px; font-size: 13px; max-width: 320px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5); animation: tin 0.2s ease-out; }
+.toast.err { border-color: var(--blood2); border-left-color: var(--blood2); }
+@keyframes tin { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+#offlineNote { display: none; margin: 0 0 14px; background: rgba(122, 13, 13, 0.15); border: 1px solid var(--blood2); color: #ffb3b3; border-radius: var(--rads); padding: 10px 14px; font-size: 13px; }
+#offlineNote.on { display: block; }
+
+/* ---------- модалка ---------- */
+#mdWrap { position: fixed; inset: 0; z-index: 300; background: rgba(4, 7, 4, 0.75); display: none; align-items: center; justify-content: center; padding: 20px; }
+#mdWrap.on { display: flex; }
+#mdBox { background: var(--z1); border: 1px solid var(--line2); border-radius: var(--radl); padding: 22px; width: 100%; max-width: 430px; animation: tin 0.18s ease-out; }
+#mdTitle { font-weight: 800; font-size: 16px; margin-bottom: 8px; color: var(--tox2); }
+#mdText { font-size: 13.5px; color: var(--dim); margin-bottom: 16px; white-space: pre-wrap; }
+#mdBtns { display: flex; gap: 8px; justify-content: flex-end; }
+
+/* ---------- мобильная версия ---------- */
+#mobNav { display: none; }
+@media (max-width: 1024px) {
+  #side { transform: translateX(-104%); width: 264px; }
+  body.sided #side { transform: none; box-shadow: 14px 0 40px rgba(0, 0, 0, 0.6); }
+  body.sided #sideShade { display: block; }
+  #burger { display: inline-flex; }
+  #main { padding: calc(var(--hd) + 14px) 14px 40px; }
+  #scrWatch .wbox { flex-direction: column; }
+  .sidevir { width: auto; }
+  .svgrid { grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); }
+}
+@media (max-width: 640px) {
+  #brand b { font-size: 16px; }
+  #brand small { display: none; }
+  #headActs .hide-m { display: none; }
+  .vgrid { grid-template-columns: 1fr; }
+  .sklgrid { grid-template-columns: 1fr; }
+  #searchWrap { max-width: none; }
+  .wacts { margin-left: 0; }
+  #mobNav {
+    display: flex;
+    position: fixed;
+    left: 10px;
+    right: 10px;
+    bottom: calc(8px + env(safe-area-inset-bottom));
+    height: 56px;
+    z-index: 70;
+    background: rgba(16, 23, 15, 0.94);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--line2);
+    border-radius: 16px;
+    padding: 6px;
+  }
+  #mobNav button { flex: 1; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; color: var(--mut); font-size: 10px; }
+  #mobNav button.on { color: var(--tox2); background: rgba(143, 188, 63, 0.12); }
+  #main { padding-bottom: 108px; }
+  .svgrid { grid-template-columns: 1fr; }
+}
+@media (max-width: 400px) { #searchWrap { display: none; } }
+</style>
+</head>
+<body>
+<!-- ═══ сторож запуска: ловим ошибку вместо чёрного экрана ═══ -->
+<script>
+window.__ZTerrs = [];
+window.addEventListener("error", function (e) {
+  window.__ZTerrs.push((e.message || "error") + (e.lineno ? " (строка " + e.lineno + ")" : ""));
+}, true);
+window.addEventListener("unhandledrejection", function (e) {
+  var r = e && e.reason;
+  window.__ZTerrs.push("promise: " + ((r && r.message) || r || "unknown"));
+});
+</script>
+
+<div id="bgg"></div>
+
+<!-- ═══ ШАПКА ═══ -->
+<header id="headBar">
+  <button id="burger" aria-label="меню">
+    <svg class="ic" viewBox="0 0 24 24"><path d="M3 6h18v2H3zM3 11h18v2H3zM3 16h18v2H3z"/></svg>
+  </button>
+  <div id="brand" title="ZombieTub — на главную">
+    <svg class="zlogo" viewBox="0 0 34 34">
+      <rect x="1" y="5" width="32" height="22" rx="6" fill="#131f10" stroke="#4f7a28" stroke-width="1.6"/>
+      <rect x="12" y="4" width="10" height="24" rx="3" fill="#7a0d0d" opacity="0.55"/>
+      <circle cx="11" cy="14" r="3.1" fill="#d9d3b8"/>
+      <circle cx="23" cy="14" r="3.1" fill="#d9d3b8"/>
+      <circle cx="11.6" cy="14.6" r="1.3" fill="#7a0d0d"/>
+      <circle cx="23.6" cy="14.6" r="1.3" fill="#7a0d0d"/>
+      <path d="M9 23q4 -2.6 8 0q4 2.6 8 0" stroke="#a9d54f" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+      <path d="M2 30h6M26 30h6M12 31h10" stroke="#3a5230" stroke-width="2.6" stroke-linecap="round"/>
+    </svg>
+    <span>
+      <b>ZOMBIE<i>TUB</i></b>
+      <small>eat the ads · не рекламу</small>
+    </span>
+  </div>
+  <div id="searchWrap">
+    <form id="searchForm" autocomplete="off">
+      <input id="searchIn" class="ipt" type="search" placeholder="Искать среди живых… например: зомби апокалипсис" aria-label="поиск видео">
+      <button id="btnSearchGo" class="btn" type="submit" aria-label="искать">
+        <svg class="ic" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 4.99L20.49 19zm-6 0A4.5 4.5 0 1 1 14 9.5 4.5 4.5 0 0 1 9.5 14z"/></svg>
+      </button>
+    </form>
+  </div>
+  <div id="headActs">
+    <button class="hbtn hide-m" id="btnShuffle" title="Случайное видео">
+      <svg class="ic" viewBox="0 0 24 24"><path d="M10.59 9.17 5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z"/></svg>
+    </button>
+    <button class="hbtn hide-m" id="btnAbout" title="О ZombieTub">
+      <svg class="ic" viewBox="0 0 24 24"><path d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16z"/></svg>
+    </a>
+    <button class="hbtn" id="btnSettings" title="Настройки">
+      <svg class="ic" viewBox="0 0 24 24"><path d="M19.14 12.94a7.07 7.07 0 0 0 0-1.88l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.61-.22l-2.39.96a7.03 7.03 0 0 0-1.63-.94l-.36-2.54a.5.5 0 0 0-.5-.42h-3.84a.5.5 0 0 0-.5.42l-.36 2.54c-.59.24-1.13.56-1.63.94l-2.39-.96a.5.5 0 0 0-.61.22L2.63 8.84a.5.5 0 0 0 .12.64l2.03 1.58a7.07 7.07 0 0 0 0 1.88l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32c.13.22.39.31.61.22l2.39-.96c.5.38 1.04.7 1.63.94l.36 2.54c.04.24.25.42.5.42h3.84c.25 0 .46-.18.5-.42l.36-2.54c.59-.24 1.13-.56 1.63-.94l2.39.96c.22.09.48 0 .61-.22l1.92-3.32a.5.5 0 0 0-.12-.64zM12 15.6A3.6 3.6 0 1 1 15.6 12 3.6 3.6 0 0 1 12 15.6z"/></svg>
+    </button>
+  </div>
+</header>
+
+<!-- ═══ САЙДБАР ═══ -->
+<aside id="side" aria-label="Навигация">
+  <div class="sgroup">
+    <div class="slabel">Логово</div>
+    <button class="sitem" data-nav="home" id="nvHome">
+      <svg class="ic" viewBox="0 0 24 24"><path d="M12 3 4 9v12h5v-7h6v7h5V9z"/></svg>Главная
+    </button>
+    <button class="sitem" data-nav="trend" id="nvTrend">
+      <svg class="ic" viewBox="0 0 24 24"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg>Восхождение
+    </button>
+    <button class="sitem" data-nav="subs" id="nvSubs">
+      <svg class="ic" viewBox="0 0 24 24"><path d="M20 8H4V6h16zm-2-6H6v2h12zm4 10v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2zm-6 4-6-3.27v6.53z"/></svg>Орда<span class="scnt" id="subsCnt"></span>
+    </button>
+  </div>
+  <div class="sgroup">
+    <div class="slabel">Твои кости</div>
+    <button class="sitem" data-nav="hist" id="nvHist">
+      <svg class="ic" viewBox="0 0 24 24"><path d="M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L8.94 12H6a7 7 0 1 1 7 7 6.95 6.95 0 0 1-4.9-2.03l-1.42 1.42A8.95 8.95 0 0 0 13 21a9 9 0 0 0 0-18zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8z"/></svg>Пожранное<span class="scnt" id="histCnt"></span>
+    </button>
+    <button class="sitem" data-nav="liked" id="nvLiked">
+      <svg class="ic" viewBox="0 0 24 24"><path d="M1 21h4V9H1zm22-11a2 2 0 0 0-2-2h-6.31l.95-4.57.03-.32a1.5 1.5 0 0 0-.44-1.06L14.17 1 7.59 7.59A2 2 0 0 0 7 9v10a2 2 0 0 0 2 2h9a2 2 0 0 0 1.84-1.22l3.02-7.05A2 2 0 0 0 23 12v-2z"/></svg>Вкусное<span class="scnt" id="likedCnt"></span>
+    </button>
+    <button class="sitem" data-nav="later" id="nvLater">
+      <svg class="ic" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm4.2 14.2L11 13V7h1.5v5.2l4.5 2.7z"/></svg>Отложить<span class="scnt" id="laterCnt"></span>
+    </button>
+  </div>
+  <div class="sgroup">
+    <div class="slabel">Трупо-факт</div>
+    <div id="factBox" style="font-size:11.5px;color:var(--mut);padding:2px 12px;line-height:1.55"></div>
+  </div>
+</aside>
+<div id="sideShade"></div>
+
+<!-- ═══ ОСНОВНОЕ ═══ -->
+<main id="main">
+  <div id="offlineNote"></div>
+
+  <!-- ГЛАВНАЯ -->
+  <section class="screen" id="scrHome">
+    <div class="chips" id="homeChips"></div>
+    <div class="vgrid" id="homeGrid"></div>
+  </section>
+
+  <!-- ПОИСК/ВОСХОЖДЕНИЕ -->
+  <section class="screen" id="scrList">
+    <h1 class="ph1" id="listTitle"></h1>
+    <div class="psub" id="listSub"></div>
+    <div class="vgrid" id="listGrid"></div>
+  </section>
+
+  <!-- ПРОСМОТР -->
+  <section class="screen" id="scrWatch">
+    <div class="wbox">
+      <div class="watchmain">
+        <div id="playerWrap">
+          <div id="playerHost"></div>
+          <div id="fbNote"></div>
+        </div>
+        <h1 class="wtitle" id="wTitle"></h1>
+        <div class="wsub">
+          <img class="wchava" id="wAva" alt="">
+          <div>
+            <div class="wchname" id="wCh"></div>
+            <div class="wchsub" id="wChSub"></div>
+          </div>
+          <div class="wacts">
+            <button class="btn" id="wSub">В орду</button>
+            <button class="btn" id="wLike" title="Вкусно">
+              <svg class="ic" viewBox="0 0 24 24"><path d="M1 21h4V9H1zm22-11a2 2 0 0 0-2-2h-6.31l.95-4.57.03-.32a1.5 1.5 0 0 0-.44-1.06L14.17 1 7.59 7.59A2 2 0 0 0 7 9v10a2 2 0 0 0 2 2h9a2 2 0 0 0 1.84-1.22l3.02-7.05A2 2 0 0 0 23 12z"/></svg>
+            </button>
+            <button class="btn" id="wLater">Отложить</button>
+            <button class="btn" id="wShare">
+              <svg class="ic" viewBox="0 0 24 24"><path d="M18 16.08a2.91 2.91 0 0 0-1.96.77L8.91 12.7a3.27 3.27 0 0 0 0-1.4l7.05-4.11A3 3 0 1 0 15 5a3.27 3.27 0 0 0 .08.7L8.04 9.81a3 3 0 1 0 0 4.38l7.12 4.16a2.82 2.82 0 0 0-.08.65 2.92 2.92 0 1 0 2.92-2.92z"/></svg>
+            </button>
+            <a class="btn" id="wOpenYt" target="_blank" rel="noopener">На ютуб</a>
+          </div>
+        </div>
+        <div class="wstats" id="wStats"></div>
+        <div class="wdesc" id="wDesc"></div>
+        <div class="wtags" id="wTags"></div>
+        <div id="cbox">
+          <h2 style="margin:14px 0 4px;font-size:16px" id="cTitle"></h2>
+          <div id="cList"></div>
+          <button class="btn ghost" id="cMore" style="margin-top:10px">Ещё жратвы…</button>
+        </div>
+      </div>
+      <div class="sidevir">
+        <h2 style="font-size:15px;margin:4px 0 10px;color:var(--dim)">Похожая падаль</h2>
+        <div class="svgrid" id="relGrid"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- КАНАЛ -->
+  <section class="screen" id="scrChan">
+    <div style="display:flex;align-items:center;gap:16px;margin:8px 0 6px;flex-wrap:wrap">
+      <img id="chAva" style="width:72px;height:72px;border-radius:50%;background:var(--z3)" alt="">
+      <div style="flex:1;min-width:200px">
+        <h1 class="ph1" style="margin:0" id="chName"></h1>
+        <div class="psub" style="margin:2px 0 0" id="chSub"></div>
+      </div>
+      <button class="btn blood" id="chSubBtn">В орду</button>
+    </div>
+    <div class="wdesc" id="chDesc" style="margin-bottom:18px"></div>
+    <div class="vgrid" id="chGrid"></div>
+  </section>
+
+  <!-- ОРДА (подписки) -->
+  <section class="screen" id="scrSubs">
+    <h1 class="ph1"><span class="zug">▤</span> Орда — твои подписки</h1>
+    <div class="psub">Хранится только у тебя в браузере. Свежие видео — кнопкой «Кормить».</div>
+    <div class="rowlist" id="subsList"></div>
+    <div class="vgrid" id="subsFeed" style="margin-top:18px"></div>
+  </section>
+
+  <!-- Пожранное / Вкусное / Отложить -->
+  <section class="screen" id="scrLocal">
+    <h1 class="ph1" id="locTitle"></h1>
+    <div class="psub" id="locSub"></div>
+    <div class="vgrid" id="locGrid"></div>
+    <div class="empty" id="locEmpty" style="display:none"><b>Пусто, как в животе у зомби</b>Сначала съешь что-нибудь.</div>
+  </section>
+
+  <!-- О программе -->
+  <section class="screen" id="scrAbout">
+    <h1 class="ph1">ZombieTub eats ads</h1>
+    <div class="psub">v1.0 · один HTML-файл · без серверов · без аккаунтов</div>
+    <div class="wdesc" style="max-width:760px;max-height:none">
+ZombieTub — зомби-оболочка над открытыми клиентами ютуба (Piped / Invidious — публичные некоммерческие зеркала). Видео — настоящие, с ютуба: ищи, смотри без рекламы, комменты и описание на месте. Пока зеркала живы — идёт прокси-плеер без рекламы; если конкретное зеркало сдохло — ZombieTub сам перепрыгивает на другое, а в крайнем случае поднимает официальный плеер ютуба (там может быть реклама — это честный запасной путь).
+Правила личных данных: подписки, история, лайки и «отложить» хранятся ТОЛЬКО в локальном хранилище твоего браузера. Никаких серверов, никаких аккаунтов, ничего никуда не отправляется.
+    </div>
+    <div class="chips" style="margin-top:18px">
+      <span class="chip" id="abMirrorCheck">Проверить статус зеркал</span>
+    </div>
+    <div class="wdesc" id="abMirrorLog" style="max-width:760px;max-height:220px;font-family:monospace;font-size:12px">нажми «Проверить статус зеркал»</div>
+  </section>
+
+  <!-- НАСТРОЙКИ -->
+  <section class="screen" id="scrSet">
+    <h1 class="ph1">⚙ Настройки кладбища</h1>
+    <div class="psub">Всё живёт локально в твоём браузере.</div>
+    <div class="rowlist" style="max-width:660px">
+      <div class="subrow" style="cursor:default;flex-wrap:wrap">
+        <div style="flex:1;min-width:200px">
+          <div class="nm">Регион «Восхождения»</div>
+          <div class="ds">откуда брать популярное</div>
+        </div>
+        <select id="setRegion" class="ipt" style="width:150px">
+          <option value="RU">Россия</option>
+          <option value="US">США</option>
+          <option value="UA">Украина</option>
+          <option value="KZ">Казахстан</option>
+          <option value="BY">Беларусь</option>
+          <option value="DE">Германия</option>
+          <option value="GB">Британия</option>
+        </select>
+      </div>
+      <div class="subrow" style="cursor:default;flex-wrap:wrap">
+        <div style="flex:1;min-width:200px">
+          <div class="nm">Зеркало (Piped/Invidious API)</div>
+          <div class="ds">пусто = авто-каскад по списку зеркал (рекомендуется)</div>
+        </div>
+        <input id="setInst" class="ipt" style="width:210px" placeholder="напр. pipedapi.kavin.rocks">
+      </div>
+      <div class="subrow" style="cursor:default">
+        <div style="flex:1">
+          <div class="nm">Проксировать видео напрямую</div>
+          <div class="ds">пытаться играть поток без плеера ютуба</div>
+        </div>
+        <button class="btn" id="setDirect">вкл</button>
+      </div>
+      <div class="subrow" style="cursor:default">
+        <div style="flex:1">
+          <div class="nm">Трупо-факт в сайдбаре</div>
+          <div class="ds">случайный факт о зомби-культуре</div>
+        </div>
+        <button class="btn" id="setFacts">вкл</button>
+      </div>
+      <div class="subrow" style="cursor:default">
+        <div style="flex:1">
+          <div class="nm">Стереть все мои данные</div>
+          <div class="ds">подписки, история, лайки, настройки — всё</div>
+        </div>
+        <button class="btn blood" id="setWipe">Стереть</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ═══ МОБИЛЬНАЯ НАВИГАЦИЯ ═══ -->
+<nav id="mobNav">
+  <button data-nav="home"><svg class="ic" viewBox="0 0 24 24"><path d="M12 3 4 9v12h5v-7h6v7h5V9z"/></svg>Главная</button>
+  <button data-nav="trend"><svg class="ic" viewBox="0 0 24 24"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg>Восход</button>
+  <button data-nav="subs"><svg class="ic" viewBox="0 0 24 24"><path d="M20 8H4V6h16zm-2-6H6v2h12zm4 10v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2zm-6 4-6-3.27v6.53z"/></svg>Орда</button>
+  <button data-nav="hist"><svg class="ic" viewBox="0 0 24 24"><path d="M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L8.94 12H6a7 7 0 1 1 7 7 6.95 6.95 0 0 1-4.9-2.03l-1.42 1.42A8.95 8.95 0 0 0 13 21a9 9 0 0 0 0-18zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8z"/></svg>Еда</button>
+  <button data-nav="set"><svg class="ic" viewBox="0 0 24 24"><path d="M19.14 12.94a7.07 7.07 0 0 0 0-1.88l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.61-.22l-2.39.96a7.03 7.03 0 0 0-1.63-.94l-.36-2.54a.5.5 0 0 0-.5-.42h-3.84a.5.5 0 0 0-.5.42l-.36 2.54c-.59.24-1.13.56-1.63.94l-2.39-.96a.5.5 0 0 0-.61.22L2.63 8.84a.5.5 0 0 0 .12.64l2.03 1.58a7.07 7.07 0 0 0 0 1.88l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32c.13.22.39.31.61.22l2.39-.96c.5.38 1.04.7 1.63.94l.36 2.54c.04.24.25.42.5.42h3.84c.25 0 .46-.18.5-.42l.36-2.54c.59-.24 1.13-.56 1.63-.94l2.39.96c.22.09.48 0 .61-.22l1.92-3.32a.5.5 0 0 0-.12-.64zM12 15.6A3.6 3.6 0 1 1 15.6 12 3.6 3.6 0 0 1 12 15.6z"/></svg>Сеты</button>
+</nav>
+
+<!-- модалка + тосты -->
+<div id="mdWrap">
+  <div id="mdBox">
+    <div id="mdTitle"></div>
+    <div id="mdText"></div>
+    <div id="mdBtns">
+      <button class="btn ghost" id="mdCancel">Нет</button>
+      <button class="btn tox" id="mdOk">Да, жрать</button>
+    </div>
+  </div>
+</div>
+<div id="ztToasts"></div>
+
+<script>
+/* ============================================================
+   ZOMBIETUB v1.0 — app core (classic script)
+   Данные видео: публичные зеркала Piped/Invidious API (каскад) →
+   fallback: официальный плеер YouTube.
+   ============================================================ */
+"use strict";
+
+/* ---------- утилиты ---------- */
+const $ = (s, r) => (r || document).querySelector(s);
+const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+const esc = (t) =>
+  String(t == null ? "" : t)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const plural = (n, one, few, many) => {
+  const m10 = n % 10, m100 = n % 100;
+  if (m10 === 1 && m100 !== 11) return one;
+  if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return few;
+  return many;
+};
+function jget(k, d) {
+  try {
+    const v = localStorage.getItem(k);
+    return v ? JSON.parse(v) : d;
+  } catch (e) {
+    return d;
+  }
+}
+function jset(k, v) {
+  try {
+    localStorage.setItem(k, JSON.stringify(v));
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+/* сокращение чисел: 1234567 → «1,2 млн» */
+function hub(n) {
+  n = Number(n) || 0;
+  if (n >= 1000000000) return (n / 1000000000).toFixed(1).replace(".", ",") + " млрд";
+  if (n >= 1000000) return (n / 1000000).toFixed(1).replace(".", ",") + " млн";
+  if (n >= 1000) return (n / 1000).toFixed(1).replace(".", ",") + " тыс.";
+  return String(n);
+}
+/* PT1H2M3S / секунды → «1:02:03» */
+function durFmt(x) {
+  let s = 0;
+  if (typeof x === "number") s = x;
+  else {
+    const m = String(x || "").match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+    if (!m) return "";
+    s = (+m[1] || 0) * 3600 + (+m[2] || 0) * 60 + (+m[3] || 0);
+  }
+  const h = Math.floor(s / 3600), mi = Math.floor((s % 3600) / 60), se = s % 60;
+  return h
+    ? h + ":" + String(mi).padStart(2, "0") + ":" + String(se).padStart(2, "0")
+    : mi + ":" + String(se).padStart(2, "0");
+}
+function agoFmt(ts) {
+  if (!ts) return "";
+  const d = Date.now() - ts;
+  const m = Math.floor(d / 60000);
+  if (m < 1) return "только что";
+  if (m < 60) return m + " " + plural(m, "минуту", "минуты", "минут") + " назад";
+  const h = Math.floor(m / 60);
+  if (h < 24) return h + " " + plural(h, "час", "часа", "часов") + " назад";
+  const dd = Math.floor(h / 24);
+  if (dd < 30) return dd + " " + plural(dd, "день", "дня", "дней") + " назад";
+  return new Date(ts).toLocaleDateString("ru");
+}
+function toast(msg, cls, ms) {
+  const t = document.createElement("div");
+  t.className = "toast" + (cls ? " " + cls : "");
+  t.textContent = msg;
+  $("#ztToasts").appendChild(t);
+  setTimeout(() => t.remove(), ms || 3400);
+}
+
+/* ---------- модалка ---------- */
+let mdResolve = null;
+function modal(title, text, okLabel) {
+  $("#mdTitle").textContent = title;
+  $("#mdText").textContent = text;
+  $("#mdOk").textContent = okLabel || "Да, жрать";
+  $("#mdWrap").classList.add("on");
+  return new Promise((res) => {
+    mdResolve = res;
+  });
+}
+function mdDone(v) {
+  $("#mdWrap").classList.remove("on");
+  if (mdResolve) {
+    mdResolve(!!v);
+    mdResolve = null;
+  }
+}
+$("#mdOk").onclick = () => mdDone(true);
+$("#mdCancel").onclick = () => mdDone(false);
+$("#mdWrap").onclick = (e) => {
+  if (e.target === $("#mdWrap")) mdDone(false);
+};
+
+/* ---------- настройки ---------- */
+const SET_DEF = { region: "RU", inst: "", direct: true, facts: true };
+let SET = Object.assign({}, SET_DEF, jget("zt_set", {}));
+const saveSet = () => jset("zt_set", SET);
+
+/* ---------- локальные данные ---------- */
+const store = {
+  get subs() { return jget("zt_subs", {}); },
+  set subs(v) { jset("zt_subs", v); },
+  get hist() { return jget("zt_hist", []); },
+  set hist(v) { jset("zt_hist", v.slice(0, 300)); },
+  get liked() { return jget("zt_liked", []); },
+  set liked(v) { jset("zt_liked", v.slice(0, 300)); },
+  get later() { return jget("zt_later", []); },
+  set later(v) { jset("zt_later", v.slice(0, 200)); },
+};
+const liteSave = (listName, item) => {
+  if (!item || !item.id) return;
+  const arr = (store[listName] || []).filter((x) => x && x.id !== item.id);
+  arr.unshift(item);
+  store[listName] = arr;
+};
+const liteDel = (listName, id) => {
+  store[listName] = (store[listName] || []).filter((x) => !x || x.id !== id);
+};
+
+/* ---------- зеркала (каскад) ---------- */
+const MIRRORS = [
+  "https://pipedapi.kavin.rocks",
+  "https://api.piped.private.coffee",
+  "https://pipedapi.adminforge.de",
+  "https://api.piped.projectsegfau.lt",
+  "https://pipedapi.drgns.space",
+  "https://inv.nadeko.net/api/v1",
+  "https://invidious.nerdvpn.de/api/v1",
+  "https://yewtu.be/api/v1",
+];
+let mirrorIdx = 0;
+let mirrorLog = jget("zt_mlog", []);
+function mirrorName(m) {
+  return m.replace(/^https:\/\/(api\.|pipedapi\.)/, "").split("/")[0];
+}
+function mlog(m, ok, note) {
+  mirrorLog = mirrorLog.filter((l) => l.indexOf(mirrorName(m)) === -1);
+  mirrorLog.unshift((ok ? "[OK] " : "[X] ") + mirrorName(m) + (note ? " — " + note : ""));
+  mirrorLog = mirrorLog.slice(0, 20);
+  jset("zt_mlog", mirrorLog);
+}
+
+/* универсальный запрос к зеркалам с каскадом */
+async function api(path, opts) {
+  opts = opts || {};
+  const list = SET.inst
+    ? ["https://" + SET.inst.replace(/^https?:\/\//, "").replace(/\/+$/, "")]
+    : MIRRORS;
+  let lastErr = null;
+  for (let t = 0; t < list.length; t++) {
+    const m = list[t];
+    const url = m + path;
+    const ctl = new AbortController();
+    const tm = setTimeout(() => ctl.abort(), 11000);
+    try {
+      const r = await fetch(url, { signal: ctl.signal, headers: { accept: "application/json" } });
+      clearTimeout(tm);
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      let j;
+      try {
+        j = await r.json();
+      } catch (e2) {
+        throw new Error("не json");
+      }
+      if (j && j.error) throw new Error(String(j.error).slice(0, 80));
+      if (list.length > 1 && t !== 0) {
+        /* это зеркало отвечает — ставим его первым в ротации */
+        const idx = MIRRORS.indexOf(m);
+        if (idx > 0) {
+          MIRRORS.splice(idx, 1);
+          MIRRORS.unshift(m);
+        }
+        mlog(m, true, "стало первым");
+      }
+      return j;
+    } catch (e) {
+      clearTimeout(tm);
+      lastErr = e;
+      mlog(m, false, (e && e.message) || "fail");
+    }
+  }
+  throw lastErr || new Error("зеркала не ответили");
+}
+
+/* ---------- нормализация видео (piped/invidious) ---------- */
+function normVideo(v, badge) {
+  const id = v.id || v.videoId;
+  if (!id) return null;
+  const thumbCell = v.videoThumbnails && v.videoThumbnails.length ? v.videoThumbnails : null;
+  const thumb =
+    v.thumbnail ||
+    (thumbCell ? thumbCell[0].url : "") ||
+    "https://i.ytimg.com/vi/" + id + "/mqdefault.jpg";
+  return {
+    id: String(id),
+    title: v.title || "(без названия)",
+    thumb: thumb.replace(/^http:/, "https:"),
+    dur: v.duration || v.lengthSeconds || 0,
+    chan: v.uploader || v.author || "?",
+    chId: (v.uploaderUrl || "").replace("/channel/", "") || v.authorId || "",
+    ava: v.uploaderAvatar || (v.authorThumbnails && v.authorThumbnails.length ? v.authorThumbnails[v.authorThumbnails.length - 1].url : "") || "",
+    views: v.views || v.viewCount || 0,
+    when: v.uploadedDate || v.publishedText || "",
+    ts: v.uploaded || v.published || 0,
+    live: !!(v.isLive || v.liveNow),
+    badge: badge || (v.isLive || v.liveNow ? "В ЭФИРЕ" : ""),
+  };
+}
+function normList(j, badge) {
+  const arr = (j && (j.items || j.relatedStreams || j.latestVideos || (Array.isArray(j) ? j : null))) || [];
+  const out = [];
+  (arr || []).forEach((v) => {
+    const n = normVideo(v, badge);
+    if (n) out.push(n);
+  });
+  return out;
+}
+
+/* ---------- карточки ---------- */
+const AVA_FALLBACK =
+  "data:image/svg+xml," +
+  encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 34 34"><rect width="34" height="34" fill="#1d2b16"/><circle cx="17" cy="17" r="9" fill="#4f7a28"/><circle cx="14" cy="15" r="2" fill="#0a0f0a"/><circle cx="20" cy="15" r="2" fill="#0a0f0a"/></svg>',
+  );
+function vCard(v, opts) {
+  opts = opts || {};
+  const el = document.createElement("article");
+  el.className = "vcard";
+  el.dataset.vid = v.id;
+  el.innerHTML =
+    '<div class="vthumb">' +
+    (v.badge || opts.badge ? '<span class="vbadge">' + esc(v.badge || opts.badge) + "</span>" : "") +
+    '<img loading="lazy" alt="" decoding="async">' +
+    (v.dur ? '<span class="vdur">' + durFmt(v.dur) + "</span>" : "") +
+    "</div>" +
+    '<div class="vmeta">' +
+    (opts.noChava ? "" : '<img loading="lazy" alt="">') +
+    '<div style="min-width:0;flex:1">' +
+    '<div class="vmtitle">' + esc(v.title) + "</div>" +
+    '<div class="vmch">' + esc(v.chan) + "</div>" +
+    '<div class="vmx">' + (v.views ? hub(v.views) + " просм. · " : "") + esc(v.when || "") + "</div>" +
+    "</div>" +
+    '<div class="vmacts">' +
+    '<button class="mk-later" title="Отложить"><svg class="ic" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm4.2 14.2L11 13V7h1.5v5.2l4.5 2.7z"/></svg></button>' +
+    '<button class="mk-share" title="Скопировать ссылку"><svg class="ic" viewBox="0 0 24 24"><path d="M18 16.08a2.91 2.91 0 0 0-1.96.77L8.91 12.7a3.27 3.27 0 0 0 0-1.4l7.05-4.11A3 3 0 1 0 15 5a3.27 3.27 0 0 0 .08.7L8.04 9.81a3 3 0 1 0 0 4.38l7.12 4.16a2.82 2.82 0 0 0-.08.65 2.92 2.92 0 1 0 2.92-2.92z"/></svg></button>' +
+    "</div></div>";
+  const img = $(".vthumb img", el);
+  img.src = v.thumb;
+  img.onerror = () => img.classList.add("err");
+  const chava = $(".vmeta img", el);
+  if (chava) {
+    if (v.ava) chava.src = v.ava;
+    else chava.src = AVA_FALLBACK;
+    chava.onerror = () => {
+      chava.src = AVA_FALLBACK;
+    };
+  }
+  el.onclick = (e) => {
+    if (e.target.closest(".mk-later")) {
+      liteSave("later", v);
+      toast("Отложено: «" + v.title.slice(0, 28) + "…»");
+      renderSideCounts();
+      return;
+    }
+    if (e.target.closest(".mk-share")) {
+      copyText("https://www.youtube.com/watch?v=" + v.id);
+      return;
+    }
+    openWatch(v);
+  };
+  return el;
+}
+async function copyText(s) {
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(s);
+      toast("Скопировано: " + s.slice(0, 42) + "…");
+      return;
+    }
+  } catch (e) {}
+  const ta = document.createElement("textarea");
+  ta.value = s;
+  document.body.appendChild(ta);
+  ta.select();
+  let ok = false;
+  try {
+    ok = document.execCommand("copy");
+  } catch (e) {}
+  ta.remove();
+  if (ok) toast("Скопировано");
+  else toast("Не вышло скопировать", "err");
+}
+function skeletons(grid, n) {
+  grid.innerHTML = "";
+  for (let i = 0; i < (n || 9); i++) {
+    const d = document.createElement("div");
+    d.innerHTML =
+      '<div class="skel th"></div>' +
+      '<div class="skel" style="height:14px;width:88%"></div>' +
+      '<div class="skel" style="height:12px;width:55%"></div>';
+    grid.appendChild(d);
+  }
+}
+
+/* ---------- экраны/роутер ---------- */
+const SCREENS = ["home", "list", "watch", "chan", "subs", "local", "about", "set"];
+let curScreen = "home";
+let curListContext = null; /* {kind:'search'|'trend'|'tag', q} */
+function go(name) {
+  if (SCREENS.indexOf(name) < 0) name = "home";
+  curScreen = name;
+  $$(".screen").forEach((s) => s.classList.remove("on"));
+  const el = $("#scr" + name.charAt(0).toUpperCase() + name.slice(1));
+  if (el) el.classList.add("on");
+  $$(".sitem").forEach((b) => b.classList.toggle("on", b.dataset.nav === name || (name === "list" && b.dataset.nav === curListContext && false)));
+  const map = { home: "home", trend: "trend", subs: "subs", hist: "hist", liked: "liked", later: "later", set: "set" };
+  $$("#mobNav button").forEach((b) => b.classList.toggle("on", b.dataset.nav === map[name]));
+  document.body.classList.remove("sided");
+  window.scrollTo(0, 0);
+}
+
+/* ---------- данные: home ---------- */
+const HOME_TABS = [
+  { t: "Все подряд", q: null, kind: "trend" },
+  { t: "Музыка", q: "music 2024" },
+  { t: "Игры", q: "gameplay" },
+  { t: "Фильмы ужасов", q: "horror movie full" },
+  { t: "Зомби", q: "zombie" },
+  { t: "Наука", q: "science explained" },
+  { t: "Юмор", q: "comedy" },
+  { t: "Технологии", q: "technology" },
+  { t: "Аниме", q: "anime" },
+];
+let homeTab = 0;
+async function loadHome() {
+  const tab = HOME_TABS[homeTab];
+  const grid = $("#homeGrid");
+  skeletons(grid, 12);
+  try {
+    $("#offlineNote").classList.remove("on");
+    const j = tab.kind === "trend" || !tab.q
+      ? await api("/trending?region=" + encodeURIComponent(SET.region))
+      : await api("/search?q=" + encodeURIComponent(tab.q) + "&filter=videos");
+    const vids = normList(j).slice(0, 40);
+    grid.innerHTML = "";
+    vids.forEach((v) => {
+      v.badge = tab.kind === "trend" || !tab.q ? (v.badge || "") : "";
+      grid.appendChild(vCard(v));
+    });
+    if (!vids.length) grid.innerHTML = '<div class="empty"><b>Зеркала вернули пустоту</b>Попробуй другую вкладку или поиск.</div>';
+  } catch (e) {
+    grid.innerHTML = emptyFail();
+    showOffline(e);
+  }
+}
+function emptyFail() {
+  return (
+    '<div class="empty"><b>Все зеркала молчат</b>' +
+    "Публичные зеркала Piped/Invidious иногда падают целиком. " +
+    'Проверь интернет, зайди в «О программе» → «Проверить статус зеркал», ' +
+    "или укажи своё зеркало в настройках.</div>"
+  );
+}
+function showOffline(e) {
+  const n = $("#offlineNote");
+  n.textContent = "Нет связи с зеркалами: " + ((e && e.message) || "ошибка") + ". Показано, что сохранилось локально.";
+  n.classList.add("on");
+}
+
+/* ---------- поиск ---------- */
+async function doSearch(q) {
+  q = String(q || "").trim();
+  if (!q) return;
+  /* прямая ссылка ютуба? */
+  const m = q.match(/(?:v=|youtu\.be\/|shorts\/|embed\/)([\w-]{11})/);
+  if (m) {
+    openWatch({ id: m[1], title: "Видео по ссылке", thumb: "https://i.ytimg.com/vi/" + m[1] + "/hqdefault.jpg", chan: "?", views: 0, when: "" });
+    return;
+  }
+  curListContext = { kind: "search", q };
+  $("#listTitle").textContent = "Ищем: «" + q + "»";
+  $("#listSub").textContent = "живой поиск по зеркалам";
+  go("list");
+  const grid = $("#listGrid");
+  skeletons(grid, 12);
+  try {
+    $("#offlineNote").classList.remove("on");
+    const j = await api("/search?q=" + encodeURIComponent(q) + "&filter=videos");
+    const vids = normList(j).slice(0, 48);
+    grid.innerHTML = "";
+    vids.forEach((v) => {
+      grid.appendChild(vCard(v));
+    });
+    $("#listSub").textContent = vids.length + " " + plural(vids.length, "видео", "видео", "видео") + " найдено";
+    if (!vids.length) $("#listGrid").innerHTML = '<div class="empty"><b>Ни одной тушки</b>Попробуй другие слова.</div>';
+  } catch (e) {
+    grid.innerHTML = emptyFail();
+    showOffline(e);
+  }
+}
+$("#searchForm").onsubmit = (e) => {
+  e.preventDefault();
+  doSearch($("#searchIn").value);
+};
+
+/* ---------- восхождение (тренды) ---------- */
+async function loadTrend() {
+  curListContext = { kind: "trend" };
+  $("#listTitle").textContent = "Восхождение";
+  $("#listSub").textContent = "топ твоего региона: " + SET.region;
+  go("list");
+  const grid = $("#listGrid");
+  skeletons(grid, 12);
+  try {
+    const j = await api("/trending?region=" + encodeURIComponent(SET.region));
+    const vids = normList(j, "В ТЕМАХ").slice(0, 48);
+    grid.innerHTML = "";
+    vids.forEach((v) => grid.appendChild(vCard(v)));
+    if (!vids.length) grid.innerHTML = '<div class="empty"><b>Пусто на пьедестале</b>Зеркало вернуло ноль.</div>';
+  } catch (e) {
+    grid.innerHTML = emptyFail();
+    showOffline(e);
+  }
+}
+
+/* ---------- просмотр видео ---------- */
+let curWatch = null;
+let curComments = null;
+async function openWatch(v) {
+  v = v || {};
+  curWatch = v;
+  curComments = { next: null, loaded: 0 };
+  $("#wTitle").textContent = v.title || "…";
+  $("#wCh").textContent = v.chan || "?";
+  $("#wChSub").textContent = v.when || "";
+  $("#wAva").src = v.ava || AVA_FALLBACK;
+  $("#wStats").textContent = "";
+  $("#wDesc").textContent = "Жрём метаданные…";
+  $("#wTags").innerHTML = "";
+  $("#cList").innerHTML = "";
+  $("#cTitle").textContent = "";
+  $("#cMore").style.display = "none";
+  $("#relGrid").innerHTML = "";
+  $("#fbNote").classList.remove("on");
+  $("#wLike").classList.toggle("on", !!(store.liked || []).some((x) => x && x.id === v.id));
+  $("#wLater").classList.toggle("on", !!(store.later || []).some((x) => x && x.id === v.id));
+  const subs = store.subs;
+  $("#wSub").textContent = subs[v.chId] ? "В орде ✔" : "В орду";
+  $("#wOpenYt").href = "https://www.youtube.com/watch?v=" + v.id;
+  go("watch");
+  liteSave("hist", v);
+  renderSideCounts();
+  buildPlayer(v);
+  loadMetaAndExtras(v);
+}
+function buildPlayer(v) {
+  const host = $("#playerHost");
+  host.innerHTML = "";
+  const wrap = $("#playerWrap");
+  /* честная политика: сначала пробуем прокси-поток (без рекламы),
+     при неудаче — официальный iframe ютуба */
+  if (SET.direct) {
+    const note = $("#fbNote");
+    note.textContent = "тянем поток через зеркало…";
+    note.classList.add("on");
+    playProxied(v).then(
+      (okd) => {
+        if (!okd) fallbackPlayer(v);
+      },
+      () => fallbackPlayer(v),
+    );
+  } else {
+    fallbackPlayer(v);
+  }
+}
+async function playProxied(v) {
+  const host = $("#playerHost");
+  let streams = null;
+  let usedMirror = null;
+  try {
+    const j = await api("/streams/" + v.id);
+    usedMirror = true;
+    streams = { hls: j.hls || j.proxyUrl && j.hls, video: (j.videoStreams || []).concat([]), audio: (j.audioStreams || []) };
+    streams.title = j.title;
+    streams.uploader = j.uploader;
+    streams.views = j.views;
+    streams.likes = j.likes;
+    streams.description = (j.description || "").replace(/<br\s*\/?>/gi, "\n").replace(/<[^>]+>/g, "");
+    streams.uploadedDate = j.uploadDate || j.uploadedDate;
+    streams.subscribers = j.uploaderSubscriberCount;
+    streams.tags = j.tags || [];
+    streams.related = (j.relatedStreams || []).map((x) => normVideo(x, "")).filter(Boolean).slice(0, 14);
+  } catch (e) {
+    return false;
+  }
+  const cands = streams.video
+    .filter((s) => s && s.url && (s.format === "MPEG_4" || /mp4/i.test(s.mimeType || "")))
+    .sort((a, b) => (b.bitrate || 0) - (a.bitrate || 0));
+  const pick = cands[0] || (streams.video.length ? streams.video[0] : null);
+  let okd = false;
+  if (pick && pick.url) {
+    okd = await new Promise((res) => {
+      const vid = document.createElement("video");
+      vid.controls = true;
+      vid.autoplay = false;
+      vid.preload = "metadata";
+      vid.playsInline = true;
+      vid.setAttribute("playsinline", "");
+      vid.poster = v.thumb || "";
+      vid.src = pick.url;
+      let settled = false;
+      const to = setTimeout(() => {
+        if (!settled) {
+          settled = true;
+          res(false);
+        }
+      }, 9000);
+      vid.onloadedmetadata = () => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(to);
+        host.innerHTML = "";
+        host.appendChild(vid);
+        res(true);
+      };
+      vid.onerror = () => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(to);
+        res(false);
+      };
+      vid.load();
+    });
+    if (okd && !curWatch.metaFilledByFallback) {
+      applyStreamMeta(streams);
+      curWatch.metaFilledByFallback = true;
+    }
+    if (okd && streams.related && streams.related.length) {
+      renderRelated(streams.related);
+    }
+    if (okd) {
+      $("#fbNote").classList.remove("on");
+      loadComments(v);
+    }
+  }
+  return okd;
+}
+function fallbackPlayer(v) {
+  const host = $("#playerHost");
+  host.innerHTML = "";
+  const fr = document.createElement("iframe");
+  fr.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
+  fr.allowFullscreen = true;
+  fr.src = "https://www.youtube-nocookie.com/embed/" + v.id + "?autoplay=0&rel=1";
+  host.appendChild(fr);
+  const note = $("#fbNote");
+  note.textContent = "официальный плеер ютуба (зеркало не дало поток — тут бывает реклама)";
+  note.classList.add("on");
+  setTimeout(() => note.classList.remove("on"), 6000);
+  if (!curWatch.metaFilledByFallback) {
+    /* метаданные через oembed */
+    fetch("https://www.youtube.com/oembed?format=json&url=" + encodeURIComponent("https://www.youtube.com/watch?v=" + v.id))
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error("oembed " + r.status))))
+      .then((j) => {
+        if (curWatch && curWatch.id === v.id) {
+          $("#wTitle").textContent = j.title || v.title;
+          $("#wCh").textContent = j.author_name || v.chan;
+          $("#wDesc").textContent = "Описание недоступно без зеркал. Видео: " + (j.title || "");
+        }
+      })
+      .catch(() => {});
+  }
+}
+function applyStreamMeta(st) {
+  $("#wTitle").textContent = st.title || $("#wTitle").textContent;
+  $("#wCh").textContent = st.uploader || $("#wCh").textContent;
+  $("#wChSub").textContent = st.uploadedDate ? String(st.uploadedDate) + (st.subscribers ? " · " + hub(st.subscribers) + " подписчиков" : "") : $("#wChSub").textContent;
+  $("#wStats").textContent =
+    (st.views ? hub(st.views) + " просмотров · " : "") +
+    (st.likes ? hub(st.likes) + " лайков" : "");
+  $("#wDesc").textContent = st.description
+    ? (st.description.length > 3000 ? st.description.slice(0, 3000) + "…" : st.description)
+    : "Описание пустое.";
+  if (st.hls) {
+    /* скопировать прямую hls-ссылку в теги бесполезно без hls.js — оставляем честную надпись */
+  }
+  $("#wTags").innerHTML = "";
+  (st.tags || []).slice(0, 10).forEach((t) => {
+    const s = document.createElement("span");
+    s.textContent = t;
+    s.onclick = () => doSearch(t);
+    $("#wTags").appendChild(s);
+  });
+}
+async function loadMetaAndExtras(v) {
+  const t0 = Date.now();
+  try {
+    const j = await api("/streams/" + v.id);
+    if (curWatch && curWatch.id === v.id) {
+      applyStreamMeta({
+        title: j.title,
+        uploader: j.uploader,
+        views: j.views,
+        likes: j.likes,
+        description: (j.description || "").replace(/<br\s*\/?>/gi, "\n").replace(/<[^>]+>/g, ""),
+        uploadedDate: j.uploadDate || j.uploadedDate,
+        subscribers: j.uploaderSubscriberCount,
+        tags: j.tags || [],
+        related: (j.relatedStreams || []).map((x) => normVideo(x, "")).filter(Boolean).slice(0, 14),
+        hls: j.hls,
+      });
+      chIdOfCurrent = j.uploaderUrl ? j.uploaderUrl.replace("/channel/", "") : v.chId || "";
+      if (chIdOfCurrent) $("#wCh").dataset.chid = chIdOfCurrent;
+      renderRelated((j.relatedStreams || []).map((x) => normVideo(x, "")).filter(Boolean).slice(0, 14));
+    }
+  } catch (e) {
+    /* meta получит fallbackPlayer; не дублируем ошибку в тост */
+    if (Date.now() - t0 > 1000 && !SET.direct) {
+      $("#wDesc").textContent = "Метаданные недоступны: зеркала молчат.";
+    }
+  }
+  loadComments(v);
+}
+let chIdOfCurrent = "";
+function renderRelated(list) {
+  const g = $("#relGrid");
+  g.innerHTML = "";
+  (list || []).forEach((v2) => {
+    const row = vCard(v2, { noChava: true, badge: v2.badge });
+    row.classList.add("svrow");
+    const th = $(".vthumb", row);
+    if (th) th.remove();
+    const meta = $(".vmeta", row);
+    if (meta) {
+      const th2 = document.createElement("div");
+      th2.className = "vthumb";
+      th2.innerHTML = '<img loading="lazy" alt="">' + (v2.dur ? '<span class="vdur">' + durFmt(v2.dur) + "</span>" : "");
+      const im = $("img", th2);
+      im.src = v2.thumb;
+      im.onerror = () => im.classList.add("err");
+      meta.parentNode.insertBefore(th2, meta);
+    }
+    g.appendChild(row);
+  });
+}
+
+/* ---------- комментарии ---------- */
+async function loadComments(v, nextPage) {
+  if (!v || !v.id) return;
+  try {
+    const base = "/comments/" + v.id + (nextPage ? "?nextpage=" + encodeURIComponent(nextPage) : "");
+    const j = await api(base);
+    if (nextPage === undefined) curComments = { next: null, loaded: 0 };
+    const arr = j.comments || [];
+    if (!nextPage) $("#cList").innerHTML = "";
+    arr.slice(0, 40).forEach((c) => {
+      const row = document.createElement("div");
+      row.className = "crow";
+      const img = document.createElement("img");
+      img.loading = "lazy";
+      img.alt = "";
+      img.src = c.thumbnail || AVA_FALLBACK;
+      img.onerror = function () {
+        this.src = AVA_FALLBACK;
+      };
+      const body = document.createElement("div");
+      body.innerHTML =
+        '<div class="cuth">' + esc(c.author) + " · " + esc(c.commentedTime || c.relDate || "") + "</div>" +
+        '<div class="ctext">' + esc(c.commentText || "") + "</div>" +
+        '<div class="clikes"><svg class="ic" style="width:12px;height:12px;vertical-align:-2px" viewBox="0 0 24 24"><path d="M1 21h4V9H1zm22-11a2 2 0 0 0-2-2h-6.31l.95-4.57.03-.32a1.5 1.5 0 0 0-.44-1.06L14.17 1 7.59 7.59A2 2 0 0 0 7 9v10a2 2 0 0 0 2 2h9a2 2 0 0 0 1.84-1.22l3.02-7.05A2 2 0 0 0 23 12z"/></svg> ' +
+        (c.likeCount ? hub(c.likeCount) : "0") +
+        (c.hearted ? " — автор" : "") +
+        (c.replyCount ? " · ответов: " + c.replyCount : "") +
+        "</div>";
+      row.appendChild(img);
+      row.appendChild(body);
+      $("#cList").appendChild(row);
+    });
+    curComments.loaded += arr.length;
+    curComments.next = j.nextpage || null;
+    $("#cTitle").textContent = "Комментарии (" + (j.commentCount ? hub(j.commentCount) : curComments.loaded) + ")";
+    $("#cMore").style.display = curComments.next ? "inline-flex" : "none";
+  } catch (e) {
+    if (!nextPage) {
+      $("#cTitle").textContent = "";
+      $("#cList").innerHTML = '<div class="empty" style="padding:16px">Комментарии недоступны — зеркала молчат.</div>';
+      $("#cMore").style.display = "none";
+    }
+  }
+}
+$("#cMore").onclick = () => {
+  if (curComments && curComments.next) loadComments(curWatch, curComments.next);
+  else toast("Комментариев больше нет");
+};
+
+/* ---------- канал ---------- */
+let curChanId = "";
+async function openChan(chId, name) {
+  if (!chId) {
+    toast("Канал не опознан у этого видео", "err");
+    return;
+  }
+  curChanId = chId;
+  $("#chName").textContent = name || "…";
+  $("#chSub").textContent = "тянем канал…";
+  $("#chDesc").textContent = "";
+  $("#chGrid").innerHTML = "";
+  $("#chAva").src = AVA_FALLBACK;
+  go("chan");
+  const subs = store.subs;
+  $("#chSubBtn").textContent = subs[chId] ? "Покинуть орду" : "В орду";
+  try {
+    const j = await api("/channel/" + encodeURIComponent(chId));
+    $("#chName").textContent = j.name || name || "?";
+    $("#chSub").textContent = hub(j.subscriberCount || 0) + " подписчиков";
+    $("#chAva").src = j.avatarUrl || AVA_FALLBACK;
+    $("#chDesc").textContent = (j.description || "").slice(0, 900) || "Описание отсутствует.";
+    $("#chGrid").innerHTML = "";
+    const vids = normList(j).slice(0, 40);
+    vids.forEach((v) => {
+      v.chId = v.chId || chId;
+      $("#chGrid").appendChild(vCard(v));
+    });
+    if (!vids.length) {
+      $("#chGrid").innerHTML = '<div class="empty"><b>Видео не показаны</b>Зеркало вернуло канал без списка.</div>';
+    }
+  } catch (e) {
+    $("#chSub").textContent = "канал недоступен: зеркала молчат";
+    $("#chGrid").innerHTML = emptyFail();
+  }
+}
+$("#wCh").onclick = () => {
+  const id = ($("#wCh").dataset.chid || (curWatch && curWatch.chId)) + "";
+  openChan(id, $("#wCh").textContent);
+};
+$("#chSubBtn").onclick = () => {
+  const id = curChanId;
+  if (!id) return;
+  const subs = store.subs;
+  if (subs[id]) {
+    delete subs[id];
+    store.subs = subs;
+    $("#chSubBtn").textContent = "В орду";
+    toast("Покинул орду");
+  } else {
+    subs[id] = { id, name: $("#chName").textContent, ava: $("#chAva").src, subbed: Date.now() };
+    store.subs = subs;
+    $("#chSubBtn").textContent = "Покинуть орду";
+    toast("Канал в орде");
+  }
+  renderSideCounts();
+};
+
+/* ---------- орда (подписки) ---------- */
+function subCountText(s) {
+  return s && s.subs ? hub(s.subs) + " подписчиков" : "канал";
+}
+function renderSubs() {
+  const subs = store.subs;
+  const ids = Object.keys(subs);
+  renderSideCounts();
+  const list = $("#subsList");
+  list.innerHTML = "";
+  const feed = $("#subsFeed");
+  if (!feed.dataset.keep) feed.innerHTML = "";
+  if (!ids.length) {
+    list.innerHTML =
+      '<div class="empty"><b>Орда пуста</b>Открой любое видео и жми «В орду» — канал встанет сюда.</div>';
+    return;
+  }
+  ids.forEach((id) => {
+    const s = subs[id];
+    const row = document.createElement("div");
+    row.className = "subrow";
+    row.innerHTML =
+      '<img src="' + esc(s.ava || AVA_FALLBACK) + '" alt=""> <div style="flex:1;min-width:0"><div class="nm">' +
+      esc(s.name) + '</div><div class="ds">' + subCountText(s) +
+      '</div></div><button class="btn ghost feed-btn">Кормить</button><button class="btn blood kick-btn">Кикнуть</button>';
+    const im = $("img", row);
+    im.onerror = function () {
+      this.src = AVA_FALLBACK;
+    };
+    $(".feed-btn", row).onclick = (e) => {
+      e.stopPropagation();
+      feedChannel(id);
+    };
+    $(".kick-btn", row).onclick = async (e) => {
+      e.stopPropagation();
+      const ok = await modal("Кикнуть из орды?", String(s.name), "Кик");
+      if (ok) {
+        const subs2 = store.subs;
+        delete subs2[id];
+        store.subs = subs2;
+        renderSubs();
+        toast("Кикнут: " + s.name);
+      }
+    };
+    row.onclick = () => openChan(id, s.name);
+    list.appendChild(row);
+  });
+}
+async function feedChannel(id) {
+  const subs = store.subs;
+  const s = subs[id];
+  if (!s) return;
+  toast("Кормим орду: " + s.name + "…");
+  const feed = $("#subsFeed");
+  feed.dataset.keep = "1";
+  skeletons(feed, 8);
+  try {
+    const j = await api("/channel/" + encodeURIComponent(id) + "/streams");
+    const vids = normList(j).slice(0, 24);
+    feed.innerHTML = "";
+    vids.forEach((v) => {
+      v.chId = v.chId || id;
+      feed.appendChild(vCard(v));
+    });
+    if (!vids.length) feed.innerHTML = '<div class="empty">Зеркало вернуло пустой канал.</div>';
+  } catch (e) {
+    feed.innerHTML = emptyFail();
+  }
+}
+
+/* ---------- локальные списки ---------- */
+const LOCAL_TITLES = {
+  hist: { t: "Пожранное", s: "история просмотров — только у тебя" },
+  liked: { t: "Вкусное", s: "видео, которые ты лайкнул" },
+  later: { t: "Отложить", s: "перекусить позже" },
+};
+/* счётчики в сайдбаре: орда/пожранное/вкусное/отложено */
+function renderSideCounts() {
+  const set = (id, n) => {
+    const el = $(id);
+    if (el) el.textContent = n ? String(n) : "";
+  };
+  set("#subsCnt", Object.keys(store.subs || {}).length);
+  set("#histCnt", (store.hist || []).length);
+  set("#likedCnt", (store.liked || []).length);
+  set("#laterCnt", (store.later || []).length);
+}
+function openLocal(kind) {
+  const t = LOCAL_TITLES[kind] || LOCAL_TITLES.hist;
+  $("#locTitle").textContent = t.t;
+  $("#locSub").textContent = t.s;
+  const grid = $("#locGrid");
+  grid.innerHTML = "";
+  const arr = (store[kind] || []).filter(Boolean);
+  $("#locEmpty").style.display = arr.length ? "none" : "block";
+  arr.forEach((v) => {
+    const c = vCard(v, { badge: kind === "hist" ? "ел" : kind === "liked" ? "вкусно" : "отложено" });
+    grid.appendChild(c);
+  });
+  go("local");
+}
+
+/* ---------- действия просмотра ---------- */
+$("#wSub").onclick = () => {
+  const id = ($("#wCh").dataset.chid || (curWatch && curWatch.chId)) + "";
+  if (!id || id === "undefined") {
+    toast("Канал не опознан — подожди загрузку метаданных", "err");
+    return;
+  }
+  const subs = store.subs;
+  if (subs[id]) {
+    delete subs[id];
+    store.subs = subs;
+    $("#wSub").textContent = "В орду";
+    toast("Покинул орду");
+  } else {
+    subs[id] = { id, name: $("#wCh").textContent, ava: $("#wAva").src, subbed: Date.now() };
+    store.subs = subs;
+    $("#wSub").textContent = "В орде ✔";
+    toast("Канал в орде");
+  }
+  renderSideCounts();
+};
+$("#wLike").onclick = () => {
+  if (!curWatch) return;
+  const has = (store.liked || []).some((x) => x && x.id === curWatch.id);
+  if (has) {
+    liteDel("liked", curWatch.id);
+    $("#wLike").classList.remove("on");
+    toast("Убрано из «Вкусного»");
+  } else {
+    liteSave("liked", Object.assign({}, curWatch, { when: $("#wStats").textContent }));
+    $("#wLike").classList.add("on");
+    toast("Вкусно! Рычит от радости");
+  }
+  renderSideCounts();
+};
+$("#wLater").onclick = () => {
+  if (!curWatch) return;
+  const has = (store.later || []).some((x) => x && x.id === curWatch.id);
+  if (has) {
+    liteDel("later", curWatch.id);
+    $("#wLater").classList.remove("on");
+    toast("Убрано из «Отложить»");
+  } else {
+    liteSave("later", curWatch);
+    $("#wLater").classList.add("on");
+    toast("Отложено на потом");
+  }
+  renderSideCounts();
+};
+$("#wShare").onclick = () => copyText("https://www.youtube.com/watch?v=" + (curWatch ? curWatch.id : ""));
+
+/* ---------- случайное видео ---------- */
+$("#btnShuffle").onclick = async () => {
+  toast("Ищем случайную падаль…");
+  const words = ["tutorial", "music live", "documentary", "review", "lofi", "podcast", "asmr", "history facts", "gameplay", "space"];
+  try {
+    const j = await api("/search?q=" + encodeURIComponent(words[Math.floor(Math.random() * words.length)]) + "&filter=videos");
+    const vids = normList(j);
+    if (vids.length) openWatch(vids[Math.floor(Math.random() * vids.length)]);
+    else toast("Пусто — жми ещё", "err");
+  } catch (e) {
+    toast("Зеркала молчат — попробуй ещё раз", "err");
+  }
+};
+
+/* ---------- трупо-факты ---------- */
+const FACTS = [
+  "Слово «зомби» пришло из гаитянского креольского: zonbi.",
+  "Первый зомби-фильм: «Белый зомби» (1932).",
+  "Медленных зомби придумал Джордж Ромеро в 1968-м.",
+  "Бежать зомби начали в 2002-м — «28 дней спустя».",
+  "У CDC США реально есть гайд «Готовность 101: зомби-апокалипсис» — как шутка про подготовку к катастрофам.",
+  "Грим одного зомби в «Ходячих мертвецах» занимал до 4 часов.",
+  "Зомби-апокалипсис — учебная модель в эпидемиологии: болезни моделируют «на зомби».",
+  "«Thriller» Майкла Джексона — самый продаваемый клип в истории.",
+  "ZombieTub ест рекламу вместо мозгов. Пока что.",
+  "Гипотеза: настоящий зомби смотрит видео без скипа. Ты не настоящий зомби — жми «Пропустить».",
+];
+function rotateFact() {
+  if (!SET.facts) {
+    $("#factBox").textContent = "";
+    return;
+  }
+  $("#factBox").textContent = FACTS[Math.floor(Math.random() * FACTS.length)];
+}
+
+/* ---------- настройки UI ---------- */
+function syncSetUI() {
+  $("#setRegion").value = SET.region || "RU";
+  $("#setInst").value = SET.inst || "";
+  $("#setDirect").textContent = SET.direct ? "вкл" : "выкл";
+  $("#setFacts").textContent = SET.facts ? "вкл" : "выкл";
+}
+$("#setRegion").onchange = () => {
+  SET.region = $("#setRegion").value;
+  saveSet();
+  toast("Регион: " + SET.region);
+  if (homeTab === 0) loadHome();
+};
+$("#setInst").onchange = () => {
+  SET.inst = $("#setInst").value.trim();
+  saveSet();
+  toast(SET.inst ? "Своё зеркало: " + SET.inst : "Авто-каскад зеркал");
+};
+$("#setDirect").onclick = () => {
+  SET.direct = !SET.direct;
+  saveSet();
+  syncSetUI();
+  toast(SET.direct ? "Прокси-потоки: вкл" : "Всегда официальный плеер");
+};
+$("#setFacts").onclick = () => {
+  SET.facts = !SET.facts;
+  saveSet();
+  syncSetUI();
+  rotateFact();
+};
+$("#setWipe").onclick = async () => {
+  const ok = await modal("Стереть всё?", "Подписки, история, лайки, «отложить» и настройки пропадут. Восстановить нельзя.", "Стереть");
+  if (!ok) return;
+  ["zt_subs", "zt_hist", "zt_liked", "zt_later", "zt_set", "zt_mlog"].forEach((k) => {
+    try {
+      localStorage.removeItem(k);
+    } catch (e2) {}
+  });
+  SET = Object.assign({}, SET_DEF);
+  mirrorLog = [];
+  syncSetUI();
+  rotateFact();
+  renderSideCounts();
+  go("home");
+  loadHome();
+  toast("Кладбище чисто", "", 4000);
+};
+
+/* ---------- статус зеркал ---------- */
+$("#abMirrorCheck").onclick = async () => {
+  const box = $("#abMirrorLog");
+  box.textContent = "щупаем зеркала…";
+  const results = [];
+  for (const m of MIRRORS) {
+    const ctl = new AbortController();
+    const tm = setTimeout(() => ctl.abort(), 8000);
+    const t0 = Date.now();
+    try {
+      const r = await fetch(m + "/trending?region=US", { signal: ctl.signal, headers: { accept: "application/json" } });
+      clearTimeout(tm);
+      const ms = Date.now() - t0;
+      results.push(mirrorName(m) + ": " + (r.ok ? "живо (" + ms + " мс)" : "HTTP " + r.status));
+    } catch (e) {
+      clearTimeout(tm);
+      results.push(mirrorName(m) + ": мёртво");
+    }
+    box.textContent = "щупаем зеркала…\n" + results.join("\n");
+  }
+  box.textContent = results.join("\n") + "\n\nПервым теперь пробуется: " + mirrorName(MIRRORS[0]);
+};
+
+/* ---------- навигация ---------- */
+const NAV_LOADERS = {
+  home: loadHome,
+  trend: loadTrend,
+  subs: renderSubs,
+  hist: () => openLocal("hist"),
+  liked: () => openLocal("liked"),
+  later: () => openLocal("later"),
+  about: () => {
+    $("#abMirrorLog").textContent = mirrorLog.join("\n") || "журнал зеркал пуст — пока всё чисто.";
+  },
+  set: syncSetUI,
+};
+$$("[data-nav]").forEach((b) => {
+  b.addEventListener("click", () => {
+    const n = b.dataset.nav;
+    if (NAV_LOADERS[n]) NAV_LOADERS[n]();
+    go(n === "hist" || n === "liked" || n === "later" ? "local" : n);
+  });
+});
+$("#brand").onclick = () => {
+  go("home");
+  loadHome();
+};
+$("#burger").onclick = () => document.body.classList.toggle("sided");
+$("#sideShade").onclick = () => document.body.classList.remove("sided");
+$("#btnSettings").onclick = () => {
+  syncSetUI();
+  go("set");
+};
+$("#btnAbout").onclick = () => go("about");
+
+/* ---------- горячие клавиши ---------- */
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") {
+    if ($("#mdWrap").classList.contains("on")) mdDone(false);
+    else if (document.body.classList.contains("sided")) document.body.classList.remove("sided");
+    else if (curScreen === "watch" || curScreen === "chan") {
+      go(curListContext ? "list" : "home");
+    }
+  }
+  if ((e.ctrlKey || e.metaKey) && (e.key === "k" || e.key === "л")) {
+    e.preventDefault();
+    $("#searchIn").focus();
+  }
+  if (e.key === "/" && document.activeElement !== $("#searchIn")) {
+    e.preventDefault();
+    $("#searchIn").focus();
+  }
+});
+window.__AVA_FALLBACK = AVA_FALLBACK;
+
+</script>
+
+<!-- сторож boot-fail: отдельный скрипт — живёт даже если главный пал -->
+<script>
+(function () {
+  var tries = 0;
+  var iv = null;
+  function check() {
+    try {
+      if (window.ZT) {
+        if (iv) clearInterval(iv);
+        return;
+      }
+      var errs = window.__ZTerrs || [];
+      var d = document.createElement("div");
+      d.setAttribute("style", "position:fixed;inset:0;z-index:2147483647;background:#0a0f0a;color:#dde4d2;font:13px/1.6 monospace;padding:26px;overflow:auto");
+      d.innerHTML =
+        '<div style="max-width:700px;margin:0 auto"><div style="color:#b31414;font-weight:700;font-size:20px;margin-bottom:10px">ZombieTub — ошибка запуска</div><div style="white-space:pre-wrap;background:#1d0d0d;border:1px solid #b31414;border-radius:8px;padding:12px">' +
+        String(errs.join("\n") || "скрипт не выполнился (старый браузер или встроенный просмотрщик)") +
+        '</div><div style="margin-top:12px;color:#9aa88c">Открой файл локально в свежем Chrome / Firefox / Edge.</div></div>';
+      document.body.appendChild(d);
+    } catch (e) {}
+    if (++tries >= 4 && iv) clearInterval(iv);
+  }
+  function start() {
+    iv = setInterval(check, 2200);
+  }
+  if (document.readyState === "complete") setTimeout(start, 2200);
+  else window.addEventListener("load", start);
+})();
+
+/* ---------- чипсы главной (категории) ---------- */
+function renderChips() {
+  const wrap = $("#homeChips");
+  if (!wrap || wrap.children.length) return;
+  HOME_TABS.forEach((t, i) => {
+    const b = document.createElement("button");
+    b.className = "chip" + (i === homeTab ? " on" : "");
+    b.textContent = t.t;
+    b.onclick = () => {
+      homeTab = i;
+      $$("#homeChips .chip").forEach((c2, j) => c2.classList.toggle("on", j === homeTab));
+      loadHome();
+    };
+    wrap.appendChild(b);
+  });
+}
+
+/* ---------- экспорт + запуск ---------- */
+window.ZT = {
+  v: "1.0",
+  go,
+  doSearch,
+  loadHome,
+  loadTrend,
+  openWatch,
+  openChan,
+  renderSubs,
+  openLocal,
+  get SET() { return SET; },
+  renderChips,
+  store,
+  api,
+  MIRRORS,
+  get mirrorName() { return MIRRORS[0]; },
+  normList,
+  normVideo,
+  vCard,
+  modal,
+  toast,
+  get mirrorLog() { return mirrorLog; },
+  get curScreen() { return curScreen; },
+  get curWatchId() { return curWatch ? curWatch.id : null; },
+  liteSave,
+  playProxied,
+  fallbackPlayer,
+};
+
+renderSideCounts();
+syncSetUI();
+rotateFact();
+renderChips();
+go("home");
+loadHome();
+setInterval(rotateFact, 45000);
+</script>
+</body>
+</html>
