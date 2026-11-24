@@ -6,6 +6,17 @@
 <meta name="theme-color" content="#050505">
 <meta name="description" content="GEKTAR AI — Intelligence Beyond Imagination. Премиальная ИИ-платформа для создания кода.">
 <title>GEKTAR AI — Intelligence Beyond Imagination</title>
+<script>
+/* GEKTAR boot watchdog (classic script): диагностика вместо чёрного экрана */
+window.__GKerrs = [];
+window.addEventListener("error", function (e) {
+  window.__GKerrs.push((e.message || "error") + (e.lineno ? " (строка " + e.lineno + ")" : ""));
+}, true);
+window.addEventListener("unhandledrejection", function (e) {
+  var r = e && e.reason;
+  window.__GKerrs.push("promise: " + ((r && r.message) || r || "unknown"));
+});
+</script>
 <style>
 /* ============================================================
    GEKTAR AI v1.0 — design system
@@ -4148,6 +4159,55 @@ body.collapsed .sidebar {
   </div>
   <div id="toasts" role="status" aria-live="polite"></div>
 </body>
+<script>
+(function () {
+  var tries = 0, iv = null;
+  function esc2(t){return String(t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}
+  function show(rsn, errs) {
+    try {
+      var old = document.getElementById("gkBootFail");
+      if (old) old.remove();
+      var d = document.createElement("div");
+      d.id = "gkBootFail";
+      d.setAttribute("style","position:fixed;inset:0;z-index:2147483647;background:#0a0a0b;color:#e9eaef;font:13px/1.65 Consolas,monospace;padding:28px;overflow:auto");
+      var h = '<div style="max-width:760px;margin:0 auto">';
+      h += '<div style="color:#E50920;font-weight:700;font-size:22px;margin-bottom:12px">GEKTAR AI \u2014 \u043e\u0448\u0438\u0431\u043a\u0430 \u0437\u0430\u043f\u0443\u0441\u043a\u0430</div>';
+      h += '<div style="margin-bottom:14px">' + rsn + '</div>';
+      if (errs && errs.length) {
+        h += '<div style="background:#1a0a0d;border:1px solid #E50920;border-radius:8px;padding:12px 14px;white-space:pre-wrap;word-break:break-all">' + esc2(errs.join("\n")) + '</div>';
+      }
+      h += '<div style="margin-top:18px;color:#a7abb6">\u0427\u0442\u043e \u0434\u0435\u043b\u0430\u0442\u044c:<br>1. \u0421\u043a\u0430\u0447\u0430\u0439\u0442\u0435 index.html \u043d\u0430 \u0443\u0441\u0442\u0440\u043e\u0439\u0441\u0442\u0432\u043e \u0438 \u043e\u0442\u043a\u0440\u043e\u0439\u0442\u0435 \u0435\u0433\u043e \u043b\u043e\u043a\u0430\u043b\u044c\u043d\u043e \u0441\u0432\u0435\u0436\u0438\u043c Chrome / Edge / Firefox \u2014 \u043d\u0435 \u0447\u0435\u0440\u0435\u0437 \u043f\u0440\u0435\u0434\u043f\u0440\u043e\u0441\u043c\u043e\u0442\u0440 GitHub \u0438 \u043d\u0435 \u0432 \u0441\u0442\u0430\u0440\u043e\u043c \u0431\u0440\u0430\u0443\u0437\u0435\u0440\u0435.<br>2. \u0415\u0441\u043b\u0438 \u0441\u043a\u0430\u0447\u0438\u0432\u0430\u043b\u0438 \u0430\u0440\u0445\u0438\u0432\u043e\u043c \u2014 \u0441\u043d\u0430\u0447\u0430\u043b\u0430 \u0440\u0430\u0441\u043f\u0430\u043a\u0443\u0439\u0442\u0435.<br>3. \u041e\u0442\u043a\u043b\u044e\u0447\u0438\u0442\u0435 \u0431\u043b\u043e\u043a\u0438\u0440\u043e\u0432\u0449\u0438\u043a\u0438 \u0441\u043a\u0440\u0438\u043f\u0442\u043e\u0432 \u0434\u043b\u044f \u044d\u0442\u043e\u0433\u043e \u0444\u0430\u0439\u043b\u0430.<br>4. \u0415\u0441\u043b\u0438 \u043d\u0435 \u043f\u043e\u043c\u043e\u0433\u043b\u043e \u2014 \u043d\u0430\u043f\u0438\u0448\u0438\u0442\u0435 \u0442\u0435\u043a\u0441\u0442 \u043e\u0448\u0438\u0431\u043a\u0438 \u043d\u0430 \u043a\u0440\u0430\u0441\u043d\u043e\u0439 \u043f\u0430\u043d\u0435\u043b\u0438 \u0440\u0430\u0437\u0440\u0430\u0431\u043e\u0442\u0447\u0438\u043a\u0443.</div>';
+      h += '</div>';
+      d.innerHTML = h;
+      document.body.appendChild(d);
+    } catch (e) {}
+  }
+  function check() {
+    try {
+      var on = document.querySelector(".scr.on");
+      if (on) {
+        var old = document.getElementById("gkBootFail");
+        if (old) old.remove();
+        if (iv) { clearInterval(iv); iv = null; }
+        return;
+      }
+      var g = window.GEKTAR;
+      var errs = window.__GKerrs || [];
+      if (!g && errs.length) { show("\u0421\u043a\u0440\u0438\u043f\u0442 \u043f\u0440\u0438\u043b\u043e\u0436\u0435\u043d\u0438\u044f \u0443\u043f\u0430\u043b \u0441 \u043e\u0448\u0438\u0431\u043a\u043e\u0439:", errs); return; }
+      if (!g && !errs.length) { show("\u0421\u043a\u0440\u0438\u043f\u0442 \u043f\u0440\u0438\u043b\u043e\u0436\u0435\u043d\u0438\u044f \u043d\u0435 \u0432\u044b\u043f\u043e\u043b\u043d\u0438\u043b\u0441\u044f. \u0427\u0430\u0441\u0442\u044b\u0435 \u043f\u0440\u0438\u0447\u0438\u043d\u044b: \u0441\u0442\u0430\u0440\u044b\u0439 \u0431\u0440\u0430\u0443\u0437\u0435\u0440 \u0431\u0435\u0437 ES-\u043c\u043e\u0434\u0443\u043b\u0435\u0439, \u0431\u043b\u043e\u043a\u0438\u0440\u043e\u0432\u0449\u0438\u043a \u0441\u043a\u0440\u0438\u043f\u0442\u043e\u0432 \u0438\u043b\u0438 \u0444\u0430\u0439\u043b \u043e\u0442\u043a\u0440\u044b\u0442 \u0447\u0435\u0440\u0435\u0437 \u043f\u0440\u0435\u0434\u043f\u0440\u043e\u0441\u043c\u043e\u0442\u0440 GitHub \u0432\u043c\u0435\u0441\u0442\u043e \u043b\u043e\u043a\u0430\u043b\u044c\u043d\u043e\u0433\u043e \u043e\u0442\u043a\u0440\u044b\u0442\u0438\u044f.", errs); return; }
+      show("\u041c\u043e\u0434\u0443\u043b\u044c \u0437\u0430\u043f\u0443\u0441\u0442\u0438\u043b\u0441\u044f, \u043d\u043e \u044d\u043a\u0440\u0430\u043d \u043d\u0435 \u043e\u0442\u043a\u0440\u044b\u043b\u0441\u044f:", errs);
+    } catch (e) {}
+  }
+  function tick() {
+    try { check(); } catch (e) {}
+    tries++;
+    if (tries >= 5 && iv) { clearInterval(iv); iv = null; }
+  }
+  function start() { if (iv) return; iv = setInterval(tick, 2000); tick(); }
+  if (document.readyState === "complete") setTimeout(start, 2500);
+  else window.addEventListener("load", start);
+})();
+</script>
 <script type="module">/* ===================== GEKTAR AI v1.0 — core ===================== */
 "use strict";
 const $ = (s, r) => (r || document).querySelector(s);
