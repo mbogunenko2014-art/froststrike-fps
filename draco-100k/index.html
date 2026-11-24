@@ -1,0 +1,1486 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>DRACO 100K — ультра-детализированный 3D-дракон</title>
+<style>
+:root {
+  --bg0: #060907;
+  --bg1: #0b120d;
+  --panel: rgba(10, 16, 12, 0.78);
+  --panel-line: rgba(139, 205, 106, 0.16);
+  --txt: #dde8d2;
+  --dim: #9fb391;
+  --mut: #63775a;
+  --gold: #d4a94e;
+  --gold2: #f0cd7e;
+  --tox: #6fae39;
+  --em1: #2e6a34;
+  --blood: #8a1d12;
+  --rads: 10px;
+  --rads2: 16px;
+  --font: "Segoe UI", Roboto, "Helvetica Neue", system-ui, -apple-system, sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; }
+body {
+  background: radial-gradient(120% 90% at 50% 8%, #101c13 0%, #0a120c 42%, var(--bg0) 100%);
+  color: var(--txt);
+  font-family: var(--font);
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
+  touch-action: none;
+}
+/* лёгкая „пыль“ сцены поверх фона */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(90% 60% at 70% 20%, rgba(111, 174, 57, 0.05), transparent 60%),
+    radial-gradient(70% 50% at 20% 80%, rgba(212, 169, 78, 0.035), transparent 65%);
+}
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(120% 120% at 50% 45%, transparent 55%, rgba(0, 0, 0, 0.55) 100%);
+}
+#gl {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  cursor: grab;
+}
+#gl.grabbing { cursor: grabbing; }
+
+/* ---------- загрузчик ---------- */
+#boot {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  background: var(--bg0);
+  transition: opacity 0.6s ease;
+}
+#boot.off { opacity: 0; pointer-events: none; }
+#bootTitle {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 34px;
+  letter-spacing: 0.22em;
+  color: var(--gold2);
+  text-shadow: 0 0 26px rgba(212, 169, 78, 0.35);
+}
+#bootSub { font-size: 12.5px; color: var(--mut); letter-spacing: 0.14em; text-transform: uppercase; }
+#bootBarWrap {
+  width: min(420px, 74vw);
+  height: 3px;
+  border-radius: 999px;
+  background: #141d16;
+  overflow: hidden;
+  margin-top: 8px;
+}
+#bootBar {
+  width: 0%;
+  height: 100%;
+  background: linear-gradient(90deg, var(--em1), var(--tox));
+  transition: width 0.15s ease;
+}
+#bootMsg { font-size: 12px; color: var(--dim); min-height: 16px; }
+
+/* ---------- HUD ---------- */
+#plaque {
+  position: fixed;
+  top: 16px;
+  left: 18px;
+  z-index: 10;
+  padding: 10px 16px 11px;
+  background: var(--panel);
+  border: 1px solid var(--panel-line);
+  border-radius: var(--rads2);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  user-select: none;
+}
+#plaque h1 {
+  font-family: Georgia, serif;
+  font-size: 19px;
+  font-weight: 400;
+  letter-spacing: 0.3em;
+  color: var(--gold2);
+  white-space: nowrap;
+}
+#plaque small { display: block; margin-top: 3px; font-size: 10.5px; letter-spacing: 0.18em; color: var(--mut); text-transform: uppercase; }
+
+#actBar {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.abtn {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 10px 14px;
+  background: var(--panel);
+  border: 1px solid var(--panel-line);
+  border-radius: 12px;
+  color: var(--dim);
+  font: 500 12.5px var(--font);
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: border-color 0.15s, color 0.15s, transform 0.08s;
+  user-select: none;
+}
+.abtn:hover { color: var(--txt); border-color: rgba(139, 205, 106, 0.4); }
+.abtn:active { transform: scale(0.97); }
+.abtn.on {
+  color: var(--gold2);
+  border-color: rgba(212, 169, 78, 0.55);
+  background: rgba(38, 30, 12, 0.82);
+}
+.abtn svg { width: 15px; height: 15px; fill: currentColor; flex: none; }
+
+#stats {
+  position: fixed;
+  left: 18px;
+  bottom: 18px;
+  z-index: 10;
+  min-width: 208px;
+  padding: 12px 15px;
+  background: var(--panel);
+  border: 1px solid var(--panel-line);
+  border-radius: var(--rads2);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  font-size: 12px;
+  color: var(--dim);
+  user-select: none;
+}
+#stats b { color: var(--gold2); font-weight: 600; font-variant-numeric: tabular-nums; }
+#stats .row { display: flex; justify-content: space-between; gap: 18px; padding: 2.5px 0; }
+#stats .row span:last-child { font-variant-numeric: tabular-nums; }
+#stTri { color: var(--gold2); }
+
+#hint {
+  position: fixed;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+  z-index: 9;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: var(--panel);
+  border: 1px solid var(--panel-line);
+  color: var(--mut);
+  font-size: 11.5px;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  user-select: none;
+  transition: opacity 0.6s;
+}
+#hint.gone { opacity: 0; }
+
+/* ---------- WebGL недоступен / ошибки ---------- */
+#glfail, #gkBootFail {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+#glfail.on, #gkBootFail.on { display: flex; }
+#glfail .box, #gkBootFail .box {
+  max-width: 560px;
+  padding: 26px 28px;
+  background: #140b0b;
+  border: 1px solid #8a1d12;
+  border-radius: var(--rads2);
+  font-size: 13.5px;
+  line-height: 1.65;
+  color: var(--txt);
+}
+#glfail .box h2, #gkBootFail .box h2 { font-size: 17px; color: #e05545; margin-bottom: 10px; letter-spacing: 0.03em; }
+#gkBootFail { background: rgba(6, 9, 7, 0.94); z-index: 60; }
+#gkBootFail pre { white-space: pre-wrap; background: #1d0d0d; border: 1px solid #8a1d12; border-radius: 8px; padding: 12px; margin-top: 10px; font-size: 12px; }
+
+/* ---------- тосты ---------- */
+#ztToasts {
+  position: fixed;
+  right: 16px;
+  bottom: 76px;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+}
+.toast {
+  padding: 9px 14px;
+  background: var(--panel);
+  border: 1px solid var(--panel-line);
+  border-left: 3px solid var(--tox);
+  border-radius: 10px;
+  font-size: 12.5px;
+  color: var(--txt);
+  animation: tin 0.25s ease;
+  backdrop-filter: blur(10px);
+}
+.toast.gd { border-left-color: var(--gold); }
+@keyframes tin { from { opacity: 0; transform: translateY(8px); } }
+
+@media (max-width: 640px) {
+  #plaque { top: 12px; left: 12px; padding: 8px 12px 9px; }
+  #plaque h1 { font-size: 15px; }
+  #plaque small { font-size: 9px; }
+  #actBar { top: auto; bottom: 64px; right: 12px; }
+  .abtn { padding: 9px 12px; font-size: 11.5px; }
+  #stats { left: 12px; bottom: 64px; min-width: 0; font-size: 11px; padding: 10px 12px; }
+  #hint { display: none; }
+  #bootTitle { font-size: 24px; }
+}
+@media (max-width: 400px) {
+  #stats { bottom: 12px; }
+  #actBar { bottom: 12px; }
+  .abtn span { display: none; }
+  .abtn svg { width: 17px; height: 17px; }
+}
+</style>
+</head>
+<body>
+<canvas id="gl" aria-label="3D-дракон — тяни, чтобы вращать, колесо/щипок — зум"></canvas>
+
+<div id="plaque">
+  <h1>DRACO · 100K</h1>
+  <small>процедурный дракон · честные полигоны</small>
+</div>
+
+<div id="actBar">
+  <button class="abtn on" id="btnSpin" title="Автоповорот">
+    <svg viewBox="0 0 24 24"><path d="M12 4V1L8 5l4 4V6a6 6 0 1 1-6 6H4a8 8 0 1 0 8-8z"/></svg><span>Поворот</span>
+  </button>
+  <button class="abtn" id="btnWire" title="Каркас: показать полигоны">
+    <svg viewBox="0 0 24 24"><path d="M12 2 2 7.5l10 5.5 10-5.5L12 2zM4.2 7.5 12 3.2l7.8 4.3L12 11.8 4.2 7.5zM3 9.2v7L11 20.7v-7L3 9.2zm18 0-8 4.4v7l8-4.4v-7z"/></svg><span>Каркас</span>
+  </button>
+  <button class="abtn" id="btnLight" title="Схема освещения">
+    <svg viewBox="0 0 24 24"><path d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.1V17h6v-.2c0-.8.4-1.6 1-2.1A7 7 0 0 0 12 2z"/></svg><span>Свет</span>
+  </button>
+  <button class="abtn" id="btnShot" title="Скриншот PNG">
+    <svg viewBox="0 0 24 24"><path d="M9 3 7.2 5H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3.2L15 3H9zm3 5a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/></svg><span>Скриншот</span>
+  </button>
+  <button class="abtn" id="btnReset" title="Сбросить камеру">
+    <svg viewBox="0 0 24 24"><path d="M12 5V2L8 6l4 4V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7z"/></svg><span>Камера</span>
+  </button>
+</div>
+
+<div id="stats">
+  <div class="row"><span>треугольники</span><b id="stTri">…</b></div>
+  <div class="row"><span>вершины</span><span id="stVert">…</span></div>
+  <div class="row"><span>деталей</span><span id="stParts">…</span></div>
+  <div class="row"><span>кадров/с</span><span id="stFps">…</span></div>
+  <div class="row"><span>полигонов · цель</span><span>100 000</span></div>
+</div>
+
+<div id="hint">тяни мышью — вращай во все стороны · колесо — зум · на сенсоре: палец и щипок</div>
+
+<div id="glfail">
+  <div class="box">
+    <h2>WebGL недоступен</h2>
+    Дракон рисуется через WebGL, а этот браузер (или встроенный просмотрщик) его не даёт.<br><br>
+    Скачай файл и открой его локально в свежем Chrome, Firefox или Edge — там всё заведётся.
+  </div>
+</div>
+
+<div id="ztToasts"></div>
+
+<div id="boot">
+  <div id="bootTitle">DRACO</div>
+  <div id="bootSub">лепим дракона · 100 000 полигонов</div>
+  <div id="bootBarWrap"><div id="bootBar"></div></div>
+  <div id="bootMsg">готовим мастерскую…</div>
+</div>
+
+<script>
+window.__ZTerrs = [];
+window.addEventListener("error", function (e) {
+  window.__ZTerrs.push(String((e && e.message) || e) + (e && e.filename ? " @" + String(e.lineno) : ""));
+});
+window.addEventListener("unhandledrejection", function (e) {
+  window.__ZTerrs.push("promise: " + String((e && e.reason && e.reason.message) || e.reason));
+});
+</script>
+
+<script>
+"use strict";
+/* ============================================================
+   DRACO 100K — процедурная геометрия дракона (чистая математика,
+   без внешних библиотек). Каждый треугольник считается здесь.
+   ============================================================ */
+
+/* ---------- vec3 ---------- */
+const V = {
+  add: (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]],
+  sub: (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]],
+  mul: (a, s) => [a[0] * s, a[1] * s, a[2] * s],
+  dot: (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2],
+  cross: (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]],
+  len: (a) => Math.hypot(a[0], a[1], a[2]),
+  norm: (a) => {
+    const l = Math.hypot(a[0], a[1], a[2]) || 1;
+    return [a[0] / l, a[1] / l, a[2] / l];
+  },
+  lerp: (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t],
+};
+const TAU = Math.PI * 2;
+const smooth = (e0, e1, x) => {
+  const t = Math.min(1, Math.max(0, (x - e0) / (e1 - e0 || 1)));
+  return t * t * (3 - 2 * t);
+};
+
+/* ---------- детерминированный шум ---------- */
+function mulberry(seed) {
+  let a = seed >>> 0;
+  return function () {
+    a |= 0;
+    a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+const rng = mulberry(20110910);
+const jit = (k) => (rng() * 2 - 1) * k;
+
+/* value noise 2d — для лёгкой органической неровности поверхностей */
+function vhash(ix, iy) {
+  let h = Math.sin(ix * 127.1 + iy * 311.7) * 43758.5453;
+  return h - Math.floor(h);
+}
+function vnoise(x, y) {
+  const ix = Math.floor(x), iy = Math.floor(y);
+  const fx = x - ix, fy = y - iy;
+  const sx = fx * fx * (3 - 2 * fx), sy = fy * fy * (3 - 2 * fy);
+  const a = vhash(ix, iy), b = vhash(ix + 1, iy), c = vhash(ix, iy + 1), d = vhash(ix + 1, iy + 1);
+  return a + (b - a) * sx + (c - a) * sy + (d - a - b + a) * sx * sy;
+}
+
+/* ---------- сетчатая поверхность: единый строитель ----------
+   F(u, v) -> [x, y, z]; нормаль и касательная — честные центральными разностями */
+function makeBucket() {
+  return { pos: [], nrm: [], tan: [], uv: [], idx: [] };
+}
+function surfGrid(out, F, nu, nv, uWrap, uScale, vScale) {
+  const e = 0.003;
+  /* все сэмплы клампятся в [0,1] — центральные разности не выходят за домен */
+  const C = (uu, vv) => F(Math.min(1, Math.max(0, uu)), Math.min(1, Math.max(0, vv)));
+  const P = [], N = [], T = [], U = [], W = [];
+  for (let j = 0; j <= nv; j++) {
+    P.push([]);
+    N.push([]);
+    T.push([]);
+    U.push([]);
+    W.push([]);
+  }
+  for (let j = 0; j <= nv; j++) {
+    const v = j / nv;
+    for (let i = 0; i < nu; i++) {
+      const u = i / nu;
+      const p = C(u, v);
+      const pu = C(u + e / nu, v);
+      const pu2 = C(u - e / nu, v);
+      const pv = C(u, v + e / nv);
+      const pv2 = C(u, v - e / nv);
+      const du = V.sub(pu, pu2);
+      const dv = V.sub(pv, pv2);
+      let n = V.cross(du, dv);
+      if (V.len(n) < 1e-9) n = [0, 1, 0];
+      P[j].push(p);
+      N[j].push(V.norm(n));
+      T[j].push(V.norm(du));
+      U[j].push(u * uScale);
+      W[j].push(v * vScale);
+    }
+  }
+  const ll = out.pos.length / 3;
+  for (let j = 0; j <= nv; j++) {
+    for (let i = 0; i < nu; i++) {
+      out.pos.push(P[j][i][0], P[j][i][1], P[j][i][2]);
+      out.nrm.push(N[j][i][0], N[j][i][1], N[j][i][2]);
+      out.tan.push(T[j][i][0], T[j][i][1], T[j][i][2]);
+      out.uv.push(U[j][i], W[j][i]);
+    }
+  }
+  const stride = nu;
+  const idx = (i, j) => j * stride + (i % nu);
+  for (let j = 0; j < nv; j++) {
+    for (let i = 0; i < (uWrap ? nu : nu - 1); i++) {
+      const a = ll + idx(i, j);
+      const b = ll + idx(i + 1, j);
+      const c = ll + idx(i, j + 1);
+      const d = ll + idx(i + 1, j + 1);
+      out.idx.push(a, b, c, b, d, c);
+    }
+  }
+  return out;
+}
+
+/* ---------- кривая Катмулла-Рома по опорным точкам ---------- */
+function crSample(pts, t) {
+  const n = pts.length - 1;
+  const f = Math.min(0.99999, Math.max(0, t)) * n;
+  const i = Math.min(Math.floor(f), n - 1);
+  const u = f - i;
+  const p0 = pts[Math.max(0, i - 1)];
+  const p1 = pts[i];
+  const p2 = pts[i + 1];
+  const p3 = pts[Math.min(n, i + 2)];
+  const u2 = u * u, u3 = u2 * u;
+  const out = [0, 0, 0];
+  for (let k = 0; k < 3; k++) {
+    out[k] =
+      0.5 * (2 * p1[k] + (-p0[k] + p2[k]) * u + (2 * p0[k] - 5 * p1[k] + 4 * p2[k] - p3[k]) * u2 + (-p0[k] + 3 * p1[k] - 3 * p2[k] + p3[k]) * u3);
+  }
+  return out;
+}
+
+/* труба вдоль кривой: radius(t) задаёт профиль */
+function tube(out, pts, radiusFn, rings, radial, opt) {
+  opt = opt || {};
+  const upv = opt.up || [0, 1, 0];
+  const belly = opt.belly || 0; /* приплюснутость снизу (живот) */
+  const curve = (u, v) => {
+    const C = crSample(pts, u);
+    const Ca = crSample(pts, Math.min(1, u + 0.002));
+    const Cb = crSample(pts, Math.max(0, u - 0.002));
+    let T = V.norm(V.sub(Ca, Cb));
+    if (V.len(T) < 1e-6) T = [1, 0, 0];
+    let N = V.cross(upv, T);
+    if (V.len(N) < 1e-6) N = V.cross([1, 0, 0], T);
+    N = V.norm(N);
+    const B = V.cross(T, N);
+    const a = v * TAU;
+    const ca = Math.cos(a), sa = Math.sin(a);
+    const r = radiusFn(u);
+    const flank = sa > 0 ? 1 - belly : (1 - belly) * 0.72 + 0.08; /* живот — вниз (-B) */
+    const sx = ca * r;
+    const sy = sa * r * (sa > 0 ? 1 - belly * 0.25 : flank);
+    /* дышащая лёгкая асимметрия + микрошум кожи */
+    const w = 1 + vnoise(u * 14 + 3, v * 9) * (opt.rough || 0.02) + (opt.wobble ? Math.sin(u * 40 + v * 6.28) * 0.004 : 0);
+    return [C[0] + (N[0] * sx + B[0] * sy) * w, C[1] + (N[1] * sx + B[1] * sy) * w, C[2] + (N[2] * sx + B[2] * sy) * w];
+  };
+  return surfGrid(out, curve, radial, rings, true, opt.uvS || 6, opt.vvS || 14);
+}
+
+/* конус-шип: база, направление, длина, радиус основания */
+function spike(out, base, dir, len, r0, rings, radial) {
+  const dv = V.norm(dir);
+  const tip = V.add(base, V.mul(dv, len));
+  const mid = V.add(base, V.mul(dv, len * 0.25));
+  const pts = [V.sub(base, V.mul(dv, 0.01)), base, mid, tip];
+  return tube(out, pts, (u) => r0 * Math.pow(1 - u, 1.1) + 0.002, rings, radial, { up: Math.abs(dv[1]) > 0.93 ? [1, 0, 0] : [0, 1, 0], uvS: 2, vvS: 3, rough: 0.03 });
+}
+
+/* эллипсоид с деформацией (череп, челюсть, глаз) */
+function blob(out, center, ax, deform, nu, nv, opt) {
+  opt = opt || {};
+  const F = (u, v) => {
+    const a = u * TAU;
+    const b = v * Math.PI;
+    const sb = Math.sin(b), cb = Math.cos(b);
+    let d = [sb * Math.cos(a), cb, sb * Math.sin(a)];
+    /* суперэллипс — более «костяная» форма при p>2 */
+    const p = opt.pow || 2.2;
+    const dp = [
+      Math.sign(d[0]) * Math.pow(Math.abs(d[0]), 2 / p),
+      Math.sign(d[1]) * Math.pow(Math.abs(d[1]), 2 / p),
+      Math.sign(d[2]) * Math.pow(Math.abs(d[2]), 2 / p),
+    ];
+    let P = [center[0] + dp[0] * ax[0], center[1] + dp[1] * ax[1], center[2] + dp[2] * ax[2]];
+    if (deform) P = deform(a, b, P);
+    return P;
+  };
+  return surfGrid(out, F, nu, nv, true, opt.uvS || 8, opt.vvS || 6);
+}
+
+/* ============================================================
+   ПАРТИТУРА ДРАКОНА
+   ============================================================ */
+
+/* позвоночник: от кончика хвоста (-x) к черепу (+x), шея поднимается */
+const SPINE = [
+  [-3.05, 0.34, 0.00],
+  [-2.55, 0.36, jit(0.02)],
+  [-1.95, 0.44, jit(0.02)],
+  [-1.30, 0.54, jit(0.02)],
+  [-0.72, 0.62, jit(0.02)],
+  [-0.18, 0.70, 0],
+  [0.32, 0.82, 0],
+  [0.72, 1.02, 0],
+  [1.02, 1.36, 0],
+  [1.24, 1.74, 0],
+  [1.40, 2.06, 0],
+  [1.50, 2.26, 0],
+];
+function spineRadius(t) {
+  /* хвост тонкий, бёдра и грудь массивные, шея снова сужается */
+  const p = [
+    [0.0, 0.015],
+    [0.08, 0.05],
+    [0.2, 0.11],
+    [0.33, 0.17],
+    [0.45, 0.26],
+    [0.55, 0.30],
+    [0.64, 0.30],
+    [0.72, 0.26],
+    [0.8, 0.19],
+    [0.9, 0.15],
+    [1.0, 0.14],
+  ];
+  for (let i = 0; i < p.length - 1; i++) {
+    if (t <= p[i + 1][0]) {
+      const k = (t - p[i][0]) / (p[i + 1][0] - p[i][0]);
+      return p[i][1] + (p[i + 1][1] - p[i][1]) * k;
+    }
+  }
+  return p[p.length - 1][1];
+}
+let spineFrames = [];
+
+const PARTS = [];
+function part(name, opts, build) {
+  PARTS.push({ name, opts: opts || {}, build });
+}
+
+/* ---------- корпус: позвоночник-труба с животом и рёбрами ---------- */
+part("corpus", { mat: 0 }, (o) => {
+  spineFrames = [];
+  const rings = 240;
+  const radial = 88;
+  const up = [0, 1, 0];
+  const curve = (u, v) => {
+    const C = crSample(SPINE, u);
+    const Ca = crSample(SPINE, Math.min(1, u + 0.002));
+    const Cb = crSample(SPINE, Math.max(0, u - 0.002));
+    let T = V.norm(V.sub(Ca, Cb));
+    if (V.len(T) < 1e-6) T = [1, 0, 0];
+    let N = V.cross(up, T);
+    if (V.len(N) < 1e-6) N = [0, 0, 1];
+    N = V.norm(N);
+    const B = V.cross(T, N);
+    spineFrames.push({ C, T, N, B, t: u });
+    const a = v * TAU;
+    const ca = Math.cos(a), sa = Math.sin(a);
+    const r = spineRadius(u);
+    const wob = 1 + vnoise(u * 16 + 3, v * 9) * 0.03;
+    /* рёбра: мягкие волны по бокам */
+    const rib = 1 + Math.sin(u * 78) * 0.02 * smooth(0.4, 0.6, u) * (1 - Math.abs(sa));
+    const belly = sa < -0.2 ? 1 - (0.34 * (1 - smooth(-0.2, -0.9, sa))) : 1; /* плоский живот */
+    const sx = ca * r * wob * rib;
+    const sy = sa * r * belly * wob;
+    return [C[0] + (N[0] * sx + B[0] * sy), C[1] + (N[1] * sx + B[1] * sy), C[2] + (N[2] * sx + B[2] * sy)];
+  };
+  surfGrid(o, curve, radial, rings, true, 8, 16);
+});
+
+/* ---------- гребень: шипы по хребту ---------- */
+const RIDGE_RINGS = [8, 18, 28, 38, 48, 58, 68, 78, 90, 102, 114, 126, 138, 150, 162, 174, 186, 198, 210, 222];
+part("ridge", { mat: 1 }, (o) => {
+  const frameAt = (t) => {
+    const C = crSample(SPINE, t);
+    const Ca = crSample(SPINE, Math.min(1, t + 0.002));
+    const T = V.norm(V.sub(Ca, C));
+    let N = V.norm(V.cross([0, 1, 0], T));
+    if (V.len(N) < 1e-6) N = [0, 0, 1];
+    const B = V.cross(T, N);
+    const r = spineRadius(t);
+    return { C, T, N, B, r };
+  };
+  RIDGE_RINGS.forEach((i, k) => {
+    const t = i / 240;
+    const f = frameAt(t);
+    const up2 = V.add(f.C, V.mul([0, 1, 0], f.r * 0.25));
+    const h = 0.05 + 0.42 * Math.sin(Math.PI * Math.min(1, k / (RIDGE_RINGS.length - 1)) ** 0.7) + jit(0.02);
+    spike(o, up2, V.norm(V.add([0, 1, 0], V.mul(f.T, 0.25))), h, f.r * 0.3, 6, 9);
+  });
+});
+
+/* ---------- хвостовой плавник-лопасть ---------- */
+part("tailfin", { mat: 4 }, (o) => {
+  const F = (u, v) => {
+    const t = 1 - u; /* от кончика хвоста назад */
+    const C = crSample(SPINE, Math.max(0, t - 0.02));
+    const T = V.norm(V.sub(C, crSample(SPINE, Math.max(0, t))));
+    const side = v * 0.5 - 0.25;
+    const span = 0.5 * Math.pow(u, 0.7) + 0.05;
+    const up2 = [0, 1, 0];
+    const zig = Math.sin(v * Math.PI) * 0.12;
+    return [C[0] + T[0] * u * 0.5 + side * 0.25, C[1] + 0.42 * u * zig - u * 0.1, C[2] + T[2] * u * 0.5 + side * span * 2 * Math.sin(Math.PI * Math.min(1, v * 1.2))];
+  };
+  surfGrid(o, F, 40, 26, false, 6, 4);
+});
+
+/* ---------- крылья: кости + перепонка ---------- */
+function wingAnchor(side) {
+  return [0.72, 1.14, 0.34 * side];
+}
+part("wingmemL", { mat: 4 }, (o) => buildWingMem(o, -1));
+part("wingmemR", { mat: 4 }, (o) => buildWingMem(o, 1));
+function buildWingMem(o, s) {
+  const S = wingAnchor(s);
+  const E = [S[0] + 0.12, S[1] + 0.42, s * 1.35];
+  const Wp = [E[0] - 0.1, E[1] + 0.42, s * 2.5];
+  const F1 = [Wp[0] - 0.3, Wp[1] + 0.42, s * 3.45];
+  const leadPts = [S, E, Wp, F1];
+  const A0 = [S[0] - 0.34, S[1] - 0.34, s * 0.05];
+  const A1 = [E[0] - 0.85, E[1] - 0.55, s * 0.1];
+  const A2 = [F1[0] - 0.7, F1[1] - 0.85, s * 0.25];
+  const trailPts = [A0, A1, A2, S, E, Wp, F1];
+  const F = (u, v) => {
+    const L = crSample(leadPts, u);
+    /* задняя кромка: с провисанием */
+    const B = crSample(trailPts, Math.pow(u, 1.25) * 0.999);
+    const sag = Math.sin(Math.PI * Math.min(1, v * 1.05)) * (0.16 + 0.42 * Math.pow(u, 1.4));
+    const wav = vnoise(u * 7 + s * 3, v * 5) * 0.05;
+    return [V.lerp(L, B, v)[0], V.lerp(L, B, v)[1] - sag - wav, V.lerp(L, B, v)[2]];
+  };
+  surfGrid(o, F, 84, 56, false, 6, 1);
+}
+function buildWingBone(o, pts, r0, r1) {
+  tube(o, pts, (u) => r0 + (r1 - r0) * u, 26, 12, { uvS: 3, vvS: 6, rough: 0.03 });
+}
+part("wingbonesL", { mat: 1 }, (o) => buildWingBones(o, -1));
+part("wingbonesR", { mat: 1 }, (o) => buildWingBones(o, 1));
+function buildWingBones(o, s) {
+  const S = wingAnchor(s);
+  const E = [S[0] + 0.12, S[1] + 0.42, s * 1.35];
+  const Wp = [E[0] - 0.1, E[1] + 0.42, s * 2.5];
+  buildWingBone(o, [V.add(S, [0, -0.06, s * 0.02]), E, V.add(Wp, [0, -0.03, s * 0.25])], 0.075, 0.045);
+  buildWingBone(o, [E, V.add(Wp, [0, -0.03, s * 0.25]), [Wp[0] - 0.3, Wp[1] + 0.42, s * 3.45]], 0.05, 0.022);
+  buildWingBone(o, [E, V.lerp(E, [E[0] - 0.85, E[1] - 0.55, s * 1.9], 0.7), [E[0] - 0.85, E[1] - 0.55, s * 1.9]], 0.03, 0.014);
+}
+
+/* ---------- задние и передние ноги ---------- */
+function legPts(sx, front) {
+  const hip = front ? [0.86, 0.98, 0] : [0.1, 0.66, 0];
+  const side = front ? 0.36 : 0.42;
+  const knee = front ? [1.02, 0.34, side] : [0.36, 0.34, side];
+  const ankle = front ? [1.06, 0.12, side * 0.8] : [0.5, 0.14, side * 0.8];
+  const foot = front ? [1.24, 0.05, side * 0.6] : [0.72, 0.05, side * 0.6];
+  return { hip, knee, ankle, foot, side };
+}
+function legRad(u) {
+  /* бедро толще, ниже — тоньше; колено с лёгкой шишкой */
+  let r = 0.14 * (1 - u) + 0.055 * u;
+  r += Math.exp(-Math.pow((u - 0.38) / 0.12, 2)) * 0.02;
+  return r;
+}
+[[-1, true], [1, true], [-1, false], [1, false]].forEach((cfg) => {
+  part("leg" + (cfg[1] ? "F" : "B") + (cfg[0] > 0 ? "R" : "L"), { mat: 0 }, (o) => {
+    const sx = cfg[0];
+    const front = cfg[1];
+    const L = legPts(sx, front);
+    const pts = [V.add(L.hip, [0.05, 0.12, 0]), V.add(L.hip, [0.02, 0.02, sx * 0.1]), V.add(L.knee, [0, 0, sx * 0.06]), L.ankle, L.foot, V.add(L.foot, [front ? 0.16 : 0.1, 0.01, 0])];
+    tube(o, pts, legRad, 84, 34, { up: [0, 0, 1], belly: 0.18, uvS: 5, vvS: 10, rough: 0.03, wobble: true });
+    /* когти: 4 штуки на ступне */
+    for (let c = 0; c < 4; c++) {
+      const fo = (c - 1.5) * 0.075;
+      const base = V.add(L.foot, [front ? 0.14 : 0.08, -0.02, fo + sx * 0.05]);
+      const dir = V.norm([front ? 0.55 : 0.4, -0.28, sx * 0.25 + fo]);
+      spike(o, base, dir, front ? 0.11 : 0.09, 0.024, 8, 9);
+    }
+    /* бедренная шишка-мышца */
+    blob(
+      o,
+      V.add(L.hip, [0.0, -0.06, sx * 0.13]),
+      [0.16, 0.2, 0.13],
+      (a, b, P) => P,
+      22,
+      14,
+      { pow: 2.6, uvS: 5, vvS: 3 },
+    );
+  });
+});
+
+/* ---------- голова: череп, челюсть, рога, зубы, глаза, ноздри ---------- */
+const HEAD_AT = [1.5, 2.26, 0];
+const HEAD_F = V.norm([1, -0.28, 0]); /* вперёд-вниз от шеи */
+const HEAD_U = V.norm(V.sub([0, 1, 0], V.mul(HEAD_F, V.dot([0, 1, 0], HEAD_F))));
+const HEAD_R = V.cross(HEAD_F, HEAD_U);
+/* локальные -> мировые */
+function headX(p) {
+  return [
+    HEAD_AT[0] + HEAD_R[0] * p[0] + HEAD_U[0] * p[1] + HEAD_F[0] * p[2],
+    HEAD_AT[1] + HEAD_R[1] * p[0] + HEAD_U[1] * p[1] + HEAD_F[1] * p[2],
+    HEAD_AT[2] + HEAD_R[2] * p[0] + HEAD_U[2] * p[1] + HEAD_F[2] * p[2],
+  ];
+}
+
+part("skull", { mat: 0 }, (o) => {
+  const deform = (a, b, P) => {
+    let [x, y, z] = [P[0], P[1], P[2]];
+    /* морда: длиннее и уже спереди */
+    if (z > 0) {
+      const f = smooth(0.05, 0.6, z);
+      x *= 1 - 0.42 * f;
+      y *= 1 - 0.3 * f;
+      z *= 1 + 0.42 * f;
+    }
+    /* надбровные дуги */
+    const brow = Math.exp(-(Math.pow(z - 0.16, 2) / 0.02 + Math.pow(Math.abs(x) - 0.17, 2) / 0.01));
+    y += 0.045 * brow;
+    /* ноздревые бугорки на конце морды */
+    const nostr = Math.exp(-(Math.pow(z - 0.85, 2) / 0.01 + Math.pow(Math.abs(Math.abs(x) - 0.09), 2) / 0.004) * (y > -0.05 ? 1 : 0));
+    y += 0.02 * nostr;
+    /* скулы */
+    const cheek = Math.exp(-(Math.pow(z - 0.05, 2) / 0.03 + Math.pow(Math.abs(x) - 0.26, 2) / 0.012));
+    x += (x > 0 ? 0.03 : -0.03) * cheek;
+    /* нёбо: плоское снизу спереди (рот приоткрыт) */
+    if (y < -0.1 && z > -0.15) y = -0.1 - (y + 0.1) * 0.25;
+    /* микрошум кожи */
+    const n = (vnoise(z * 30 + 7, x * 26) - 0.5) * 0.012 + (vnoise(z * 90, x * 80) - 0.5) * 0.004;
+    return [x + n, y + n, z + n];
+  };
+  blob(o, [0, 0, 0], [0.3, 0.34, 0.34], deform, 96, 64, { pow: 2.5, uvS: 12, vvS: 8 });
+});
+
+part("jaw", { mat: 0 }, (o) => {
+  const open = 0.3;
+  const cs = Math.cos(open), sn = Math.sin(open);
+  const deform = (a, b, P) => {
+    let [x, y, z] = [P[0], P[1], P[2]];
+    /* челюсть: уже и сплюснута, тянется вперёд */
+    x *= 0.72;
+    if (z > 0) {
+      const f = smooth(0.0, 0.5, z);
+      x *= 1 - 0.3 * f;
+      z *= 1 + 0.5 * f;
+    }
+    if (y > 0.02) y = 0.02 + (y - 0.02) * 0.3; /* плоское нёбо нижней челюсти */
+    /* приоткрыть: вращение вокруг X */
+    const y2 = y * cs + z * sn;
+    const z2 = -y * sn + z * cs;
+    const n = (vnoise(z * 30 + 13, x * 26) - 0.5) * 0.01;
+    return [x + n, y2 + n - 0.12, z2 + n + 0.08];
+  };
+  blob(o, [0, -0.1, 0.05], [0.26, 0.16, 0.34], deform, 64, 40, { pow: 2.5, uvS: 10, vvS: 6 });
+});
+
+part("horns", { mat: 1 }, (o) => {
+  [-1, 1].forEach((s) => {
+    const base = headX([s * 0.13, 0.26, -0.06]);
+    const p1 = headX([s * 0.2, 0.4, -0.26]);
+    const p2 = headX([s * 0.19, 0.6, -0.52]);
+    const p3 = headX([s * 0.13, 0.8, -0.74]);
+    tube(o, [base, p1, p2, p3], (u) => 0.052 * Math.pow(1 - u, 0.9) + 0.004, 40, 14, { up: [0, 0, 1], uvS: 5, vvS: 8, rough: 0.05 });
+    /* вторая пара — маленькие щёчные */
+    const b2 = headX([s * 0.25, 0.02, 0.02]);
+    const t2 = headX([s * 0.25, 0.34, -0.14]);
+    tube(o, [b2, V.lerp(b2, t2, 0.5), t2], (u) => 0.03 * (1 - u) + 0.004, 16, 10, { up: [0, 0, 1], uvS: 3, vvS: 3, rough: 0.05 });
+  });
+});
+
+part("teeth", { mat: 2 }, (o) => {
+  /* верхние: вдоль нёба; нижние: вдоль челюсти */
+  for (let k = 0; k < 9; k++) {
+    const z = 0.12 + k * 0.075;
+    const w = 0.24 * (1 - smooth(0.0, 0.9, z)) + 0.03;
+    [-1, 1].forEach((s) => {
+      const can = k === 2 ? 1.5 : 1;
+      const base = headX([s * (w - 0.015), -0.075, z + 0.08]);
+      spike(o, base, [0, -1, 0.12], 0.035 * can, 0.011 * can, 4, 8);
+      /* нижние чуть внутрь и меньше */
+      const low = V.add(V.add(headX([0, 0, 0]), [0, -0.28, 0]), [s * (w - 0.05), 0, z + 0.1]);
+      spike(o, low, [0, 1, 0.12], 0.028 * can, 0.009 * can, 4, 8);
+    });
+  }
+});
+
+part("eyes", { mat: 3 }, (o) => {
+  [-1, 1].forEach((s) => {
+    blob(o, headX([s * 0.185, 0.14, 0.2]), [0.052, 0.05, 0.052], null, 26, 16, { pow: 2, uvS: 1, vvS: 1 });
+    /* кожистое веко-валик вокруг глаза */
+    blob(o, headX([s * 0.185, 0.15, 0.19]), [0.075, 0.045, 0.068], null, 20, 12, { pow: 3.2, uvS: 1, vvS: 1 });
+  });
+});
+
+/* ---------- земля: диск с тенью ---------- */
+part("ground", { mat: 5 }, (o) => {
+  const F = (u, v) => {
+    const a = u * TAU;
+    const r = 0.35 + v * 5.2;
+    return [Math.cos(a) * r, 0, Math.sin(a) * r];
+  };
+  surfGrid(o, F, 72, 26, true, 12, 6);
+});
+</script>
+<script>
+"use strict";
+/* ============================================================
+   DRACO 100K — WebGL-рендер, камера-орбита, HUD, запуск
+   ============================================================ */
+
+const canvas = document.getElementById("gl");
+let gl = null;
+try {
+  gl = canvas.getContext("webgl", { antialias: true, alpha: true, preserveDrawingBuffer: true }) || canvas.getContext("experimental-webgl", { antialias: true, alpha: true, preserveDrawingBuffer: true });
+} catch (e) {
+  gl = null;
+}
+
+/* ---------- шейдеры ---------- */
+const VS = `
+attribute vec3 aP;
+attribute vec3 aN;
+attribute vec3 aT;
+attribute vec2 aUV;
+uniform mat4 uVP;
+uniform float uBob;
+varying vec3 vP;
+varying vec3 vN;
+varying vec3 vT;
+varying vec2 vUV;
+void main() {
+  vec3 p = aP;
+  p.y += uBob * (0.4 - 0.35 * cos(p.x * 0.25));
+  vP = p;
+  vN = aN;
+  vT = aT;
+  vUV = aUV;
+  gl_Position = uVP * vec4(p, 1.0);
+}`;
+
+const FS = `
+precision highp float;
+varying vec3 vP;
+varying vec3 vN;
+varying vec3 vT;
+varying vec2 vUV;
+uniform int uMat;
+uniform vec3 uEyeC;
+uniform float uLightRot;
+
+float hash12(vec2 p) {
+  vec3 p3 = fract(vec3(p.xyx) * 0.1031);
+  p3 += dot(p3, p3.yzx + 33.33);
+  return fract((p3.x + p3.y) * p3.z);
+}
+float vnoise(vec2 p) {
+  vec2 i = floor(p);
+  vec2 f = fract(p);
+  f = f * f * (3.0 - 2.0 * f);
+  float a = hash12(i);
+  float b = hash12(i + vec2(1.0, 0.0));
+  float c = hash12(i + vec2(0.0, 1.0));
+  float d = hash12(i + vec2(1.0, 1.0));
+  return a + (b - a) * f.x + (c - a) * f.y + (a - b - c + d) * f.x * f.y;
+}
+
+/* рельеф чешуи: соты со смещением рядов + микрошум + крупные морщины */
+float scaleH(vec2 uv) {
+  vec2 g = vec2(uv.x * 42.0, uv.y * 30.0);
+  float row = floor(g.y);
+  g.x += mod(row, 2.0) * 0.5;
+  vec2 c = fract(g) - 0.5;
+  float dome = 1.0 - 0.85 * smoothstep(0.16, 0.6, length(c));
+  float micro = vnoise(uv * 220.0) * 0.14;
+  float wrinkle = (vnoise(uv * 7.0 + 3.0) - 0.5) * 0.5;
+  return dome * 0.55 + micro + wrinkle;
+}
+
+void main() {
+  vec3 N = normalize(vN);
+  if (!gl_FrontFacing) N = -N;
+  vec3 Vv = normalize(uEyeC - vP);
+
+  /* ---- материалы ---- */
+  vec3 alb = vec3(0.19, 0.34, 0.15);
+  float rough = 0.55;
+  float spec = 0.5;
+  vec3 emis = vec3(0.0);
+  float alpha = 1.0;
+  float shadowBake = 1.0;
+
+  if (uMat == 5) {
+    /* земля: чёрный камень + запечённая мягкая тень по радиусу */
+    float d = length(vP.xz);
+    float shade = smoothstep(0.4, 1.6, d) * 0.75 + 0.25;
+    float floorFade = smoothstep(3.4, 5.4, d);
+    alb = mix(vec3(0.05), vec3(0.09, 0.11, 0.08), shade) ;
+    rough = 0.95; spec = 0.04;
+    alpha = 1.0 - floorFade;
+    N = vec3(0.0, 1.0, 0.0);
+    if (!gl_FrontFacing) discard;
+  } else if (uMat == 1) {
+    /* рога и когти: кость */
+    float marb = vnoise(vUV * vec2(26.0, 6.0)) * 0.5 + vnoise(vUV * vec2(90.0, 20.0)) * 0.25;
+    alb = mix(vec3(0.78, 0.74, 0.62), vec3(0.55, 0.5, 0.4), marb);
+    /* затемнение у основания */
+    alb *= 0.78 + 0.22 * smoothstep(0.0, 0.6, fract(vUV.y * 0.25));
+    rough = 0.35; spec = 0.7;
+  } else if (uMat == 2) {
+    /* зубы: слоновая кость */
+    alb = mix(vec3(0.92, 0.9, 0.8), vec3(0.8, 0.78, 0.66), vnoise(vUV * 40.0));
+    rough = 0.22; spec = 1.1;
+  } else if (uMat == 3) {
+    /* глаз: янтарная радужка + вертикальная щель-зрачок */
+    vec2 e = fract(vUV * vec2(1.0, 1.0));
+    float r = length((e - 0.5) * vec2(1.0, 1.15));
+    float iris = smoothstep(0.16, 0.34, r);
+    vec3 amber = mix(vec3(1.0, 0.62, 0.12), vec3(0.55, 0.2, 0.02), iris);
+    /* лучики радужки */
+    float ang = atan(e.y - 0.5, e.x - 0.5);
+    amber *= 0.85 + 0.3 * vnoise(vec2(ang * 9.0, r * 30.0));
+    float slit = smoothstep(0.045, 0.02, abs(e.x - 0.5)) * (1.0 - smoothstep(0.1, 0.34, r));
+    alb = mix(amber, vec3(0.02), slit);
+    emis = mix(vec3(0.9, 0.42, 0.05) * (1.0 - slit) * 0.75, vec3(0.0), slit);
+    rough = 0.1; spec = 1.6;
+  } else if (uMat == 4) {
+    /* перепонка крыла: тёмно-кровавая с прожилками */
+    float fib = vnoise(vec2(vUV.x * 160.0, vUV.y * 7.0));
+    float fib2 = vnoise(vec2(vUV.x * 300.0, vUV.y * 14.0));
+    vec3 deep = mix(vec3(0.24, 0.05, 0.035), vec3(0.5, 0.12, 0.07), fib * 0.7 + fib2 * 0.3);
+    float body2 = smoothstep(0.0, 1.0, vUV.y);
+    alb = deep;
+    /* край прозрачный и светлее */
+    alb = mix(alb * 1.35, alb, smoothstep(0.0, 0.15, body2));
+    rough = 0.5; spec = 0.35;
+  } else {
+    /* чешуя: рельеф + окрас */
+    float e = 0.004;
+    float h = scaleH(vUV);
+    float hx = scaleH(vUV + vec2(e, 0.0));
+    float hy = scaleH(vUV + vec2(0.0, e));
+    vec3 Tg = normalize(vT);
+    vec3 Bg = normalize(cross(N, Tg));
+    float k = 1.35;
+    vec3 Nb = normalize(N + Tg * (h - hx) * -k + Bg * (h - hy) * -k);
+    N = Nb;
+
+    float mottle = vnoise(vUV * vec2(26.0, 16.0)) * 0.6 + vnoise(vUV * vec2(70.0, 44.0)) * 0.4;
+    vec3 scaleA = vec3(0.10, 0.26, 0.11);
+    vec3 scaleB = vec3(0.16, 0.34, 0.15);
+    vec3 scaleD = vec3(0.05, 0.16, 0.07);
+    alb = mix(scaleA, scaleB, mottle);
+    /* блик на куполе чешуи — золотистый */
+    alb += vec3(0.16, 0.12, 0.03) * smoothstep(0.35, 0.9, h) * 0.5;
+    /* впадины темнее */
+    alb = mix(alb, scaleD, smoothstep(-0.2, -0.7, h) * -1.0);
+    /* живот: костяные пластины-полосы */
+    float down = 1.0 - smoothstep(-0.15, -0.7, N.y);
+    float plates = smoothstep(0.42, 0.5, sin(vUV.y * 60.0) * 0.5 + 0.5);
+    alb = mix(alb, mix(vec3(0.62, 0.56, 0.4), vec3(0.5, 0.44, 0.3), plates), down * 0.25 + smoothstep(0.3, 0.9, down) * 0.25);
+    rough = 0.5 - 0.2 * smoothstep(0.2, 0.8, h);
+    spec = 0.55;
+  }
+
+  /* ---- свет ---- */
+  float lr = uLightRot;
+  vec3 L1 = normalize(vec3(cos(lr) * 0.8, 0.85, sin(lr) * 0.25));       /* тёплый ключевой */
+  vec3 L2 = normalize(vec3(-0.5, 0.25, -0.7));                          /* холодный заполняющий */
+  vec3 L3 = normalize(vec3(0.2, 0.15, -1.0));                           /* контровой */
+  vec3 H1 = normalize(L1 + Vv);
+  float dif1 = max(dot(N, L1), 0.0);
+  float dif2 = max(dot(N, L2), 0.0);
+  float dif3 = max(dot(N, L3), 0.0);
+  float sp1 = pow(max(dot(N, H1), 0.0), mix(96.0, 8.0, rough)) * spec;
+  float aoY = 0.75 + 0.25 * smoothstep(-0.6, 0.6, N.y);
+  float wrap1 = (dif1 + 0.3) / 1.3;
+
+  /* пресеты света задаёт uLightRot +постоянные ниже */
+  vec3 cKey = vec3(1.25, 1.1, 0.85);
+  vec3 cFill = vec3(0.16, 0.22, 0.34);
+  vec3 cRim = vec3(0.35, 0.6, 0.3);
+  vec3 amb = vec3(0.09, 0.12, 0.09);
+
+  vec3 col = amb * alb;
+  col += cKey * dif1 * alb * 1.05;
+  col += cFill * dif2 * alb * 0.8;
+  col += cRim * dif3 * alb * 0.5;
+  col += cKey * sp1 * 0.9;
+  col *= aoY * shadowBake;
+  col += emis;
+
+  /* френель — тонкая зелёная кромка */
+  float fr = pow(1.0 - max(dot(N, Vv), 0.0), 3.0);
+  col += fr * vec3(0.14, 0.3, 0.12) * 0.6 * (1.0 - rough);
+
+  /* лёгкий тон-маппинг */
+  col = col / (col + vec3(0.9)) * 1.55;
+  col = pow(col, vec3(0.9));
+
+  gl_FragColor = vec4(col, alpha);
+}`;
+
+function compile(type, src) {
+  const sh = gl.createShader(type);
+  gl.shaderSource(sh, src);
+  gl.compileShader(sh);
+  if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) throw new Error("shader: " + gl.getShaderInfoLog(sh));
+  return sh;
+}
+
+let prog = null;
+const loc = {};
+
+/* ---------- математика камеры ---------- */
+function mPersp(fov, asp, n, f) {
+  const t = 1 / Math.tan(fov / 2);
+  return [t / asp, 0, 0, 0, 0, t, 0, 0, 0, 0, (f + n) / (n - f), -1, 0, 0, (2 * f * n) / (n - f), 0];
+}
+function mLook(eye, ctr, up) {
+  const z = V.norm(V.sub(eye, ctr));
+  const x = V.norm(V.cross(up, z));
+  const y = V.cross(z, x);
+  return [
+    x[0], y[0], z[0], 0,
+    x[1], y[1], z[1], 0,
+    x[2], y[2], z[2], 0,
+    -V.dot(x, eye), -V.dot(y, eye), -V.dot(z, eye), 1,
+  ];
+}
+function mMul(a, b) {
+  const o = new Array(16);
+  for (let c = 0; c < 4; c++) {
+    for (let r = 0; r < 4; r++) {
+      o[c * 4 + r] = a[r] * b[c * 4] + a[4 + r] * b[c * 4 + 1] + a[8 + r] * b[c * 4 + 2] + a[12 + r] * b[c * 4 + 3];
+    }
+  }
+  return o;
+}
+
+/* ---------- состояние камеры/сцены ---------- */
+const cam = {
+  yaw: 0.6,
+  pitch: 0.18,
+  dist: 8.4,
+  target: [0.1, 1.15, 0],
+  auto: true,
+  vYaw: 0.0,
+  vPitch: 0.0,
+};
+let wire = false;
+let lightPreset = 0;
+const LIGHT_PRESETS = [0.5, 2.2, 3.8, 5.3];
+const wireIndex = {};
+
+function eyePos() {
+  const cp = Math.cos(cam.pitch), sp = Math.sin(cam.pitch);
+  return [cam.target[0] + cam.dist * cp * Math.sin(cam.yaw), cam.target[1] + cam.dist * sp, cam.target[2] + cam.dist * cp * Math.cos(cam.yaw)];
+}
+
+/* ---------- меши ---------- */
+const meshes = [];
+function uploadPart(name, mat, b) {
+  const num = b.pos.length / 3;
+  if (!num) return;
+  const glp = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, glp);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(b.pos), gl.STATIC_DRAW);
+  const gln = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, gln);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(b.nrm), gl.STATIC_DRAW);
+  const glt = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, glt);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(b.tan), gl.STATIC_DRAW);
+  const gluv = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, gluv);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(b.uv), gl.STATIC_DRAW);
+  const gli = gl.createBuffer();
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, gli);
+  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(b.idx), gl.STATIC_DRAW);
+  meshes.push({ name, mat, glp, gln, glt, gluv, gli, tri: b.idx.length / 3, vert: num, wireBuf: null, idxSrc: b.idx });
+}
+let OES32 = false;
+
+function buildWire(m) {
+  if (m.wireBuf) return;
+  /* честный каркас: рёбра треугольников без дублей */
+  const seen = new Set();
+  const idxArr = new Uint32Array(m.tri * 6);
+  const src = m.idxSrc;
+  let w = 0;
+  for (let t = 0; t < src.length; t += 3) {
+    const e = [[src[t], src[t + 1]], [src[t + 1], src[t + 2]], [src[t + 2], src[t]]];
+    for (const [a, b] of e) {
+      const key = a < b ? a * 524288 + b : b * 524288 + a;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      idxArr[w++] = a;
+      idxArr[w++] = b;
+    }
+  }
+  const g = gl.createBuffer();
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, g);
+  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, idxArr.subarray(0, w), gl.STATIC_DRAW);
+  m.wireBuf = g;
+  m.wireCount = w;
+}
+
+/* ---------- ввод: орбита мышью и пальцем ---------- */
+let dragging = false;
+let lastX = 0, lastY = 0;
+let pinchD = 0;
+canvas.addEventListener("mousedown", (e) => {
+  dragging = true;
+  cam.auto = false;
+  syncSpin();
+  lastX = e.clientX;
+  lastY = e.clientY;
+  canvas.classList.add("grabbing");
+  hideHint();
+});
+window.addEventListener("mousemove", (e) => {
+  if (!dragging) return;
+  const dx = e.clientX - lastX, dy = e.clientY - lastY;
+  lastX = e.clientX;
+  lastY = e.clientY;
+  cam.yaw -= dx * 0.0055;
+  cam.pitch = Math.max(-1.35, Math.min(1.45, cam.pitch + dy * 0.0045));
+});
+window.addEventListener("mouseup", () => {
+  dragging = false;
+  canvas.classList.remove("grabbing");
+});
+canvas.addEventListener("wheel", (e) => {
+  e.preventDefault();
+  hideHint();
+  cam.dist = Math.max(2.2, Math.min(20, cam.dist * (e.deltaY > 0 ? 1.09 : 0.92)));
+}, { passive: false });
+canvas.addEventListener("touchstart", (e) => {
+  hideHint();
+  if (e.touches.length === 1) {
+    dragging = true;
+    cam.auto = false;
+    syncSpin();
+    lastX = e.touches[0].clientX;
+    lastY = e.touches[0].clientY;
+  } else if (e.touches.length >= 2) {
+    dragging = false;
+    pinchD = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+  }
+}, { passive: true });
+canvas.addEventListener("touchmove", (e) => {
+  e.preventDefault();
+  if (e.touches.length === 1 && dragging) {
+    const dx = e.touches[0].clientX - lastX, dy = e.touches[0].clientY - lastY;
+    lastX = e.touches[0].clientX;
+    lastY = e.touches[0].clientY;
+    cam.yaw -= dx * 0.007;
+    cam.pitch = Math.max(-1.35, Math.min(1.45, cam.pitch + dy * 0.005));
+  } else if (e.touches.length >= 2) {
+    const d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+    if (pinchD > 0) cam.dist = Math.max(2.2, Math.min(20, cam.dist * (pinchD / d)));
+    pinchD = d;
+  }
+}, { passive: false });
+canvas.addEventListener("touchend", () => {
+  dragging = false;
+  pinchD = 0;
+});
+/* стрелки-подстраховка: кор全资 можно крутить с клавиатуры */
+window.addEventListener("keydown", (e) => {
+  if (e.key === "ArrowLeft") cam.yaw += 0.12;
+  if (e.key === "ArrowRight") cam.yaw -= 0.12;
+  if (e.key === "ArrowUp") cam.pitch = Math.min(1.45, cam.pitch + 0.08);
+  if (e.key === "ArrowDown") cam.pitch = Math.max(-1.35, cam.pitch - 0.08);
+  if (e.key === "+" || e.key === "=") cam.dist = Math.max(2.2, cam.dist * 0.93);
+  if (e.key === "-") cam.dist = Math.min(20, cam.dist * 1.07);
+});
+let hintHidden = false;
+function hideHint() {
+  if (hintHidden) return;
+  hintHidden = true;
+  const h = document.getElementById("hint");
+  if (h) setTimeout(() => h.classList.add("gone"), 1200);
+}
+
+/* ---------- HUD ---------- */
+const el = (id) => document.getElementById(id);
+function toast(msg, cls) {
+  const t = document.createElement("div");
+  t.className = "toast" + (cls ? " " + cls : "");
+  t.textContent = msg;
+  el("ztToasts").appendChild(t);
+  setTimeout(() => t.remove(), 2800);
+}
+function syncSpin() {
+  el("btnSpin").classList.toggle("on", cam.auto);
+}
+el("btnSpin").onclick = () => {
+  cam.auto = !cam.auto;
+  syncSpin();
+  toast(cam.auto ? "Автоповорот включён" : "Автоповорот выключен", "gd");
+};
+el("btnWire").onclick = () => {
+  wire = !wire;
+  el("btnWire").classList.toggle("on", wire);
+  if (wire) {
+    toast("Лепим каркас из рёбер…");
+    setTimeout(() => {
+      try {
+        meshes.forEach(buildWire);
+        toast("Каркас: " + meshes.reduce((s, m) => s + ((m.wireCount || 0) / 2), 0) + " рёбер", "gd");
+      } catch (e) {
+        toast("Каркас не удалось собрать: " + (e && e.message), "");
+        wire = false;
+        el("btnWire").classList.remove("on");
+      }
+    }, 30);
+  }
+};
+el("btnLight").onclick = () => {
+  lightPreset = (lightPreset + 1) % LIGHT_PRESETS.length;
+  const names = ["Солнце слева", "Прожектор сзади", "Полночь", "Рассвет"];
+  toast("Свет: " + names[lightPreset] + " (" + (lightPreset + 1) + "/4)", "gd");
+};
+el("btnReset").onclick = () => {
+  cam.yaw = 0.6;
+  cam.pitch = 0.18;
+  cam.dist = 8.4;
+  toast("Камера сброшена", "gd");
+};
+el("btnShot").onclick = () => {
+  try {
+    const url = canvas.toDataURL("image/png");
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "draco-100k.png";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    toast("Скриншот сохранён", "gd");
+  } catch (e) {
+    toast("Браузер не дал сохранить PNG", "");
+  }
+};
+
+/* ---------- цикл ---------- */
+let frames = 0, fpsT = 0, fpsShown = 0;
+let lastT = 0;
+function frame(t) {
+  if (!gl) return;
+  const dt = lastT ? Math.min(0.05, (t - lastT) / 1000) : 0.016;
+  lastT = t;
+  if (cam.auto && !dragging) cam.yaw += dt * 0.28;
+
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  const w = Math.floor(canvas.clientWidth * dpr), h = Math.floor(canvas.clientHeight * dpr);
+  if (canvas.width !== w || canvas.height !== h) {
+    canvas.width = w;
+    canvas.height = h;
+  }
+  gl.viewport(0, 0, w, h);
+  gl.clearColor(0, 0, 0, 0);
+  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+  const eye = eyePos();
+  const proj = mPersp(0.9, w / Math.max(1, h), 0.1, 60);
+  const view = mLook(eye, cam.target, [0, 1, 0]);
+  const vp = mMul(proj, view);
+
+  gl.useProgram(prog);
+  gl.uniformMatrix4fv(loc.uVP, false, new Float32Array(vp));
+  gl.uniform3f(loc.uEyeC, eye[0], eye[1], eye[2]);
+  gl.uniform1f(loc.uLightRot, LIGHT_PRESETS[lightPreset]);
+  gl.uniform1f(loc.uBob, wire ? 0 : Math.sin(t * 0.0006) * 0.25);
+
+  gl.enable(gl.DEPTH_TEST);
+  gl.depthFunc(gl.LEQUAL);
+  gl.enable(gl.BLEND);
+  gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+
+  for (const m of meshes) {
+    if (m.mat === 5 && wire) continue; /* землю в каркасе не рисуем */
+    if (m.mat === 5) gl.depthMask(false);
+    gl.uniform1i(loc.uMat, m.mat);
+    gl.bindBuffer(gl.ARRAY_BUFFER, m.glp);
+    gl.enableVertexAttribArray(loc.aP);
+    gl.vertexAttribPointer(loc.aP, 3, gl.FLOAT, false, 0, 0);
+    gl.bindBuffer(gl.ARRAY_BUFFER, m.gln);
+    gl.enableVertexAttribArray(loc.aN);
+    gl.vertexAttribPointer(loc.aN, 3, gl.FLOAT, false, 0, 0);
+    gl.bindBuffer(gl.ARRAY_BUFFER, m.glt);
+    gl.enableVertexAttribArray(loc.aT);
+    gl.vertexAttribPointer(loc.aT, 3, gl.FLOAT, false, 0, 0);
+    gl.bindBuffer(gl.ARRAY_BUFFER, m.gluv);
+    gl.enableVertexAttribArray(loc.aUV);
+    gl.vertexAttribPointer(loc.aUV, 2, gl.FLOAT, false, 0, 0);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, wire && m.wireBuf ? m.wireBuf : m.gli);
+    if (wire && m.wireBuf) {
+      gl.uniform1f(loc.uBob, 0);
+      gl.uniform1i(loc.uMat, 1); /* рёбра цветом кости */
+      gl.lineWidth(1.0);
+      gl.drawElements(gl.LINES, m.wireCount, gl.UNSIGNED_INT, 0);
+    } else {
+      gl.drawElements(gl.TRIANGLES, m.tri * 3, gl.UNSIGNED_INT, 0);
+    }
+    if (m.mat === 5) gl.depthMask(true);
+  }
+
+  frames++;
+  if (t - fpsT > 500) {
+    fpsShown = Math.round((frames * 1000) / (t - fpsT));
+    fpsT = t;
+    frames = 0;
+    el("stFps").textContent = String(fpsShown);
+  }
+  requestAnimationFrame(frame);
+}
+
+/* ---------- запуск ---------- */
+function startRender() {
+  el("bootMsg").textContent = "включаем свет…";
+  el("boot").classList.add("off");
+  el("stTri").textContent = meshes.reduce((s, m) => s + m.tri, 0).toLocaleString("ru");
+  el("stVert").textContent = meshes.reduce((s, m) => s + m.vert, 0).toLocaleString("ru");
+  el("stParts").textContent = String(meshes.length);
+  requestAnimationFrame(frame);
+}
+
+function boot() {
+  if (!gl) {
+    document.getElementById("glfail").classList.add("on");
+    document.getElementById("boot").classList.add("off");
+    return;
+  }
+  const vs = compile(gl.VERTEX_SHADER, VS);
+  const fs = compile(gl.FRAGMENT_SHADER, FS);
+  prog = gl.createProgram();
+  gl.attachShader(prog, vs);
+  gl.attachShader(prog, fs);
+  gl.linkProgram(prog);
+  if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error("link: " + gl.getProgramInfoLog(prog));
+  loc.aP = gl.getAttribLocation(prog, "aP");
+  loc.aN = gl.getAttribLocation(prog, "aN");
+  loc.aT = gl.getAttribLocation(prog, "aT");
+  loc.aUV = gl.getAttribLocation(prog, "aUV");
+  loc.uVP = gl.getUniformLocation(prog, "uVP");
+  loc.uMat = gl.getUniformLocation(prog, "uMat");
+  loc.uEyeC = gl.getUniformLocation(prog, "uEyeC");
+  loc.uLightRot = gl.getUniformLocation(prog, "uLightRot");
+  loc.uBob = gl.getUniformLocation(prog, "uBob");
+  OES32 = !!gl.getExtension("OES_element_index_uint");
+  if (!OES32) throw new Error("32-битные индексы не поддерживаются — 100к треугольников не собрать");
+
+  /* лепим по деталям с честным прогрессом */
+  let i = 0;
+  const bar = el("bootBar");
+  const names = PARTS.map((p) => p.name);
+  function step() {
+    if (i >= PARTS.length) {
+      startRender();
+      return;
+    }
+    const p = PARTS[i];
+    el("bootMsg").textContent = "деталь: " + p.name;
+    try {
+      const o = makeBucket();
+      p.build(o);
+      uploadPart(p.name, p.opts.mat || 0, o);
+    } catch (e) {
+      window.__ZTerrs.push("part " + p.name + ": " + (e && e.message));
+    }
+    i++;
+    bar.style.width = Math.round((i / PARTS.length) * 100) + "%";
+    setTimeout(step, 10);
+  }
+  step();
+}
+
+function buildDry() {
+  /* сборка геометрии без WebGL: честный подсчёт треугольников и габаритов */
+  let tri = 0, vert = 0;
+  const mn = [1e9, 1e9, 1e9], mx = [-1e9, -1e9, -1e9];
+  const parts = [];
+  for (const p of PARTS) {
+    const o = makeBucket();
+    p.build(o);
+    const t = o.idx.length / 3;
+    const v = o.pos.length / 3;
+    tri += t;
+    vert += v;
+    for (let k = 0; k < o.pos.length; k += 3) {
+      for (let c = 0; c < 3; c++) {
+        const x = o.pos[k + c];
+        if (!isFinite(x)) throw new Error("не-числовая координата в " + p.name);
+        if (x < mn[c]) mn[c] = x;
+        if (x > mx[c]) mx[c] = x;
+      }
+    }
+    parts.push({ name: p.name, tri: t, vert: v });
+  }
+  return { tri, vert, parts, min: mn, max: mx };
+}
+
+window.DR3 = {
+  v: "1.0",
+  meshes,
+  PARTS,
+  buildDry,
+  cam,
+  get triCount() {
+    return meshes.reduce((s, m) => s + m.tri, 0);
+  },
+  get glOk() {
+    return !!gl;
+  },
+  boot,
+  toast,
+};
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", boot);
+} else {
+  boot();
+}
+</script>
+
+<!-- сторож запуска: отдельный скрипт — живёт, даже если главный скрипт упал -->
+<script>
+(function () {
+  var tries = 0;
+  var iv = null;
+  function check() {
+    try {
+      if (window.DR3) {
+        if (iv) clearInterval(iv);
+        return;
+      }
+      var errs = window.__ZTerrs || [];
+      var d = document.createElement("div");
+      d.setAttribute("style", "position:fixed;inset:0;z-index:2147483647;background:#060907;color:#dde8d2;font:13px/1.6 monospace;padding:26px;overflow:auto");
+      d.innerHTML =
+        '<div style="max-width:700px;margin:0 auto"><div style="color:#e05545;font-weight:700;font-size:20px;margin-bottom:10px">DRACO — ошибка запуска</div><div style="white-space:pre-wrap;background:#1d0d0d;border:1px solid #8a1d12;border-radius:8px;padding:12px">' +
+        String(errs.join("\n") || "скрипт не выполнился (старый браузер или встроенный просмотрщик)") +
+        '</div><div style="margin-top:12px;color:#9fb391">Скачай файл и открой локально в свежем Chrome / Firefox / Edge.</div></div>';
+      document.body.appendChild(d);
+    } catch (e) {}
+    if (++tries >= 4 && iv) clearInterval(iv);
+  }
+  function start() {
+    iv = setInterval(check, 2200);
+  }
+  if (document.readyState === "complete") setTimeout(start, 2200);
+  else window.addEventListener("load", start);
+})();
+</script>
+</body>
+</html>
