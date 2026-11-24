@@ -6704,7 +6704,7 @@ function assembleHtml(files) {
       ? '<style data-src="' + esc(f) + '">\n' + files[f] + "\n</style>"
       : m;
   });
-  /* инлайн <script src="*.js"> — с экранированием </script> внутри кода */
+  /* инлайн <script src="*.js"> — с экранированием <\/script> внутри кода */
   html = html.replace(/<script[^>]*\ssrc=["']([^"']+)["'][^>]*>\s*<\/script>/gi, (m, src) => {
     const f = resolvePath(src);
     if (!f || files[f] === undefined) return m;
