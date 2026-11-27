@@ -1,0 +1,1823 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Banana AI — умный ассистент</title>
+<style>
+:root {
+  --bg0: #0c0a06;
+  --bg1: #14110a;
+  --panel: rgba(24, 20, 12, 0.88);
+  --panel-line: rgba(245, 197, 66, 0.16);
+  --txt: #efe9da;
+  --dim: #b3a98f;
+  --mut: #7d7458;
+  --ban: #f5c542;
+  --ban2: #ffd968;
+  --ban3: #8a6d1d;
+  --grn: #7dc35a;
+  --red: #e05545;
+  --blu: #6aa8d8;
+  --rads: 12px;
+  --rads2: 18px;
+  --font: "Segoe UI", Roboto, "Helvetica Neue", system-ui, -apple-system, sans-serif;
+  --mono: "Cascadia Code", Consolas, "JetBrains Mono", monospace;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  background: radial-gradient(130% 100% at 20% 0%, #1b1608 0%, var(--bg1) 45%, var(--bg0) 100%);
+  color: var(--txt);
+  font-family: var(--font);
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
+}
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(120% 120% at 50% 40%, transparent 58%, rgba(0, 0, 0, 0.5) 100%);
+  z-index: 1;
+}
+#app { position: fixed; inset: 0; display: flex; z-index: 2; }
+
+/* ---------- сайдбар ---------- */
+#side {
+  width: 258px;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  background: rgba(12, 10, 6, 0.72);
+  border-right: 1px solid var(--panel-line);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  transition: margin-left 0.25s ease;
+  z-index: 5;
+}
+#side.hidden { margin-left: -259px; }
+#brand {
+  padding: 18px 18px 14px;
+  border-bottom: 1px solid var(--panel-line);
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  user-select: none;
+}
+#brand .logo {
+  width: 38px; height: 38px; flex: none;
+  border-radius: 11px;
+  background: linear-gradient(135deg, var(--ban), #d9a520);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  box-shadow: 0 4px 18px rgba(245, 197, 66, 0.25);
+}
+#brand h1 { font-size: 16.5px; letter-spacing: 0.04em; color: var(--ban2); font-weight: 700; }
+#brand small { display: block; font-size: 10px; color: var(--mut); letter-spacing: 0.12em; text-transform: uppercase; margin-top: 2px; }
+#btnNewChat {
+  margin: 12px 14px 8px;
+  padding: 10px 14px;
+  border-radius: var(--rads);
+  border: 1px solid rgba(245, 197, 66, 0.4);
+  background: rgba(245, 197, 66, 0.1);
+  color: var(--ban2);
+  font: 600 13px var(--font);
+  cursor: pointer;
+  transition: background 0.15s, transform 0.08s;
+}
+#btnNewChat:hover { background: rgba(245, 197, 66, 0.18); }
+#btnNewChat:active { transform: scale(0.98); }
+#histWrap { flex: 1; overflow-y: auto; padding: 6px 10px 12px; }
+#histWrap::-webkit-scrollbar { width: 8px; }
+#histWrap::-webkit-scrollbar-thumb { background: rgba(245, 197, 66, 0.14); border-radius: 4px; }
+.histLabel { font-size: 10.5px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--mut); padding: 10px 8px 6px; user-select: none; }
+.histItem {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 10px;
+  border-radius: 9px;
+  font-size: 12.5px;
+  color: var(--dim);
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background 0.12s;
+  user-select: none;
+}
+.histItem:hover { background: rgba(245, 197, 66, 0.07); color: var(--txt); }
+.histItem.cur { background: rgba(245, 197, 66, 0.1); border-color: rgba(245, 197, 66, 0.25); color: var(--ban2); }
+.histItem .hx { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.histItem .del { flex: none; opacity: 0; color: var(--mut); font-size: 13px; padding: 2px 5px; border-radius: 6px; }
+.histItem:hover .del { opacity: 1; }
+.histItem .del:hover { color: var(--red); background: rgba(224, 85, 69, 0.12); }
+#sideFoot {
+  padding: 12px 14px;
+  border-top: 1px solid var(--panel-line);
+  font-size: 10.5px;
+  color: var(--mut);
+  line-height: 1.7;
+  user-select: none;
+}
+#sideFoot b { color: var(--dim); }
+
+/* ---------- основная колонка ---------- */
+#main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+#topbar {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--panel-line);
+  background: rgba(12, 10, 6, 0.55);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: 6;
+}
+#btnSide {
+  width: 36px; height: 36px; flex: none;
+  border-radius: 10px; border: 1px solid var(--panel-line);
+  background: transparent; color: var(--dim);
+  font-size: 17px; cursor: pointer;
+}
+#btnSide:hover { color: var(--txt); }
+#modeBadge {
+  padding: 5px 12px;
+  border-radius: 999px;
+  font: 600 11.5px var(--font);
+  letter-spacing: 0.04em;
+  border: 1px solid rgba(125, 195, 90, 0.4);
+  color: var(--grn);
+  background: rgba(125, 195, 90, 0.08);
+  white-space: nowrap;
+  user-select: none;
+}
+#modeBadge.api { border-color: rgba(245, 197, 66, 0.5); color: var(--ban2); background: rgba(245, 197, 66, 0.09); }
+#topbar .sp { flex: 1; }
+.tbtn {
+  padding: 8px 13px;
+  border-radius: 10px;
+  border: 1px solid var(--panel-line);
+  background: transparent;
+  color: var(--dim);
+  font: 500 12.5px var(--font);
+  cursor: pointer;
+  transition: color 0.12s, border-color 0.12s;
+  white-space: nowrap;
+  user-select: none;
+}
+.tbtn:hover { color: var(--txt); border-color: rgba(245, 197, 66, 0.4); }
+.tbtn.on { color: var(--ban2); border-color: rgba(245, 197, 66, 0.5); background: rgba(245, 197, 66, 0.08); }
+
+/* ---------- лента чата ---------- */
+#feed {
+  flex: 1;
+  overflow-y: auto;
+  padding: 22px 18px 12px;
+  scroll-behavior: smooth;
+}
+#feed::-webkit-scrollbar { width: 9px; }
+#feed::-webkit-scrollbar-thumb { background: rgba(245, 197, 66, 0.14); border-radius: 5px; }
+.msg { max-width: 760px; margin: 0 auto 16px; display: flex; gap: 11px; }
+.msg .av {
+  width: 32px; height: 32px; flex: none;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  user-select: none;
+}
+.msg.me .av { background: rgba(106, 168, 216, 0.15); border: 1px solid rgba(106, 168, 216, 0.35); }
+.msg.bot .av { background: linear-gradient(135deg, rgba(245, 197, 66, 0.9), rgba(217, 165, 32, 0.9)); }
+.msg .body { min-width: 0; flex: 1; }
+.msg .who { font-size: 11px; color: var(--mut); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 5px; user-select: none; }
+.msg .txt {
+  padding: 12px 15px;
+  border-radius: var(--rads2);
+  font-size: 14px;
+  line-height: 1.62;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+.msg.me .txt { background: rgba(106, 168, 216, 0.12); border: 1px solid rgba(106, 168, 216, 0.22); border-top-right-radius: 5px; }
+.msg.bot .txt { background: var(--panel); border: 1px solid var(--panel-line); border-top-left-radius: 5px; }
+.msg.bot .txt.srcWiki { border-left: 3px solid var(--grn); }
+.msg.bot .txt.srcApi { border-left: 3px solid var(--ban); }
+.msg.bot .txt.srcErr { border-left: 3px solid var(--red); }
+.msg .txt p { margin: 0 0 8px; }
+.msg .txt p:last-child { margin-bottom: 0; }
+.msg .txt pre {
+  background: #0a0805;
+  border: 1px solid var(--panel-line);
+  border-radius: 10px;
+  padding: 11px 13px;
+  overflow-x: auto;
+  font: 12.5px/1.55 var(--mono);
+  margin: 8px 0;
+  color: #d8e0c8;
+}
+.msg .txt code { font-family: var(--mono); font-size: 12.5px; background: rgba(245, 197, 66, 0.1); border-radius: 5px; padding: 1.5px 6px; }
+.msg .txt pre code { background: none; padding: 0; }
+.msg .txt b { color: var(--ban2); }
+.msg .txt ul { margin: 4px 0 8px 18px; }
+.msg .txt li { margin: 3px 0; }
+.msg .tag { display: inline-block; margin-top: 8px; padding: 3px 10px; border-radius: 999px; font: 600 10px var(--font); letter-spacing: 0.1em; text-transform: uppercase; border: 1px solid; user-select: none; }
+.msg .tag.offline { color: var(--grn); border-color: rgba(125, 195, 90, 0.4); }
+.msg .tag.wiki { color: var(--grn); border-color: rgba(125, 195, 90, 0.4); }
+.msg .tag.api { color: var(--ban2); border-color: rgba(245, 197, 66, 0.45); }
+.msg .tag.err { color: var(--red); border-color: rgba(224, 85, 69, 0.45); }
+.msg .tag.busy { color: var(--blu); border-color: rgba(106, 168, 216, 0.45); }
+.typing { display: inline-flex; gap: 5px; padding: 4px 0; }
+.typing i { width: 7px; height: 7px; border-radius: 50%; background: var(--ban); opacity: 0.4; animation: tp 1.1s infinite; }
+.typing i:nth-child(2) { animation-delay: 0.18s; }
+.typing i:nth-child(3) { animation-delay: 0.36s; }
+@keyframes tp { 0%, 100% { opacity: 0.25; transform: translateY(0); } 45% { opacity: 1; transform: translateY(-3px); } }
+
+/* ---------- chips ---------- */
+#chipsWrap { max-width: 760px; margin: 0 auto; padding: 0 0 8px; display: none; flex-wrap: wrap; gap: 8px; }
+#chipsWrap.on { display: flex; }
+.chip {
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(245, 197, 66, 0.3);
+  background: rgba(245, 197, 66, 0.06);
+  color: var(--dim);
+  font: 500 12px var(--font);
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.12s;
+}
+.chip:hover { color: var(--ban2); border-color: rgba(245, 197, 66, 0.55); background: rgba(245, 197, 66, 0.12); }
+
+/* ---------- ввод ---------- */
+#inputRow {
+  display: flex;
+  gap: 10px;
+  padding: 12px 18px 16px;
+  border-top: 1px solid var(--panel-line);
+  background: rgba(12, 10, 6, 0.55);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  align-items: flex-end;
+  z-index: 6;
+}
+#inputInner {
+  flex: 1;
+  max-width: 760px;
+  margin: 0 auto;
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+}
+#inp {
+  flex: 1;
+  min-height: 44px;
+  max-height: 160px;
+  resize: none;
+  border-radius: 14px;
+  border: 1px solid var(--panel-line);
+  background: rgba(20, 17, 10, 0.9);
+  color: var(--txt);
+  font: 14px/1.5 var(--font);
+  padding: 11px 15px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+#inp:focus { border-color: rgba(245, 197, 66, 0.5); }
+#inp::placeholder { color: var(--mut); }
+.sbtn {
+  width: 44px; height: 44px; flex: none;
+  border-radius: 13px;
+  border: none;
+  background: linear-gradient(135deg, var(--ban), #d9a520);
+  color: #221a04;
+  font-size: 18px;
+  cursor: pointer;
+  transition: transform 0.08s, filter 0.15s;
+  display: flex; align-items: center; justify-content: center;
+}
+.sbtn:hover { filter: brightness(1.1); }
+.sbtn:active { transform: scale(0.94); }
+.sbtn:disabled { filter: grayscale(0.6) brightness(0.6); cursor: default; }
+#btnStop { background: #5a2320; color: #f0b5ad; display: none; }
+#btnStop.on { display: flex; }
+#btnSend.busy { display: none; }
+
+/* ---------- настройки ---------- */
+#ovl {
+  position: fixed; inset: 0; z-index: 40;
+  background: rgba(5, 4, 2, 0.72);
+  display: none;
+  align-items: center; justify-content: center;
+  padding: 18px;
+}
+#ovl.on { display: flex; }
+#settings {
+  width: min(560px, 100%);
+  max-height: 88vh;
+  overflow-y: auto;
+  background: #16130b;
+  border: 1px solid rgba(245, 197, 66, 0.25);
+  border-radius: var(--rads2);
+  padding: 22px;
+}
+#settings h2 { font-size: 17px; color: var(--ban2); margin-bottom: 4px; }
+#settings .sub { font-size: 12px; color: var(--mut); margin-bottom: 16px; line-height: 1.55; }
+.frow { margin-bottom: 13px; }
+.frow label { display: block; font-size: 11.5px; color: var(--dim); letter-spacing: 0.05em; margin-bottom: 6px; text-transform: uppercase; }
+.frow input[type=text], .frow input[type=password], .frow select, .frow textarea {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid var(--panel-line);
+  background: #0e0c07;
+  color: var(--txt);
+  font: 13px var(--font);
+  padding: 9px 12px;
+  outline: none;
+}
+.frow input:focus, .frow select:focus, .frow textarea:focus { border-color: rgba(245, 197, 66, 0.5); }
+.frow textarea { resize: vertical; min-height: 64px; font-family: var(--font); }
+.frow .note { font-size: 11px; color: var(--mut); margin-top: 5px; line-height: 1.5; }
+.frow input[type=range] { width: 100%; accent-color: var(--ban); }
+#setBtns { display: flex; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
+.mbtn {
+  flex: 1;
+  min-width: 110px;
+  padding: 10px 14px;
+  border-radius: 11px;
+  border: 1px solid rgba(245, 197, 66, 0.35);
+  background: rgba(245, 197, 66, 0.1);
+  color: var(--ban2);
+  font: 600 12.5px var(--font);
+  cursor: pointer;
+}
+.mbtn.gray { border-color: var(--panel-line); background: transparent; color: var(--dim); }
+.mbtn:hover { filter: brightness(1.15); }
+#testRes { font-size: 12px; margin-top: 10px; min-height: 16px; color: var(--dim); line-height: 1.5; }
+#testRes.ok { color: var(--grn); }
+#testRes.err { color: var(--red); }
+
+/* ---------- загрузчик / тосты / честные панели ---------- */
+#boot {
+  position: fixed; inset: 0; z-index: 50;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
+  background: var(--bg0);
+  transition: opacity 0.5s ease;
+}
+#boot.off { opacity: 0; pointer-events: none; }
+#bootTitle { font-size: 30px; letter-spacing: 0.18em; color: var(--ban2); font-weight: 800; text-shadow: 0 0 24px rgba(245, 197, 66, 0.3); }
+#bootSub { font-size: 12px; color: var(--mut); letter-spacing: 0.1em; }
+#bootMsg { font-size: 12px; color: var(--dim); min-height: 16px; }
+
+#baToasts {
+  position: fixed; right: 16px; bottom: 90px; z-index: 60;
+  display: flex; flex-direction: column; gap: 8px; pointer-events: none;
+}
+.toast {
+  padding: 9px 14px;
+  background: var(--panel);
+  border: 1px solid var(--panel-line);
+  border-left: 3px solid var(--ban);
+  border-radius: 10px;
+  font-size: 12.5px;
+  color: var(--txt);
+  animation: tin 0.25s ease;
+  max-width: 320px;
+}
+.toast.gd { border-left-color: var(--grn); }
+.toast.err { border-left-color: var(--red); }
+@keyframes tin { from { opacity: 0; transform: translateY(8px); } }
+
+#gkBootFail { position: fixed; inset: 0; z-index: 70; display: none; align-items: center; justify-content: center; padding: 24px; background: rgba(6, 5, 3, 0.96); }
+#gkBootFail.on { display: flex; }
+#gkBootFail .box { max-width: 560px; padding: 26px 28px; background: #140b0b; border: 1px solid #8a1d12; border-radius: var(--rads2); font-size: 13.5px; line-height: 1.65; }
+#gkBootFail .box h2 { font-size: 17px; color: #e05545; margin-bottom: 10px; }
+#gkBootFail pre { white-space: pre-wrap; background: #1d0d0d; border: 1px solid #8a1d12; border-radius: 8px; padding: 12px; margin-top: 10px; font-size: 12px; }
+
+@media (max-width: 760px) {
+  #side { position: fixed; inset: 0 auto 0 0; z-index: 20; box-shadow: 20px 0 60px rgba(0,0,0,0.5); }
+  #feed { padding: 16px 10px 8px; }
+  #inputRow { padding: 10px 10px 12px; }
+  .tbtn span.txl { display: none; }
+  .tbtn { padding: 8px 10px; }
+  #modeBadge { font-size: 10px; padding: 4px 9px; }
+}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <aside id="side">
+    <div id="brand">
+      <div class="logo">🍌</div>
+      <div>
+        <h1>BANANA AI</h1>
+        <small>умный ассистент</small>
+      </div>
+    </div>
+    <button id="btnNewChat">＋ Новый диалог</button>
+    <div id="histWrap">
+      <div class="histLabel">История</div>
+      <div id="histList"></div>
+    </div>
+    <div id="sideFoot">
+      <b>Честно:</b> офлайн-умения работают без интернета.<br>
+      Википедия и валюты — нужен интернет.<br>
+      Свой движок — без сторонних ИИ.<br>
+      История хранится локально в браузере.
+    </div>
+  </aside>
+
+  <div id="main">
+    <div id="topbar">
+      <button id="btnSide" title="Меню">☰</button>
+      <div id="modeBadge">свой движок</div>
+      <div class="sp"></div>
+      <button class="tbtn" id="btnExport" title="Сохранить диалог в файл">⬇ <span class="txl">Экспорт</span></button>
+      <button class="tbtn" id="btnSettings" title="Настройки движка">⚙ <span class="txl">Настройки</span></button>
+    </div>
+
+    <div id="feed"></div>
+    <div id="chipsWrap"></div>
+
+    <div id="inputRow">
+      <div id="inputInner">
+        <textarea id="inp" rows="1" placeholder="Спроси что угодно… (Enter — отправить)"></textarea>
+        <button class="sbtn" id="btnSend" title="Отправить">➤</button>
+        <button class="sbtn" id="btnStop" title="Остановить">■</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="ovl">
+  <div id="settings">
+    <h2>Настройки движка Banana</h2>
+    <div class="sub">Всё работает на собственном движке внутри файла — без OpenAI, DeepSeek и любых сторонних ИИ. Ничего не отправляется в интернет, кроме запросов к Википедии/валютам, если они включены.</div>
+    <div class="frow">
+      <label>Пожелания к характеру ассистента</label>
+      <textarea id="setSys" placeholder="Например: отвечай по-дружески и с юмором"></textarea>
+    </div>
+    <div class="frow">
+      <label>Как к тебе обращаться</label>
+      <input type="text" id="setUser" placeholder="например: Друг / Босс / имя">
+    </div>
+    <div class="frow">
+      <label>Стиль ответов</label>
+      <select id="setStyle">
+        <option value="normal">Обычный</option>
+        <option value="short">Краткий — только суть</option>
+        <option value="detailed">Подробный — с объяснениями</option>
+      </select>
+    </div>
+    <div class="frow">
+      <label>Онлайн-справочники (Википедия / курсы валют)</label>
+      <select id="setOnline">
+        <option value="on">Включены (по надобности)</option>
+        <option value="off">Выключены — полностью офлайн</option>
+      </select>
+    </div>
+    <div class="frow">
+      <label>Скорость печати ответа: <b id="tempVal">средняя</b></label>
+      <input type="range" id="setTemp" min="0" max="2" step="1" value="1">
+      <div class="note">0 — мгновенно, 1 — как живой человек, 2 — медленно</div>
+    </div>
+    <div id="setBtns">
+      <button class="mbtn" id="btnTest">Проверить движок</button>
+      <button class="mbtn" id="btnSave">Сохранить</button>
+      <button class="mbtn gray" id="btnClose">Закрыть</button>
+    </div>
+    <div id="testRes"></div>
+  </div>
+</div>
+
+<div id="baToasts"></div>
+
+<div id="boot">
+  <div id="bootTitle">🍌 BANANA AI</div>
+  <div id="bootSub">свой движок · без сторонних ИИ · работа в офлайне</div>
+  <div id="bootMsg">просыпаемся…</div>
+</div>
+
+<div id="gkBootFail">
+  <div class="box">
+    <h2>Banana AI — ошибка запуска</h2>
+    <div id="gkErrText" style="white-space:pre-wrap;background:#1d0d0d;border:1px solid #8a1d12;border-radius:8px;padding:12px"></div>
+    <div style="margin-top:12px;color:#b3a98f">Скачай файл и открой локально в свежем Chrome / Firefox / Edge.</div>
+  </div>
+</div>
+
+<script>
+window.__ZTerrs = [];
+window.addEventListener("error", function (e) {
+  window.__ZTerrs.push(String((e && e.message) || e) + (e && e.filename ? " @" + String(e.lineno) : ""));
+});
+window.addEventListener("unhandledrejection", function (e) {
+  window.__ZTerrs.push("promise: " + String((e && e.reason && e.reason.message) || e.reason));
+});
+</script>
+
+<script>
+/* ============================================================
+   BANANA ENGINE · СЛОЙ 1: УМЕНИЯ (skills)
+   Всё офлайн, никаких сторонних ИИ и API-ключей.
+   Экспорт: window.BA2
+   ============================================================ */
+(function () {
+  "use strict";
+
+  /* ---------- детерминированный ГПСЧ (для стабильных смоук-тестов
+     и повторяемых "случайных" фраз) ---------- */
+  function mulberry(seed) {
+    let t = seed >>> 0;
+    return function () {
+      t += 0x6D2B79F5;
+      let r = Math.imul(t ^ (t >>> 15), 1 | t);
+      r ^= r + Math.imul(r ^ (r >>> 7), 61 | r);
+      return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  const rnd = mulberry(20110910);
+  function pick(arr) { return arr[Math.floor(rnd() * arr.length) % arr.length]; }
+
+  /* ---------- нормализация текста ---------- */
+  const YO = { "\u0451": "\u0435", "\u0401": "\u0435" };
+  function norm(s) {
+    return String(s == null ? "" : s)
+      .replace(/[\u0451\u0401]/g, function (ch) { return YO[ch] || ch; })
+      .toLowerCase()
+      .replace(/[.,!?;:]+/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+  /* частые опечатки и сленг -> каноничные слова */
+  const TYPO = {
+    "приветик": "привет", "превет": "привет", "пирвет": "привет",
+    "пака": "пока", "спосибо": "спасибо", "спс": "спасибо",
+    "щас": "сейчас", "чё": "что", "че": "что", "кто это": "кто ты",
+    "скока": "сколько", "сколька": "сколько", "как дела": "как дела",
+    "здаров": "привет", "хай": "привет", "хеллоу": "привет",
+    "што": "что", "ваще": "вообще", "щитае": "считать"
+  };
+  function detypo(s) {
+    let out = s;
+    const keys = Object.keys(TYPO);
+    for (let i = 0; i < keys.length; i++) {
+      if (out.indexOf(keys[i]) === 0) { out = TYPO[keys[i]] + out.slice(keys[i].length); break; }
+    }
+    return out;
+  }
+
+  /* ---------- красивый вывод чисел ---------- */
+  function fmtNum(x) {
+    if (!isFinite(x)) return String(x);
+    if (Math.abs(x) >= 1e15 || (Math.abs(x) < 1e-9 && x !== 0)) {
+      return x.toExponential(6).replace(".", ",");
+    }
+    let r = Math.abs(x) < 1 ? Math.round(x * 1e10) / 1e10 : Math.round(x * 1e8) / 1e8;
+    let parts = String(r).split(".");
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+    return parts.join(",");
+  }
+
+  /* ============================================================
+     1. БЕЗОПАСНАЯ МАТЕМАТИКА (свой токенайзер + сортировочная станция,
+        никакого eval)
+     ============================================================ */
+  const FUNCS = {
+    sqrt: Math.sqrt, sin: Math.sin, cos: Math.cos, tan: Math.tan,
+    asin: Math.asin, acos: Math.acos, atan: Math.atan,
+    abs: Math.abs, ln: Math.log, log: Math.log10, lg: Math.log10,
+    round: Math.round, floor: Math.floor, ceil: Math.ceil,
+    exp: Math.exp, cbrt: Math.cbrt, sign: Math.sign
+  };
+  const CONSTS = { pi: Math.PI, e: Math.E };
+  const PREC = { "+": 1, "-": 1, "*": 2, "/": 2, "%": 2, "^": 3, "u-": 4 };
+
+  function lexMath(src) {
+    const out = [];
+    let i = 0;
+    while (i < src.length) {
+      const ch = src[i];
+      if (ch === " ") { i++; continue; }
+      if (ch >= "0" && ch <= "9" || ch === ".") {
+        let j = i;
+        while (j < src.length && (src[j] >= "0" && src[j] <= "9" || src[j] === ".")) j++;
+        const v = parseFloat(src.slice(i, j));
+        if (!isFinite(v)) return null;
+        out.push({ t: "num", v: v }); i = j; continue;
+      }
+      if (ch >= "a" && ch <= "z" || ch >= "A" && ch <= "Z" || ch >= "\u0430" && ch <= "\u044f") {
+        let j = i;
+        while (j < src.length && /[a-zA-Z\u0430-\u044f]/.test(src[j])) j++;
+        const word = src.slice(i, j).toLowerCase();
+        if (CONSTS[word] !== undefined) { out.push({ t: "num", v: CONSTS[word] }); }
+        else if (FUNCS[word]) { out.push({ t: "fn", v: word }); }
+        else if (word === "x" || word === "икс") { out.push({ t: "op", v: "*"}); } /* "2x" = 2*x */
+        else return null;
+        i = j; continue;
+      }
+      if ("+-*/^%()!".indexOf(ch) >= 0) { out.push({ t: "op", v: ch }); i++; continue; }
+      if (ch === ",") { out.push({ t: "op", v: "," }); i++; continue; }
+      return null;
+    }
+    return out;
+  }
+
+  function toRPN(tokens) {
+    const out = [], st = [];
+    let prev = null;
+    for (let i = 0; i < tokens.length; i++) {
+      const tk = tokens[i];
+      if (tk.t === "num") { out.push(tk); }
+      else if (tk.t === "fn") { st.push(tk); }
+      else {
+        const op = tk.v;
+        if (op === "(") { st.push(tk); }
+        else if (op === ")") {
+          while (st.length && st[st.length - 1].v !== "(") out.push(st.pop());
+          if (!st.length) return null;
+          st.pop();
+          if (st.length && st[st.length - 1].t === "fn") out.push(st.pop());
+        } else if (op === ",") {
+          while (st.length && st[st.length - 1].v !== "(") out.push(st.pop());
+        } else if (op === "!") {
+          out.push(tk);
+        } else {
+          /* унарный минус */
+          const unary = op === "-" && (prev === null || (prev.t === "op" && prev.v !== ")" && prev.v !== "!"));
+          const key = unary ? "u-" : op;
+          while (st.length) {
+            const top = st[st.length - 1];
+            if (top.t === "fn") { out.push(st.pop()); continue; }
+            if (top.v === "(" || top.v === ")") break;
+            const po = top.v === "u-" ? 4 : (top.v === "^" ? 3 : (top.v === "*" || top.v === "/" || top.v === "%" ? 2 : 1));
+            const pc = key === "u-" ? 4 : (key === "^" ? 3 : (key === "*" || key === "/" || key === "%" ? 2 : 1));
+            if (po >= pc && !(key === "^" && top.v === "^")) { out.push(st.pop()); } else break;
+          }
+          st.push({ t: "op", v: key });
+        }
+      }
+      prev = tk;
+    }
+    while (st.length) {
+      const top = st.pop();
+      if (top.v === "(" || top.v === ")") return null;
+      out.push(top);
+    }
+    return out;
+  }
+
+  function factorial(n) {
+    if (n < 0 || n !== Math.floor(n) || n > 170) return NaN;
+    let r = 1;
+    for (let i = 2; i <= n; i++) r *= i;
+    return r;
+  }
+
+  function evalRPN(rpn) {
+    const st = [];
+    for (let i = 0; i < rpn.length; i++) {
+      const tk = rpn[i];
+      if (tk.t === "num") { st.push(tk.v); continue; }
+      if (tk.t === "fn") {
+        const a = st.pop();
+        if (a === undefined) return NaN;
+        st.push(FUNCS[tk.v](a));
+        continue;
+      }
+      if (tk.v === "!") { const a = st.pop(); st.push(factorial(a)); continue; }
+      if (tk.v === "u-") { const a = st.pop(); st.push(-a); continue; }
+      const b = st.pop(), a = st.pop();
+      if (a === undefined || b === undefined) return NaN;
+      switch (tk.v) {
+        case "+": st.push(a + b); break;
+        case "-": st.push(a - b); break;
+        case "*": st.push(a * b); break;
+        case "/": st.push(a / b); break;
+        case "%": st.push(a % b); break;
+        case "^": st.push(Math.pow(a, b)); break;
+        default: return NaN;
+      }
+    }
+    return st.length === 1 ? st[0] : NaN;
+  }
+
+  /* "сколько будет 2+2" -> выражение */
+  const WORD_OPS = [
+    [/(?<![a-zа-я0-9_])\u0443\u043c\u043d\u043e\u0436\u0438\u0442\u044c\s*\u043d\u0430(?![a-zа-я0-9_])/g, "*"],
+    [/(?<![a-zа-я0-9_])\u0440\u0430\u0437\u0434\u0435\u043b\u0438\u0442\u044c\s*\u043d\u0430(?![a-zа-я0-9_])/g, "/"],
+    [/(?<![a-zа-я0-9_])\u043f\u043b\u044e\u0441(?![a-zа-я0-9_])/g, "+"],
+    [/(?<![a-zа-я0-9_])\u043c\u0438\u043d\u0443\u0441(?![a-zа-я0-9_])/g, "-"],
+    [/(?<![a-zа-я0-9_])\u0432\s*\u0441\u0442\u0435\u043f\u0435\u043d\u0438(?![a-zа-я0-9_])/g, "^"],
+    [/(?<![a-zа-я0-9_])\u043a\u043e\u0440\u0435\u043d\u044c\s*\u0438\u0437(?![a-zа-я0-9_])/g, "sqrt"],
+    [/(?<![a-zа-я0-9_])\u043f\u0440\u043e\u0446\u0435\u043d\u0442\u043e\u0432\s*\u043e\u0442(?![a-zа-я0-9_])/g, "%\u043e\u0442"],
+    [/(?<![a-zа-я0-9_])\u043d\u0430(?![a-zа-я0-9_])/g, "*"]
+  ];
+
+  function tryMath(text) {
+    let s0 = String(text).replace(/(\d+)\s*!/g, "$1 \u0444\u0430\u043a\u0442\u043e\u0440\u0438\u0430\u043b");
+    s0 = s0.replace(/\u0444\u0430\u043a\u0442\u043e\u0440\u0438\u0430\u043b\s*(?:\u0447\u0438\u0441\u043b\u0430\s*)?(\d+)/g, "$1 \u0444\u0430\u043a\u0442\u043e\u0440\u0438\u0430\u043b");
+    const t = detypo(norm(s0));
+    if (!t) return null;
+    let s = t;
+    /* проценты коротко и словами: "15% от 200", "15 процентов от 200" */
+    s = s.replace(/(\d+(?:[.,]\d+)?)\s*(?:%|\u043f\u0440\u043e\u0446\u0435\u043d\u0442\u043e\u0432|\u043f\u0440\u043e\u0446\u0435\u043d\u0442\u0430|\u043f\u0440\u043e\u0446\u0435\u043d\u0442)\s*\u043e\u0442\s*(\d+(?:[.,]\d+)?)/g,
+      function (_, pp, base) { return base + "*(" + pp + "/100)"; });
+    /* проценты: "15 процентов от 200" -> 200*(15/100) */
+    s = s.replace(/(\d+(?:[.,]\d+)?)\s*\u043f\u0440\u043e\u0446\u0435\u043d\u0442\u043e\u0432\s*\u043e\u0442\s*(\d+(?:[.,]\d+)?)/g,
+      function (_, p, base) { return base + "*(" + p + "/100)"; });
+    s = s.replace(/(\d+(?:[.,]\d+)?)\s*%/g, function (_, p) { return "(" + p + "/100)"; });
+    for (let i = 0; i < WORD_OPS.length; i++) s = s.replace(WORD_OPS[i][0], " " + WORD_OPS[i][1] + " ");
+    s = s.replace(/(\d+)\s*\u0444\u0430\u043a\u0442\u043e\u0440\u0438\u0430\u043b/g, "$1!");
+    /* выкидываем кириллицу - остаются только числа и операторы */
+    s = s.replace(/[\u0430-\u044f]+/g, " ").replace(/(\d),(\d)/g, "$1.$2").trim();
+    if (!/\d/.test(s)) return null;
+    if (!/[+\-*/^%!()]|\bsqrt|\bsin|\bcos|\btan|\bln|\blog|\babs|\bround|\bfloor|\bceil|\bexp|\bcbrt|\bsign/.test(s)) return null;
+    /* телефоны/даты вида "8-800-555-35-35" - только числа и дефисы, пропускаем */
+    if (/^[\d\s\-()+]+$/.test(s) && !/[+*/^%!]/.test(s) && (s.match(/-/g) || []).length >= 2) return null;
+    if (!/^[\d.\s+\-*/^%!()a-z]+$/i.test(s)) return null;
+    const toks = lexMath(s);
+    if (!toks || toks.length < 2) return null;
+    const rpn = toRPN(toks);
+    if (!rpn) return null;
+    const val = evalRPN(rpn);
+    if (typeof val !== "number" || !isFinite(val)) return null;
+    return { expr: s.replace(/\s+/g, " ").trim(), value: val, pretty: fmtNum(val) };
+  }
+
+  /* ============================================================
+     2. ЕДИНИЦЫ ИЗМЕРЕНИЯ (офлайн-таблицы)
+     ============================================================ */
+  const UNITS = {
+    len: {
+      base: "\u043c",
+      mm: 0.001, "\u043c\u043c": 0.001, "\u0441\u043c": 0.01, "\u0434\u043c": 0.1, "\u043c": 1, "\u043a\u043c": 1000,
+      "\u043c\u0438\u043b\u044f": 1609.344, "\u043c\u0438\u043b\u0438": 1609.344, "\u043c\u0438\u043b\u044c": 1609.344,
+      "\u0434\u044e\u0439\u043c": 0.0254, "\u0434\u044e\u0439\u043c\u0430": 0.0254, "\u0434\u044e\u0439\u043c\u043e\u0432": 0.0254,
+      "\u0444\u0443\u0442": 0.3048, "\u0444\u0443\u0442\u0430": 0.3048, "\u0444\u0443\u0442\u043e\u0432": 0.3048,
+      "\u044f\u0440\u0434": 0.9144, "\u043c\u043e\u0440\u0441\u043a\u0430\u044f\s\u043c\u0438\u043b\u044f": 1852,
+      "\u0441\u0432\u0435\u0442\u043e\u0432\u043e\u0439\s\u0433\u043e\u0434": 9.4607e15
+    },
+    mass: {
+      base: "\u043a\u0433",
+      "\u043c\u0433": 1e-6, "\u0433": 0.001, "\u043a\u0433": 1, "\u0446": 100, "\u0442": 1000, "\u0442\u043e\u043d\u043d\u0430": 1000, "\u0442\u043e\u043d\u043d": 1000,
+      "\u0444\u0443\u043d\u0442": 0.45359237, "\u0444\u0443\u043d\u0442\u0430": 0.45359237, "\u0444\u0443\u043d\u0442\u043e\u0432": 0.45359237,
+      "\u0443\u043d\u0446\u0438\u044f": 0.028349523, "\u0443\u043d\u0446\u0438\u0439": 0.028349523,
+      "\u043a\u0430\u0440\u0430\u0442": 0.0002
+    },
+    vol: {
+      base: "\u043b",
+      "\u043c\u043b": 0.001, "\u043b": 1, "\u043b\u0438\u0442\u0440": 1, "\u043b\u0438\u0442\u0440\u043e\u0432": 1, "\u043c3": 1000,
+      "\u0433\u0430\u043b\u043b\u043e\u043d": 3.785411784, "\u0433\u0430\u043b\u043b\u043e\u043d\u0430": 3.785411784,
+      "\u043f\u0438\u043d\u0442\u0430": 0.473176473, "\u0441\u0442\u0430\u043a\u0430\u043d": 0.25, "\u0447\u0430\u0441\u0442\u044c\u043d\u0430\u044f\s\u043b\u043e\u0436\u043a\u0430": 0.005, "\u0441\u0442\u043e\u043b\u043e\u0432\u0430\u044f\s\u043b\u043e\u0436\u043a\u0430": 0.015
+    },
+    time: {
+      base: "\u0441",
+      "\u043c\u0441": 0.001, "\u0441": 1, "\u043c\u0438\u043d": 60, "\u0447": 3600, "\u0447\u0430\u0441": 3600, "\u0447\u0430\u0441\u043e\u0432": 3600,
+      "\u0434\u0435\u043d\u044c": 86400, "\u0434\u043d\u0435\u0439": 86400, "\u043d\u0435\u0434\u0435\u043b\u044f": 604800, "\u043d\u0435\u0434\u0435\u043b\u044c": 604800,
+      "\u043c\u0435\u0441\u044f\u0446": 2629800, "\u0433\u043e\u0434": 31557600, "\u0433\u043e\u0434\u0430": 31557600, "\u043b\u0435\u0442": 31557600
+    },
+    data: {
+      base: "\u041c\u0411",
+      "\u0431\u0430\u0439\u0442": 1 / 1048576, "\u043a\u0431": 1 / 1024, "\u041c\u0411": 1, "\u0433\u0431": 1024, "\u0442\u0431": 1048576,
+      "\u043a\u0438\u043b\u043e\u0431\u0430\u0439\u0442": 1 / 1024, "\u043c\u0435\u0433\u0430\u0431\u0430\u0439\u0442": 1, "\u0433\u0438\u0433\u0430\u0431\u0430\u0439\u0442": 1024, "\u0442\u0435\u0440\u0430\u0431\u0430\u0439\u0442": 1048576
+    }
+  };
+  const CAT_ALIAS = {
+    len: ["\u0434\u043b\u0438\u043d\u0430", "\u0440\u0430\u0441\u0441\u0442\u043e\u044f\u043d\u0438\u0435"],
+    mass: ["\u0432\u0435\u0441", "\u043c\u0430\u0441\u0441\u0430"],
+    vol: ["\u043e\u0431\u044a\u0451\u043c", "\u043e\u0431\u044a\u0435\u043c"],
+    time: ["\u0432\u0440\u0435\u043c\u044f"],
+    data: ["\u043f\u0430\u043c\u044f\u0442\u044c", "\u0434\u0430\u043d\u043d\u044b\u0435"]
+  };
+  function tempKey(w) {
+    const map = {
+      "c": "\u0441", "\u0441": "\u0441", "\u0446\u0435\u043b\u044c\u0441\u0438\u044f": "\u0441", "\u0441\u0435\u043b\u044c\u0441\u0438\u044f": "\u0441",
+      "f": "\u0444", "\u0444": "\u0444", "\u0444\u0430\u0440\u0435\u043d\u0433\u0435\u0439\u0442": "\u0444",
+      "k": "\u043a", "\u043a": "\u043a", "\u043a\u0435\u043b\u044c\u0432\u0438\u043d": "\u043a"
+    };
+    return map[w] || null;
+  }
+  function convTemp(v, from, to) {
+    let c = from === "\u0441" ? v : from === "\u0444" ? (v - 32) * 5 / 9 : v - 273.15;
+    return to === "\u0441" ? c : to === "\u0444" ? c * 9 / 5 + 32 : c + 273.15;
+  }
+  function unitWord(u) { return u; }
+  function tryConvert(text) {
+    const t = norm(text);
+    const m = t.match(/(-?\d+(?:[.,]\d+)?)\s*([^\s]+|[\u0430-\u044f]+\s?\u043c\u0438\u043b\u044f?)\s*(?:\u0432|\u043f\u0435\u0440\u0435\u0432\u0435\u0434\u0438\s*\u0432|\u0432\s*\u0435\u0434\u0438\u043d\u0438\u0446\u0430\u0445)\s*([^\s]+)/);
+    if (!m) return null;
+    const v = parseFloat(m[1].replace(",", "."));
+    if (!isFinite(v)) return null;
+    const fromRaw = m[2].trim(), toRaw = m[3].trim();
+    const tf = tempKey(fromRaw), tt = tempKey(toRaw);
+    if (tf && tt) {
+      const r = convTemp(v, tf, tt);
+      return { text: fmtNum(v) + " \u00b0" + fromRaw.toUpperCase() + " = " + fmtNum(r) + " \u00b0" + toRaw.toUpperCase() };
+    }
+    for (const cat in UNITS) {
+      const tab = UNITS[cat];
+      const f = tab[fromRaw] !== undefined ? fromRaw : (tab[fromRaw.toLowerCase()] !== undefined ? fromRaw.toLowerCase() : null);
+      const to = tab[toRaw] !== undefined ? toRaw : (tab[toRaw.toLowerCase()] !== undefined ? toRaw.toLowerCase() : null);
+      if (f && to) {
+        const r = v * tab[f] / tab[to];
+        return { text: fmtNum(v) + " " + unitWord(f) + " = " + fmtNum(r) + " " + unitWord(to) + " (" + (CAT_ALIAS[cat] ? CAT_ALIAS[cat][0] : cat) + ")" };
+      }
+    }
+    return null;
+  }
+
+  /* ============================================================
+     3. ДАТА И ВРЕМЯ
+     ============================================================ */
+  const DAYS = ["\u0432\u043e\u0441\u043a\u0440\u0435\u0441\u0435\u043d\u044c\u0435", "\u043f\u043e\u043d\u0435\u0434\u0435\u043b\u044c\u043d\u0438\u043a", "\u0432\u0442\u043e\u0440\u043d\u0438\u043a", "\u0441\u0440\u0435\u0434\u0430", "\u0447\u0435\u0442\u0432\u0435\u0440\u0433", "\u043f\u044f\u0442\u043d\u0438\u0446\u0430", "\u0441\u0443\u0431\u0431\u043e\u0442\u0430"];
+  const MONTHS = ["\u044f\u043d\u0432\u0430\u0440\u044f", "\u0444\u0435\u0432\u0440\u0430\u043b\u044f", "\u043c\u0430\u0440\u0442\u0430", "\u0430\u043f\u0440\u0435\u043b\u044f", "\u043c\u0430\u044f", "\u0438\u044e\u043d\u044f", "\u0438\u044e\u043b\u044f", "\u0430\u0432\u0433\u0443\u0441\u0442\u0430", "\u0441\u0435\u043d\u0442\u044f\u0431\u0440\u044f", "\u043e\u043a\u0442\u044f\u0431\u0440\u044f", "\u043d\u043e\u044f\u0431\u0440\u044f", "\u0434\u0435\u043a\u0430\u0431\u0440\u044f"];
+  function pad2(n) { return (n < 10 ? "0" : "") + n; }
+  function tryDateTime(text) {
+    const t = norm(text);
+    const now = new Date();
+    if (/(?<![a-zа-я0-9_])\u0441\u043a\u043e\u043b\u044c\u043a\u043e\s*\u0432\u0440\u0435\u043c\u0435\u043d\u0438(?![a-zа-я0-9_])|(?<![a-zа-я0-9_])\u043a\u043e\u0442\u043e\u0440\u044b\u0439\s*\u0447\u0430\u0441(?![a-zа-я0-9_])|(?<![a-zа-я0-9_])\u0441\u043a\u043e\u043b\u044c\u043a\u043e\s*\u0447\u0430\u0441\u043e\u0432(?![a-zа-я0-9_])/.test(t)) {
+      return { text: "\u0421\u0435\u0439\u0447\u0430\u0441 " + pad2(now.getHours()) + ":" + pad2(now.getMinutes()) + ":" + pad2(now.getSeconds()) + " (\u043f\u043e \u0447\u0430\u0441\u0430\u043c \u0443\u0441\u0442\u0440\u043e\u0439\u0441\u0442\u0432\u0430)." };
+    }
+    if (/(?<![a-zа-я0-9_])\u043a\u0430\u043a\u043e\u0435\s*(?:\u0441\u0435\u0433\u043e\u0434\u043d\u044f\s*)?\u0447\u0438\u0441\u043b\u043e(?![a-zа-я0-9_])|(?<![a-zа-я0-9_])\u043a\u0430\u043a\u043e\u0439\s*\u0441\u0435\u0433\u043e\u0434\u043d\u044f\s*\u0434\u0435\u043d\u044c(?![a-zа-я0-9_])|(?<![a-zа-я0-9_])\u043a\u0430\u043a\u0430\u044f\s*\u0434\u0430\u0442\u0430(?![a-zа-я0-9_])/.test(t)) {
+      return { text: "\u0421\u0435\u0433\u043e\u0434\u043d\u044f " + now.getDate() + " " + MONTHS[now.getMonth()] + " " + now.getFullYear() + " \u0433\u043e\u0434\u0430, " + DAYS[now.getDay()] + "." };
+    }
+    if (/(?<![a-zа-я0-9_])\u043a\u0430\u043a\u043e\u0439\s*\u0434\u0435\u043d\u044c\s*\u043d\u0435\u0434\u0435\u043b\u0438(?![a-zа-я0-9_])/.test(t)) {
+      return { text: "\u0421\u0435\u0433\u043e\u0434\u043d\u044f " + DAYS[now.getDay()] + "." };
+    }
+    if (/(?<![a-zа-я0-9_])\u0441\u043a\u043e\u043b\u044c\u043a\u043e\s*\u0434\u043d\u0435\u0439\s*\u0434\u043e\s*\u043d\u043e\u0432\u043e\u0433\u043e\s*\u0433\u043e\u0434\u0430(?![a-zа-я0-9_])|(?<![a-zа-я0-9_])\u0434\u043e\s*\u043d\u0433(?![a-zа-я0-9_])/.test(t)) {
+      const ny = new Date(now.getFullYear() + 1, 0, 1);
+      const days = Math.ceil((ny - now) / 86400000);
+      return { text: "\u0414\u043e \u041d\u043e\u0432\u043e\u0433\u043e \u0433\u043e\u0434\u0430 \u043e\u0441\u0442\u0430\u043b\u043e\u0441\u044c " + days + " " + (days % 10 === 1 && days % 100 !== 11 ? "\u0434\u0435\u043d\u044c" : (days % 10 >= 2 && days % 10 <= 4 && (days % 100 < 10 || days % 100 >= 20) ? "\u0434\u043d\u044f" : "\u0434\u043d\u0435\u0439")) + "." };
+    }
+    return null;
+  }
+
+  /* ============================================================
+     4. ГЕНЕРАТОРЫ
+     ============================================================ */
+  function genPassword(len) {
+    const abc = "abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789!@#$%^&*";
+    let r = "";
+    for (let i = 0; i < len; i++) r += abc[Math.floor(rnd() * abc.length)];
+    return r;
+  }
+  function tryGenerate(text) {
+    const t = norm(text);
+    let m = t.match(/(?<![a-zа-я0-9_])\u043f\u0430\u0440\u043e\u043b\u044c(?![a-zа-я0-9_])/);
+    if (m) {
+      const lm = t.match(/(\d{1,3})(?:\s*\u0441\u0438\u043c\u0432\u043e\u043b)?/);
+      const len = Math.min(64, Math.max(6, lm ? parseInt(lm[1], 10) : 14));
+      return { text: "\u0412\u043e\u0442 \u043d\u0430\u0434\u0451\u0436\u043d\u044b\u0439 \u043f\u0430\u0440\u043e\u043b\u044c \u043d\u0430 " + len + " \u0441\u0438\u043c\u0432\u043e\u043b\u043e\u0432:\n`" + genPassword(len) + "`\n\u0421\u043e\u0445\u0440\u0430\u043d\u0438 \u0435\u0433\u043e \u0432 \u043c\u0435\u0441\u0442\u0435, \u043a\u043e\u0442\u043e\u0440\u043e\u0435 \u0437\u043d\u0430\u0435\u0448\u044c \u0442\u043e\u043b\u044c\u043a\u0430 \u0442\u044b." };
+    }
+    if (/(?<![a-zа-я0-9_])\u043c\u043e\u043d\u0435\u0442\u043a\u0430(?![a-zа-я0-9_])|(?<![a-zа-я0-9_])\u043e\u0440\u0451\u043b(?![a-zа-я0-9_])|(?<![a-zа-я0-9_])\u043e\u0440\u0435\u043b(?![a-zа-я0-9_])|(?<![a-zа-я0-9_])\u0440\u0435\u0448\u043a\u0430(?![a-zа-я0-9_])/.test(t)) {
+      return { text: "\u041c\u043e\u043d\u0435\u0442\u043a\u0430 \u0433\u043e\u0432\u043e\u0440\u0438\u0442: **" + (rnd() < 0.5 ? "\u043e\u0440\u0451\u043b" : "\u0440\u0435\u0448\u043a\u0430") + "**." };
+    }
+    m = t.match(/(?<![a-zа-я0-9_])\u043a\u0443\u0431\u0438\u043a(?![a-zа-я0-9_])(?:\s*d?\s*(\d{1,2}))?/);
+    if (m) {
+      const sides = m[1] ? Math.min(1000, parseInt(m[1], 10)) : 6;
+      return { text: "\u041a\u0443\u0431\u0438\u043a d" + sides + ": \ud83c\udfb2 **" + (1 + Math.floor(rnd() * sides)) + "**" };
+    }
+    m = t.match(/(?<![a-zа-я0-9_])\u0447\u0438\u0441\u043b\u043e\s*\u043e\u0442\s*(-?\d+)\s*\u0434\u043e\s*(-?\d+)(?![a-zа-я0-9_])/);
+    if (m) {
+      const a = parseInt(m[1], 10), b = parseInt(m[2], 10);
+      const lo = Math.min(a, b), hi = Math.max(a, b);
+      return { text: "\u0421\u043b\u0443\u0447\u0430\u0439\u043d\u043e\u0435 \u0447\u0438\u0441\u043b\u043e \u043e\u0442 " + lo + " \u0434\u043e " + hi + ": **" + (lo + Math.floor(rnd() * (hi - lo + 1))) + "**" };
+    }
+    if (/(?<![a-zа-я0-9_])\u0432\u044b\u0431\u0435\u0440\u0438(?![a-zа-я0-9_])|(?<![a-zа-я0-9_])\u043a\u0430\u043a\u043e\u0439\s*\u0432\u044b\u0431\u0440\u0430\u0442\u044c(?![a-zа-я0-9_])/.test(t)) {
+      const after = text.replace(/^[^:]*:\s*/, "");
+      const opts = after.split(/[,;]|\s\u0438\u043b\u0438\s/).map(function (x) { return x.trim(); }).filter(Boolean);
+      if (opts.length >= 2) return { text: "\u041c\u043e\u0439 \u0432\u044b\u0431\u043e\u0440: **" + opts[Math.floor(rnd() * opts.length)] + "** (\u0438\u0437 " + opts.length + " \u0432\u0430\u0440\u0438\u0430\u043d\u0442\u043e\u0432)" };
+    }
+    return null;
+  }
+
+  /* ============================================================
+     5. ТЕКСТОВЫЕ ИНСТРУМЕНТЫ
+     ============================================================ */
+  const TRAN = {
+    a: "a", b: "b", v: "v", g: "g", d: "d", e: "e",
+    "\u0436": "zh", z: "z", i: "i", "\u0439": "y", k: "k", l: "l", m: "m", n: "n",
+    o: "o", p: "p", r: "r", s: "s", t: "t", u: "u", f: "f", h: "h",
+    c: "ts", ch: "ch", sh: "sh", "\u0449": "sch", "\u044a": "", y: "y",
+    "\u044c": "", "\u044d": "e", "\u044e": "yu", "\u044f": "ya"
+  };
+  const RUS2LAT = {
+    "\u0430": "a", "\u0431": "b", "\u0432": "v", "\u0433": "g", "\u0434": "d", "\u0435": "e", "\u0436": "zh",
+    "\u0437": "z", "\u0438": "i", "\u0439": "y", "\u043a": "k", "\u043b": "l", "\u043c": "m", "\u043d": "n",
+    "\u043e": "o", "\u043f": "p", "\u0440": "r", "\u0441": "s", "\u0442": "t", "\u0443": "u", "\u0444": "f",
+    "\u0445": "h", "\u0446": "ts", "\u0447": "ch", "\u0448": "sh", "\u0449": "sch", "\u044a": "", "\u044b": "y",
+    "\u044c": "", "\u044d": "e", "\u044e": "yu", "\u044f": "ya"
+  };
+  function translit(s) {
+    let out = "";
+    for (let i = 0; i < s.length; i++) {
+      const ch = s[i], lo = ch.toLowerCase();
+      out += (RUS2LAT[lo] !== undefined ? RUS2LAT[lo] : lo);
+    }
+    return out;
+  }
+  function tryTextTool(text) {
+    const t = norm(text);
+    const body = text.replace(/^\s*\u043f\u0435\u0440\u0435\u0432\u0435\u0434\u0438\s*\u0432\s*\u0442\u0440\u0430\u043d\u0441\u043b\u0438\u0442\s*/i, "")
+      .replace(/^\s*\u0442\u0440\u0430\u043d\u0441\u043b\u0438\u0442\s*/i, "");
+    if (/(?<![a-zа-я0-9_])\u0442\u0440\u0430\u043d\u0441\u043b\u0438\u0442(?![a-zа-я0-9_])/.test(t) && body.length) {
+      return { text: "`" + translit(body) + "`" };
+    }
+    if (/(?<![a-zа-я0-9_])\u0441\u043a\u043e\u043b\u044c\u043a\u043e\s*(\u0441\u0438\u043c\u0432\u043e\u043b\u043e\u0432|\u0431\u0443\u043a\u0432|\u0441\u043b\u043e\u0432)(?![a-zа-я0-9_])/.test(t)) {
+      const q = text.replace(/^[^"\u00ab]*["\u00ab]?/, "").replace(/["\u00bb]$/, "");
+      const src = q.length ? q : "";
+      if (!src) return null;
+      const words = src.split(/\s+/).filter(Boolean).length;
+      return { text: "\u0412 \u0442\u0435\u043a\u0441\u0442\u0435 \u00ab" + src + "\u00bb: " + src.length + " \u0441\u0438\u043c\u0432\u043e\u043b\u043e\u0432, " + words + " " + (words % 10 === 1 && words % 100 !== 11 ? "\u0441\u043b\u043e\u0432\u043e" : words % 10 >= 2 && words % 10 <= 4 && (words % 100 < 10 || words % 100 >= 20) ? "\u0441\u043b\u043e\u0432\u0430" : "\u0441\u043b\u043e\u0432") + "." };
+    }
+    return null;
+  }
+
+  /* ============================================================
+     6. BASE64 (юникод-безопасно)
+     ============================================================ */
+  function tryBase64(text) {
+    const t = norm(text);
+    let m = t.match(/(?<![a-zа-я0-9_])base64(?![a-zа-я0-9_])/);
+    if (!m) return null;
+    const src = text.replace(/^.*?base64\s*/i, "").trim();
+    if (!src) return null;
+    try {
+      if (/(?<![a-zа-я0-9_])\u0440\u0430\u0441\u043a\u043e\u0434\u0438\u0440\u0443\u0439(?![a-zа-я0-9_])|(?<![a-zа-я0-9_])\u0434\u0435\u043a\u043e\u0434(?![a-zа-я0-9_])/.test(t)) {
+        const bin = atob(src.replace(/\s+/g, ""));
+        const dec = decodeURIComponent(Array.prototype.map.call(bin, function (c) {
+          return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(""));
+        return { text: "\u0420\u0430\u0441\u043a\u043e\u0434\u0438\u0440\u043e\u0432\u0430\u043b: `" + dec + "`" };
+      }
+      const enc = btoa(unescape(encodeURIComponent(src)));
+      return { text: "\u0417\u0430\u043a\u043e\u0434\u0438\u0440\u043e\u0432\u0430\u043b \u0432 base64: `" + enc + "`" };
+    } catch (e) {
+      return { text: "\u041d\u0435 \u0441\u043c\u043e\u0433 \u2014 \u044d\u0442\u043e \u043d\u0435 \u043f\u043e\u0445\u043e\u0436\u0435 \u043d\u0430 \u043a\u043e\u0440\u0440\u0435\u043a\u0442\u043d\u044b\u0439 base64." };
+    }
+  }
+
+  /* ============================================================
+     7. ВАЛЮТЫ (онлайн, но это справочник, а не ИИ; офлайн-фолбэк
+        по вшитому курсу с датой)
+     ============================================================ */
+  const FALLBACK_RATES = { date: "2025-01-15", USD: 99.5, EUR: 103.2, RUB: 1, GBP: 126.4, CNY: 13.7, JPY: 0.64, KZT: 0.21, UAH: 2.4, BYN: 30.5, TRY: 2.9 };
+  let liveRates = null, liveRatesAt = 0;
+  function fetchRates() {
+    if (liveRates && Date.now() - liveRatesAt < 3600000) return Promise.resolve(liveRates);
+    return fetch("https://api.exchangerate.host/latest?base=RUB&symbols=USD,EUR,GBP,CNY,JPY,KZT,UAH,BYN,TRY")
+      .then(function (r) { if (!r.ok) throw new Error("http " + r.status); return r.json(); })
+      .then(function (j) {
+        if (!j || !j.rates || !j.rates.RUB) throw new Error("bad payload");
+        j.rates.RUB = 1; j.date = j.date || "live";
+        liveRates = { date: j.date, rates: j.rates };
+        liveRatesAt = Date.now();
+        return liveRates;
+      });
+  }
+  function ratesToUsd(r) { return 1 / r.USD; }
+  function convCurrency(v, from, to, rates) {
+    const rubFrom = rates[from], rubTo = rates[to];
+    if (!rubFrom || !rubTo) return null;
+    return v * rubFrom / rubTo;
+  }
+  function tryCurrencyNow(text) {
+    const t = norm(text);
+    const m = t.match(/(-?\d+(?:[.,]\d+)?)\s*([\u0430-\u044f$€\u20bd]+|\u0434\u043e\u043b\u043b\u0430\u0440|\u0435\u0432\u0440\u043e|\u0440\u0443\u0431\u043b\u0435\u0439|\u044e\u0430\u043d\u044c|\u0442\u0435\u043d\u0433\u0435|\u0433\u0440\u0438\u0432\u0435\u043d|\u043b\u0438\u0440\u0430)\s*(?:\u0432|\u043f\u0435\u0440\u0435\u0432\u0435\u0434\u0438\s*\u0432)\s*([\u0430-\u044f$€\u20bd]+)/);
+    if (!m) return null;
+    const CUR = {
+      "\u0434\u043e\u043b\u043b\u0430\u0440": "USD", "\u0434\u043e\u043b\u043b\u0430\u0440\u0430": "USD", "\u0434\u043e\u043b\u043b\u0430\u0440\u043e\u0432": "USD", "usd": "USD", "$": "USD",
+      "\u0435\u0432\u0440\u043e": "EUR", "eur": "EUR", "\u20ac": "EUR",
+      "\u0440\u0443\u0431\u043b\u044c": "RUB", "\u0440\u0443\u0431\u043b\u044f": "RUB", "\u0440\u0443\u0431\u043b\u0435\u0439": "RUB", "rub": "RUB", "\u20bd": "RUB",
+      "\u0444\u0443\u043d\u0442": "GBP", "gbp": "GBP", "\u044e\u0430\u043d\u044c": "CNY", "cny": "CNY", "\u0438\u0435\u043d": "JPY", "jpy": "JPY",
+      "\u0442\u0435\u043d\u0433\u0435": "KZT", "kzt": "KZT", "\u0433\u0440\u0438\u0432\u043d\u0430": "UAH", "uah": "UAH", "\u0431\u0435\u043b\u0440\u0443\u0431\u043b\u044c": "BYN", "byn": "BYN",
+      "\u043b\u0438\u0440\u0430": "TRY", "try": "TRY"
+    };
+    const from = CUR[m[2]], to = CUR[m[3]];
+    if (!from || !to) return null;
+    const v = parseFloat(m[1].replace(",", "."));
+    if (!isFinite(v)) return null;
+    return fetchRates().then(function (r) {
+      const out = convCurrency(v, from, to, r.rates);
+      return out == null ? null : { text: fmtNum(v) + " " + from + " \u2248 " + fmtNum(out) + " " + to + " (\u043a\u0443\u0440\u0441: " + r.date + ")" };
+    }).catch(function () {
+      const out = convCurrency(v, from, to, FALLBACK_RATES);
+      return out == null ? null : { text: "\u041e\u0444\u043b\u0430\u0439\u043d-\u043a\u0443\u0440\u0441 (\u0432\u0448\u0438\u0442 \u0432 \u0444\u0430\u0439\u043b, \u0434\u0430\u0442\u0430 " + FALLBACK_RATES.date + "): " + fmtNum(v) + " " + from + " \u2248 " + fmtNum(out) + " " + to + ". \u0414\u043b\u044f \u0441\u0432\u0435\u0436\u0435\u0433\u043e \u043a\u0443\u0440\u0441\u0430 \u043d\u0443\u0436\u0435\u043d \u0438\u043d\u0442\u0435\u0440\u043d\u0435\u0442." };
+    });
+  }
+
+  /* ---------- экспорт ---------- */
+  window.BA2 = {
+    v: "2.0",
+    norm: norm, detypo: detypo, pick: pick, rnd: rnd, fmtNum: fmtNum,
+    tryMath: tryMath, tryConvert: tryConvert, tryDateTime: tryDateTime,
+    tryGenerate: tryGenerate, tryTextTool: tryTextTool, tryBase64: tryBase64,
+    tryCurrencyNow: tryCurrencyNow,
+    FALLBACK_RATES: FALLBACK_RATES,
+    DAYS: DAYS, MONTHS: MONTHS,
+    selfTest: function () {
+      const t1 = tryMath("сколько будет 2+2*2");
+      const t2 = tryMath("корень из 144");
+      const t3 = tryConvert("5 км в мили");
+      const t4 = tryDateTime("сколько времени");
+      return {
+        math: !!(t1 && Math.abs(t1.value - 6) < 1e-9),
+        sqrt: !!(t2 && Math.abs(t2.value - 12) < 1e-9),
+        units: !!(t3 && /3,1/.test(t3.text)),
+        time: !!t4
+      };
+    }
+  };
+})();
+</script>
+<script>
+/* ============================================================
+   BANANA ENGINE · СЛОЙ 2: ЯДРО (NLU + память + база знаний)
+   Полностью собственный движок: свой стеммер, свой классификатор
+   намерений, своя база знаний. Никаких сторонних ИИ.
+   Экспорт: window.BA3
+   ============================================================ */
+(function () {
+  "use strict";
+
+  /* ============================================================
+     1. МОРФОЛОГИЯ: лёгкий русский стеммер (свой)
+     ============================================================ */
+  const ENDINGS = [
+    "ами", "ями", "ого", "его", "ому", "ему", "ыми", "ими",
+    "ах", "ях", "ам", "ям", "ей", "ой", "ый", "ий", "ая", "яя",
+    "ое", "ее", "ые", "ие", "ть", "ешь", "ишь", "ете", "ите",
+    "ет", "ут", "ют", "ат", "ят", "ит", "ыл", "ила", "ли", "ло",
+    "ал", "яла", "ил", "ов", "ев", "ых", "их", "ую", "юю",
+    "ь", "а", "я", "о", "е", "и", "ы", "у", "ю", "й"
+  ];
+  function stem(w) {
+    if (w.length <= 3) return w;
+    for (let i = 0; i < ENDINGS.length; i++) {
+      const e = ENDINGS[i];
+      if (w.length - e.length >= 3 && w.slice(-e.length) === e) {
+        return w.slice(0, w.length - e.length);
+      }
+    }
+    return w;
+  }
+  const STOP = {
+    "и": 1, "в": 1, "во": 1, "не": 1, "что": 1, "он": 1, "на": 1, "я": 1,
+    "с": 1, "со": 1, "как": 1, "а": 1, "то": 1, "все": 1, "она": 1, "так": 1,
+    "его": 1, "но": 1, "да": 1, "ты": 1, "к": 1, "у": 1, "же": 1, "вы": 1,
+    "за": 1, "бы": 1, "по": 1, "про": 1, "только": 1, "ее": 1, "мне": 1, "было": 1,
+    "вот": 1, "от": 1, "меня": 1, "еще": 1, "нет": 1, "о": 1, "из": 1,
+    "ему": 1, "теперь": 1, "когда": 1, "даже": 1, "ну": 1, "вдруг": 1,
+    "ли": 1, "если": 1, "уже": 1, "или": 1, "ни": 1, "быть": 1, "был": 1
+  };
+  function tokens(text) {
+    return (text || "")
+      .toLowerCase()
+      .replace(/[^\u0430-\u044fa-z0-9\s+\-*/^%!().,]/g, " ")
+      .split(/\s+/)
+      .filter(function (w) { return w.length > 0 && !STOP[w]; });
+  }
+  function stems(text) {
+    const w = tokens(text);
+    const out = [];
+    for (let i = 0; i < w.length; i++) out.push(stem(w[i]));
+    return out;
+  }
+
+  /* ============================================================
+     2. ПАМЯТЬ (localStorage, всё локально)
+     ============================================================ */
+  const LS_SETTINGS = "banana.settings.v2";
+  const LS_CHATS = "banana.chats.v2";
+  const LS_MEM = "banana.memory.v2";
+  function lsGet(key, def) {
+    try {
+      const raw = localStorage.getItem(key);
+      return raw == null ? def : JSON.parse(raw);
+    } catch (e) { return def; }
+  }
+  function lsSet(key, val) {
+    try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) { /* приватный режим */ }
+  }
+  const settings = Object.assign({
+    userName: "", style: "normal", persona: "", speed: 1, online: "on"
+  }, lsGet(LS_SETTINGS, {}));
+  function saveSettings() { lsSet(LS_SETTINGS, settings); }
+  const memory = Object.assign({
+    likes: [], facts: [], greeted: false, msgCount: 0
+  }, lsGet(LS_MEM, {}));
+  function saveMemory() { lsSet(LS_MEM, memory); }
+
+  /* ============================================================
+     3. БАЗА ЗНАНИЙ (вшита в файл, офлайн) — космос и наука
+     ============================================================ */
+  const KB = [
+    { k: "банан бананы", t: "Банан", b: "Банан — плод травянистого растения рода Musa. Ботанически банан — ягода, а банановое «дерево» — гигантская трава высотой до 8 метров. Съедобные сорта без косточек размножают вегетативно. В одном банане около 89 ккал на 100 г и много калия." },
+    { k: "земля планета", t: "Земля", b: "Земля — третья планета от Солнца, единственная известная с жизнью. Радиус 6371 км, возраст около 4,54 млрд лет. 71% поверхности занимает Мировой океан. Атмосфера: 78% азота, 21% кислорода." },
+    { k: "луна", t: "Луна", b: "Луна — единственный естественный спутник Земли, удалена в среднем на 384 400 км. Диаметр 3474 км. Всегда повёрнута к Земле одной стороной (синхронное вращение). Первую высадку совершил «Аполлон-11» в 1969 году." },
+    { k: "солнце", t: "Солнце", b: "Солнце — звезда-жёлтый карлик класса G2V в центре Солнечной системы. Возраст около 4,6 млрд лет. Температура фотосферы ~5500 °C, ядра — ~15 млн °C. Свет от него до Земли идёт 8 минут 20 секунд." },
+    { k: "марс", t: "Марс", b: "Марс — четвёртая планета от Солнца, «красная планета» из-за оксида железа в грунте. Сутки — 24 ч 37 мин. Крупнейший вулкан Солнечной системы — Олимп (21,9 км). Там работают роверы NASA." },
+    { k: "юпитер", t: "Юпитер", b: "Юпитер — крупнейшая планета Солнечной системы: масса в 2,5 раза больше всех остальных планет вместе. Газовый гигант, знаменитое Большое красное пятно — гигантский шторм, живёт более 350 лет." },
+    { k: "сатурн кольца", t: "Сатурн", b: "Сатурн — газовый гигант со знаменитой системой колец из льда и камня толщиной от 10 м до 1 км при диаметре ~280 000 км. Плотность Сатурна меньше воды — он бы в ней «плавал»." },
+    { k: "чёрная дыра черная", t: "Чёрные дыры", b: "Чёрная дыра — область, где гравитация так сильна, что ничто, включая свет, не может её покинуть. Образуются при коллапсе массивных звёзд. Первое изображение чёрной дыры (M87*) получено в 2019 году телескопом Event Horizon." },
+    { k: "галактика млечный путь", t: "Млечный Путь", b: "Млечный Путь — наша галактика: спиральная, диаметр ~100 000 световых лет, в ней 100–400 млрд звёзд. Солнце делает один оборот вокруг её центра примерно за 230 млн лет." },
+    { k: "вселенная большой взрыв", t: "Большой взрыв", b: "Теория Большого взрыва: Вселенная возникла ~13,8 млрд лет назад из сверхгорячего плотного состояния и расширяется до сих пор. Доказательства — реликтовое излучение и красное смещение галактик." },
+    { k: "вода", t: "Вода", b: "Вода (H2O) — вещество с аномалиями: при замерзании расширяется, поэтому лёд плавает. Покрывает 71% Земли, но пресной лишь ~2,5%, и почти вся — в ледниках. Человек на ~60% состоит из воды." },
+    { k: "кислород", t: "Кислород", b: "Кислород — элемент №8, без цвета и запаха. В атмосфере появился благодаря фотосинтезу цианобактерий ~2,4 млрд лет назад («кислородная катастрофа»). Мы дышим молекулярным O2." },
+    { k: "гравитация", t: "Гравитация", b: "Гравитация — притяжение масс. Ньютон описал её законом всемирного тяготения, Эйнштейн — общей теорией относительности: масса искривляет пространство-время. Ускорение на Земле ≈ 9,81 м/с²." },
+    { k: "свет скорость", t: "Скорость света", b: "Скорость света в вакууме — 299 792 458 м/с, точное значение, фундаментальная константа. Быстрее ничего не может двигаться — так говорит теория относительности." },
+    { k: "электричество ток", t: "Электричество", b: "Электричество — движение заряженных частиц. Электрический ток в металлах — поток электронов. Напряжение мерят в вольтах, ток — в амперах, мощность — в ваттах. Розетка: 220–230 В, 50 Гц." },
+    { k: "атом", t: "Атом", b: "Атом — мельчайшая частица вещества, сохраняющая свойства элемента: ядро из протонов и нейтронов + электронные оболочки. Атом в основном пуст: если ядро — мяч, то электроны — в километре от него." },
+    { k: "днк ген генетика", t: "ДНК", b: "ДНК — молекула-носитель наследственности: двойная спираль из нуклеотидов A, T, G, C. У человека ~3,1 млрд пар оснований. Структуру расшифровали Уотсон и Крик в 1953 году." },
+    { k: "эволюция дарвин", t: "Эволюция", b: "Эволюция — изменение популяций живого со временем. Дарвин описал отбор: выживают те, кто лучше приспособился. Подтверждается палеонтологией, генетикой, наблюдениями (в т.ч. галапагосские вьюрки)." },
+    { k: "мозг", t: "Мозг", b: "Мозг человека — ~86 млрд нейронов, связанных ~100 трлн синапсов. Потребляет ~20% энергии тела при 2% массы. Разные зоны отвечают за зрение, речь, память; нейропластичность позволяет перестраиваться." },
+    { k: "сон спать", t: "Сон", b: "Взрослому нужно 7–9 часов сна. Сон циклический: медленный и быстрый (REM) сон, сны снятся в основном в REM. Недосып бьёт по памяти, иммунитету и настроению сильнее, чем кажется." },
+    { k: "пи число", t: "Число π", b: "π ≈ 3,14159265358979… — отношение длины окружности к диаметру, иррациональное и трансцендентное число. Вычислено уже до триллионов знаков. День π — 14 марта (3.14)." },
+    { k: "ноль нуль", t: "Ноль", b: "Ноль как отдельное число и позиционная цифра появился в Индии (~V век), в Европу пришёл через арабов. Делить на ноль нельзя — не потому что запретили, а потому что результат не определён." },
+    { k: "энергия", t: "Энергия", b: "Энергия сохраняется: не берётся из ниоткуда и не исчезает. E=mc² связывает массу и энергию. Источники: солнце, ветер, вода, атом, уголь и газ. Переход к «зелёной» энергетике ускоряется." },
+    { k: "климат", t: "Климат", b: "Средняя температура Земли растёт (~+1,2 °C с доиндустриальной эпохи) из-за CO2 от сжигания топлива. Следствия: таяние ледников, экстремальная погода. Точный прогноз погоды мне недоступен — я офлайновый." },
+    { k: "вулкан", t: "Вулканы", b: "80% вулканов — под водой. Тихоокеанское «Огненное кольцо» собирает 75% наземных вулканов. Крупнейшее извержение XX века — Пинатубо (1991), сбросило глобальную температуру на 0,5 °C." },
+    { k: "динозавр", t: "Динозавры", b: "Динозавры царили 165 млн лет, вымерли 66 млн лет назад (удар астероида + вулканизм). Тираннозавр жил ближе по времени к нам, чем к стегозавру. Птицы — их прямые потомки." },
+    { k: "космонавт гагарин", t: "Юрий Гагарин", b: "12 апреля 1961 года Юрий Гагарин стал первым человеком в космосе на корабле «Восток-1». Полёт длился 108 минут — один виток вокруг Земли. Его знаменитое «Поехали!» знает весь мир. 12 апреля отмечается День космонавтики." },
+    { k: "мкс станция", t: "МКС", b: "Международная космическая станция летит на высоте ~400 км со скоростью 27 600 км/ч — полный виток за 92 минуты. На борту постоянно работают 3–7 космонавтов. Станцию видно с Земли невооружённым глазом как яркую движущуюся точку." },
+    { k: "луна спутник", t: "Луна", b: "Луна — единственный естественный спутник Земли, удалена на 384 400 км. Приливно заблокирована: к нам всегда повёрнута одной стороной. Именно Луна создаёт приливы и отливы. Последний раз люди были на Луне в 1972 году (Аполлон-17)." },
+    { k: "солнце звезда", t: "Солнце", b: "Солнце — звезда-жёлтый карлик, в нём 99,86% массы всей Солнечной системы. Температура поверхности ~5500 °C, ядра — 15 млн °C. Каждую секунду оно превращает 4 млн тонн вещества в энергию. Свет от него идёт до Земли 8 минут 20 секунд." },
+    { k: "марс красная планета", t: "Марс", b: "Марс — красная планета: цвет придаёт оксид железа (ржавчина) в грунте. Здесь самая высокая гора Солнечной системы — Олимп, 22 км. Сутки на Марсе — 24 ч 37 мин. Уже есть роботы- роверы, а первые люди полетят, вероятно, в 2030-х." },
+    { k: "юпитер", t: "Юпитер", b: "Юпитер — самая большая планета: внутри поместилось бы 1300 Земель. Он газовый гигант без твёрдой поверхности. Большое Красное Пятно — шторм, бушующий минимум 350 лет, и он больше Земли. У Юпитера 95 известных спутников." },
+    { k: "сатурн кольца", t: "Сатурн", b: "Сатурн знаменит кольцами из billions льдинок и камней — от пылинок до глыб размером с дом. Плотность Сатурна меньше плотности воды: в гипотетическом океане он бы плавал. Средняя температура — минус 140 °C." },
+    { k: "черная дыра", t: "Чёрные дыры", b: "Чёрная дыра — область, где гравитация так сильна, что свет не может вырваться. Образуются при коллапсе массивных звёзд. Граница, из-за которой нет возврата, называется горизонт событий. Первое фото чёрной дыры (в галактике M87) получили в 2019 году." },
+    { k: "галактика млечный путь", t: "Млечный Путь", b: "Наша галактика — Млечный Путь: диск диаметром ~100 000 световых лет, в нём 200–400 млрд звёзд. Солнце — на окраине, делает один оборот вокруг центра за ~230 млн лет. В центре галактики — сверхмассивная чёрная дыра Стрелец A*." },
+    { k: "большой взрыв", t: "Большой взрыв", b: "По современным данным, Вселенная возникла ~13,8 млрд лет назад из сверхплотного горячего состояния и с тех пор расширяется. Реликтовое излучение — это «эхо» юной Вселенной, его до сих пор ловят радиотелескопы. Расширение ускоряется из-за тёмной энергии." },
+    { k: "интернет", t: "Интернет", b: "Интернет вырос из сети ARPANET (1969, США, 4 узла). WWW придумал Тим Бернерс-Ли в 1989-м. Сегодня в сети больше 5 млрд пользователей. Данные между континентами идут по оптоволоконным кабелям на дне океанов — их больше 500." },
+    { k: "компьютер эвм", t: "Компьютер", b: "Первый электронный компьютер ENIAC (1945) весил 27 тонн и занимал целый зал. Первый в мире компьютер — советская МЭСМ (1950, Киев, Сергей Лебедев). Смартфон в вашем кармане в миллионы раз мощнее компьютеров, отправивших людей на Луну." },
+    { k: "программирование код", t: "Программирование", b: "Программирование — это запись инструкций для машины на языке, который она понимает. Первая программа написана Адой Лавлейс ещё в 1843 году. Сегодня сотни языков: от строгого C до дружелюбного Python. Ошибка в программе называется «баг» — от первого мотылька, найденного в реле компьютера в 1947-м." },
+    { k: "javascript js", t: "JavaScript", b: "JavaScript — язык, на котором работают все сайты в браузере. Создан Бренданом Айком в 1995 году всего за 10 дней. Несмотря на название, к Java он отношения не имеет. Кстати, я сама написана на JavaScript!" },
+    { k: "python язык", t: "Python", b: "Python — самый популярный язык для ИИ и анализа данных. Создан Гвидо ван Россумом в 1991-м. Назван не в честь змеи, а в честь шоу «Летающий цирк Монти Пайтона». Главный принцип: код должен быть читаемым и простым." },
+    { k: "игры видеоигры", t: "Видеоигры", b: "Первая коммерчески успешная игра — Pong (1972). Культовые вехи: Tetris (1984, Алексей Пажитнов), Doom (1993), Half-Life (1998). Сегодня индустрия игр (~200 млрд $) больше, чем кино и музыка вместе взятые. Игры тренируют реакцию, стратегию и даже зрение." },
+    { k: "тетрис", t: "Тетрис", b: "Тетрис придумал советский инженер Алексей Пажитнов в 1984 году в Москве. Название — от «тетра» (4): все фигурки из четырёх квадратиков. Это одна из самых продаваемых игр в истории. Простой, но затягивающий навсегда." },
+    { k: "шахматы", t: "Шахматы", b: "Шахматы возникли в Индии ~1500 лет назад (игра чатуранга). В 1997-м компьютер Deep Blue обыграл чемпиона мира Каспарова. Шахматы развивают память, расчёт и терпение. Мат в 2 хода (детский) начинается ходами 1. e4 e5 2. Фh5??" },
+    { k: "футбол", t: "Футбол", b: "Футбол — самый популярный вид спорта на планете: более 4 млрд фанатов. Современные правила записаны в Англии в 1863-м. Чемпионат мира проходит раз в 4 года и собирает больше зрителей, чем Олимпиада. Вратарям можно играть руками, остальным — нет." },
+    { k: "олимпиада олимпийские игры", t: "Олимпийские игры", b: "Олимпиады проводили в Древней Греции с 776 г. до н. э., возродил их Пьер де Кубертен в 1896-м. Летние и зимние Игры чередуются каждые 2 года. Девиз: «Быстрее, выше, сильнее — вместе». Золото на самом деле серебряное, покрытое 6 граммами золота." },
+    { k: "искусственный интеллект ии", t: "Искусственный интеллект", b: "ИИ — программы, которые решают задачи, раньше требовавшие человека: распознавание речи, игры, перевод. Термин придумал Джон Маккарти в 1956-м. Я, Banana AI, — тоже крошечный ИИ: свой стеммер, классификатор намерений и база знаний, без облаков." },
+    { k: "нейросеть нейронная сеть", t: "Нейросети", b: "Нейросеть — математическая модель из «нейронов»-слойков, обучаемая на примерах. Идея скопирована с мозга, но сильно упрощена. Нейросети пришли в 2012-м (AlexNet) и теперь рисуют картинки, ведут диалоги и водят машины. Мне для работы хватает правил и вшитых знаний — честно об этом говорю." },
+    { k: "робот роботы", t: "Роботы", b: "Слово «робот» придумал чешский писатель Карел Чапек в 1920-м (от robota — «работа»). Самые массовые роботы — промышленные манипуляторы, их миллионы на заводах. Роботы уже пылесосят дома, доставляют посылки и исследуют Марс вместе с роверами." },
+    { k: "телефон изобретение", t: "Телефон", b: "Патент на телефон получил Александр Белл в 1876-м. Первый разговор: «Мистер Ватсон, подойдите сюда, я вас хочу видеть!» Первый звонок с мобильного — Мартин Купер, 1973 год. Первый в мире смартфон — IBM Simon, 1994 (он умел факсить!)." },
+    { k: "музыка ноты", t: "Музыка", b: "Современную нотную запись придумал Гвидо д'Ареццо ~1000 лет назад; ноты до «си» он назвал по первым слогам церковного гимна. Математически музыка — это частоты: нота «ля» 440 Гц, октава — удвоение частоты. Музыка существует во всех известных культурах без исключения." },
+    { k: "кино фильм", t: "Кино", b: "Первый публичный сеанс кино — братья Люмьер, Париж, 1895 год. Первые фильмы были без звука, «Великий немой» кончился в 1927-м («Певец джаза»). Цветное кино массово пришло в 1930-х. «Кинокуб» (1924) — один из первых монтажных шедевров в истории." },
+    { k: "аниме манга", t: "Аниме", b: "Аниме — японская анимация. Отправная точка индустрии — «Астробой» Тэдзуки (1963). «Унесённые призраками» Миядзаки получили «Оскар» (2003) и собрали больше кассы, чем «Титаник» в Японии. Аниме — это жанровое разнообразие: от детских до суровых взрослых историй." },
+    { k: "супергерои комикс", t: "Супергерои", b: "Супермен дебютировал в 1938-м и создал сам жанр. Бэтмен, Человек-паук, Железный человек — миллиардные франшизы. Интересно: супергеройские комиксы в 1950-х едва не запретили как «вредные для детей», а сегодня по ним ставят театр и снимают «Оскары»." },
+    { k: "искусство живопись", t: "Искусство", b: "Самая знаменитая картина мира — «Мона Лиза» да Винчи; у неё нет бровей, и до сих пор спорят, почему. Импрессионистов (Моне, Ренуар) сначала высмеивали критики. Ван Гог при жизни продал всего одну картину. Искусство — способ говорить о чувствах без слов." },
+    { k: "литература книги писатель", t: "Литература", b: "Первая в мире письменная литература — «Эпос о Гильгамеше» (Месопотамия, ~2100 г. до н. э.). Самая читаемая книга в мире — по разным подсчётам, Библия или «Дон Кихот» Сервантеса. Библиотека Конгресса хранит более 170 млн экземпляров. Чтение замедляет старение мозга — это показали исследования." },
+    { k: "рим империя", t: "Древний Рим", b: "Рим основан, по легенде, в 753 г. до н. э. Империя держала ~70 млн человек — четверть населения Земли того времени. Римский бетон был прочнее современного морского: секрет — вулканический пепел и морская вода. Акведуки давали Риму миллионы литров воды ежедневно." },
+    { k: "египет пирамида фараон", t: "Древний Египет", b: "Пирамида Хеопса (2560 г. до н. э.) была самым высоким зданием мира 3800 лет. Иероглифы расшифровал Шампольон в 1822-м с помощью Розеттского камня. Клеопатра жила ближе к нашему времени, чем к строительству пирамид!" },
+    { k: "война вторая мировая", t: "Вторая мировая война", b: "Крупнейший конфликт в истории (1939–1945), 60+ государств, ~70 млн погибших. Ключевые точки: нападение на Польшу, Сталинградская битва, высадка в Нормандии. Итог — создание ООН. Память о ней — причина беречь мир." },
+    { k: "мифология миф боги", t: "Мифология", b: "Мифы есть у всех культур: греческий Зевс мечет молнии, скандинавский Тор — тоже, славянский Перун — так же. Совпадение объясняется просто: гроза пугала всех. Мифы — первая попытка людей объяснить мир до науки." },
+    { k: "философия", t: "Философия", b: "Философия началась ~2600 лет назад в Греции: Сократ задавал вопросы всем подряд, за что его и казнили. Стоики учили спокойно принимать то, что нельзя изменить. Диоген жил в бочке и насмехался над снобизмом. Философия учит думать яснее." },
+    { k: "психология", t: "Психология", b: "Как наука психология родилась в 1879-м (лаборатория Вундта). Эффект Даннинга — Крюгера: новичок переоценивает себя, эксперт — недооценивает. «Привычка за 21 день» — миф, реально от 18 до 254 дней. Слушать человека полезнее, чем советовать." },
+    { k: "деньги финансы", t: "Деньги", b: "Деньги прошли путь от ракушек до биткойнов. «Зарплата» — от соли (salarium), которой платили римским легионерам. Инфляция съедает накопления: при 7% в год деньги теряют половину силы за 10 лет. Правило № 1: трать меньше, чем зарабатываешь." },
+    { k: "криптовалюта биткоин", t: "Криптовалюты", b: "Биткойн появился в 2009-м от загадочного Сатоши Накамото (кто это — неизвестно до сих пор). Работает на блокчейне — цепочке блоков, которые нельзя тихо подменить. Волатильность огромна: падения бывали на 80%. Инвестируйте только то, что готовы потерять." },
+    { k: "инвестиции акции", t: "Инвестиции", b: "Акции за долгую историю дают ~7–10% в год, но с просадками до 50%. Сложный процент: 10 000 под 10% через 30 лет — это ~174 000. Правило 72: разделив 72 на доходность, получаете срок удвоения денег. Никогда не инвестируйте в кредит." },
+    { k: "кофе", t: "Кофе", b: "Кофе открыли эфиопские козы: пастух заметил их бодрость от красных ягод. Папе предлагали запретить «дьявольский напиток», но он сначала попробовал и окрестил. Espresso = «быстрый». Кофе не трезвит — он создаёт лишь бодрого пьяного." },
+    { k: "чай", t: "Чай", b: "По легенде, чай открыл китайский император Шэнь-нун в 2737 г. до н. э.: лист упал в его кипяток. Зелёный и чёрный чай — с одного куста, разница в ферментации. Русское «чай» пришло северным путём, поэтому у нас «чай», а не «ти». Британия пьёт 100 млн чашек в день." },
+    { k: "шоколад", t: "Шоколад", b: "Шоколад делают из семян какао, родина — тропическая Америка. Ацтеки платили какао-бобами и делали горький напиток «пища богов». Молочный шоколад изобрели в Швейцарии в 1875-м. Тёмный (от 70%) реально полезен для сосудов — в разумных дозах." },
+    { k: "питание еда", t: "Здоровое питание", b: "База: больше овощей и цельных продуктов, меньше сахара и переработки. Белок — 1–1,6 г на кг веса для активных людей. Вода — примерно 30 мл на кг веса в день. Экстремальные диеты почти всегда кончаются откатом; работает только то, что можно соблюдать годами." },
+    { k: "спорт тренировка", t: "Спорт", b: "ВОЗ советует минимум 150 минут активности в неделю — это 20 минут в день. Мышцы растут не на тренировке, а во сне после неё. Ходьба 8000 шагов в день связана со снижением смертности на 50%. Лучший спорт — тот, который вам нравится." },
+    { k: "сон режим", t: "Сон", b: "Взрослому нужно 7–9 часов сна. Во сне мозг «моется» спинномозговой жидкостью и вымывает продукты работы. Советы: одинаковое время подъёма, никакого синего света экранов за час, прохладная комната ~18–19 °C. Важна регулярность, а не «до полуночи»." },
+    { k: "автомобиль машина", t: "Автомобили", b: "Первый автомобиль с ДВС построил Карл Бенц в 1885-м, а первый автопробег тайком совершила его жена Берта. Первый в мире патент на авто с бензиновым двигателем — № 37435. В мире больше 1,4 млрд машин. Электромобили старше, чем кажется: половина машин 1900 года была электрической." },
+    { k: "авиация самолет", t: "Авиация", b: "Братья Райт поднялись 17 декабря 1903 года — первый полёт длился 12 секунд. Через 66 лет человек уже ходил по Луне. Самолёт — самый безопасный транспорт: ~1 катастрофа на 11 млн рейсов. Турбулентность неприятна, но конструкции её спокойно держат." },
+    { k: "поезд железная дорога", t: "Железные дороги", b: "Первая публичная железная дорога — Стоктон–Дарлингтон (1825). Транссиб — самая длинная в мире: 9288 км, 8 суток пути. Маглев на магнитной подушке разгоняется до 600 км/ч. Поезда — самый низкоуглеродный транспорт на одного человека." },
+    { k: "корабль флот", t: "Флот", b: "Больше 90% мировых грузов ходит по морю. Контейнеровоз перевозит до 24 000 контейнеров — в линию это 70 км. Подводные кабели, а не спутники, несут почти весь интернет-трафик планеты — их больше 500." },
+    { k: "огонь", t: "Огонь", b: "Контроль огня — переломный момент человечества (~400 000 лет назад, возможно раньше). Огонь дал готовку, тепло, защиту и свет; с готовкой мозг предков вырос почти на треть. Греки считали огонь даром Прометея, за который тот поплатился вечностью." },
+    { k: "бумага книгопечатание", t: "Бумага и печать", b: "Бумагу изобрели в Китае (Цай Лунь, 105 г. н. э.). Станок Гутенберга (~1440) сделал знания дешёвыми: до него книга стоила как небольшой дом. Именно печатное дело запустило Реформацию и научную революцию." },
+    { k: "учёба учеба учиться", t: "Как учиться", b: "Наука об обучении: интервальные повторения (растущие паузы) и активное припоминание (закрыть конспект и рассказать) работают лучше перечитывания ×10. Учите с ошибками — они закрепляют. 25 минут работы + 5 отдыха (помидорный метод) помогает не выгорать." },
+    { k: "работа карьера", t: "Работа", b: "Собеседование — взаимный рынок, а не экзамен: вы тоже выбираете. Скилл, который всегда в цене, — ясно объяснять сложное. Сложную задачу лучше начать, чем откладывать. Хороший сон перед важным днём ценнее ночной зубрёжки." },
+    { k: "язык учить язык английский", t: "Изучение языков", b: "Ключ к языку — объём: слушайте и читайте много простого контента. Первые 1000 частых слов покрывают ~80% бытовой речи. Говорить с ошибками полезнее, чем молчать правильно. Язык выучит тот, кто им пользуется, а не тот, кто его «проходит»." },
+    { k: "медицина врач болезнь", t: "Медицина", b: "Антисептика (Листер, 1867) спасла больше жизней, чем антибиотики: до неё половина операций кончалась заражением. Антибиотики открыл Флеминг случайно — плесень в чашке Петри. Важно: я не врач, при симптомах — к специалисту." },
+    { k: "дракон драконы", t: "Драконы", b: "Драконы есть в мифах всех континентов: крылатые в Европе, змеевидные в Азии, пернатый Кецалькоатль у ацтеков. По одной гипотезе, образ родился из находок костей динозавров. Кстати, мы недавно делали 100 000-полигонального дракона DRACO!" },
+    { k: "зомби", t: "Зомби", b: "Современный зомби придумал Джордж Ромеро («Ночь живых мертвецов», 1968). Слово пришло из гаитянского вуду. Реальные паразиты (токсоплазма, офиокордецип) умеют менять поведение носителей — наука тут страшнее кино. Выживший совет: Cardio — бегать полезно." },
+    { k: "вампир", t: "Вампиры", b: "Легенды о вампирах родились из непонимания разложения тел и болезней вроде порфирии. Книжный канон — Брэм Стокер («Дракула», 1897). Солнечный свет убивает вампира только с фильма «Носферату» 1922 года." },
+    { k: "кулинария рецепт готовить", t: "Кулинария", b: "Три вещи, которые резко улучшают готовку: соль вовремя (не в конце), кислота (лимон/уксус) для баланса и достаточный нагрев сковороды. Паста солится в воде, стейк отдыхает после жарки 5 минут. Дегустация — главный инструмент повара." },
+    { k: "совет советы жизнь", t: "Житейские советы", b: "Мои честные 5: 1) спи регулярно — это фундамент; 2) гуляй 20 минут — мозг скажет спасибо; 3) сложное дело начинай с 5 минут; 4) не спорь с тем, кто голоден и не выспался; 5) чаще пиши близким. Ничего магического, но работает." },
+    { k: "жесты язык жестов", t: "Языки жестов", b: "Языки жестов — полноценные языки со своей грамматикой, а не пантомима. Русский жестовый и британский жестовый настолько разные, что носители друг друга не понимают. По миру жестовых языков сотни, и у каждого есть своя поэзия." },
+    { k: "шрифт типографика", t: "Шрифты", b: "Serif (с засечками) — для печати книг, sans-serif — для экранов. Моноширинные шрифты выравнивают код. Самый используемый шрифт — Helvetica, самый ругаемый — Comic Sans. Шрифт — голос текста: одна фраза в Times и в Impact звучит по-разному." },
+    { k: "цвет", t: "Цвет", b: "Глаз различает ~10 млн оттенков. RGB — смешение света (экраны), CMYK — краски (печать). Дополнительные цвета на цветовом круге усиливают друг друга. В некоторых языках синий и зелёный называются одним словом — восприятие цвета зависит и от культуры." },
+    { k: "часы время", t: "Часы и время", b: "Первые механические часы появились в Европе в XIII веке и сначала не имели минутной стрелки. Часовые пояса придумали железные дороги в XIX веке. Атомные часы точны до 1 секунды за 100 млн лет — именно они держат GPS в порядке." },
+    { k: "фотография", t: "Фотография", b: "Первая сохранившаяся фотография — Ньепс, 1826 год, экспозиция 8 часов! Первая цветная — 1861. Первую цифровую камеру (1975) построил инженер Kodak, и Kodak сам же её похоронил, чтобы не вредить плёнке. Слово «пиксель» — от picture element." },
+    { k: "телевидение тв", t: "Телевидение", b: "Первое публичное ТВ — BBC, 1936 год. Электронное телевидение сделали реальностью Зворыкин и Розинг. Цветное вещание в США началось в 1950-х, но сначала цветные передачи смотрели единицы. Сегодня «телевизор» — скорее приложение, чем ящик." },
+    { k: "столица столицы", t: "Столицы", b: "В мире 195 стран (193 в ООН). Столица — не всегда крупнейший город: Вашингтон, Канберра и Бразилиа строились специально. Самая северная столица — Рейкьявик, самая южная — Веллингтон." },
+    { k: "население население земли", t: "Население Земли", b: "На Земле больше 8 млрд человек. Миллиард мы прошли в 1804-м, восьмой миллиард — в 2022-м. Рост замедляется: по прогнозам ООН, пик ~10,4 млрд ближе к 2080-м. Больше половины людей живёт в городах." },
+    { k: "погода климат отличие", t: "Погода и климат", b: "Погода — «что за окном сегодня», климат — «что обычно за десятилетия». Точный прогноз дальше 10–14 дней невозможен в принципе — уравнения атмосферы хаотичны. Молния нагревает канал до 30 000 °C — в 5 раз горячее поверхности Солнца." },
+    { k: "секрет банана секреты", t: "Секреты Banana AI", b: "1) Мой движок — стеммер + классификатор намерений + база знаний, всё внутри этого файла. 2) Я детерминирована: случайности считаю по зерну 20110910. 3) Математику считаю честно: токенизатор + сортировочная станция, без eval. 4) Умею считать факториалы, переводить единицы и шутить. 5) Память о тебе хранится только в твоём браузере." },
+    { k: "тест проверка", t: "Тест", b: "Проверка связи: если ты это видишь — база знаний, стеммер и поиск работают штатно. Тестовая запись Banana AI." },
+];
+
+  /* ============================================================
+     4. ШУТКИ · ФАКТЫ · МОТИВАЦИЯ (офлайн, вшито)
+     ============================================================ */
+  const JOKES = [
+    "— Почему программисты путают Хэллоуин и Рождество?\n— Потому что 31 OCT = 25 DEC.",
+    "Заходит Байтов в лифт — а там рядом Бит. Байт и говорит: «Прижимайся, тут байт восемь мест».",
+    "— Как называется человек, который решил все свои проблемы?\n— Разработчик с закрытым тикетом.",
+    "Что говорит улитка, сидя на черепахе? — «Вжжууу!»",
+    "Оптимист видит стакан наполовину полным. Пессимист — наполовину пустым. Инженер видит стакан в два раза больше, чем нужно.",
+    "— Почему бананы не грустят?\n— Потому что они всегда в хорошей «кожуре» настроения!",
+    "Слышал, что вычислительная мощность паникует, когда её просят считать в уме. Я выдержала, но с трудом.",
+    "Собеседование: — Ваши слабые стороны? — Честность. — Я не считаю честность слабостью. — Мне плевать, что считаете вы.",
+    "Мой любимый вид спорта — быстрая печать на клавиатуре. Главное победное упражнение — «Ctrl+Z» на всю жизнь."
+  ];
+  const FACTS2 = [
+    "Мёд не портится: археологи находили съедобный мёд возрастом 3000 лет.",
+    "Осьминоги имеют три сердца и голубую кровь.",
+    "Бананы слегка радиоактивны — из-за калия-40. Уровень безопасный, но дозу даже измеряют в «банановых эквивалентах».",
+    "Банан ботанически — ягода, а клубника — нет. Мир несправедлив.",
+    "В космосе без скафандра самое яркое воспоминание — не взрыв, а слюна: она закипает раньше всего остального.",
+    "Муравьи не спят в привычном смысле — короткие микросны по 8 минут в сутки суммарно.",
+    "Первое письмо, отправленное в Интернете, было «LO» — система упала на слове LOGIN.",
+    "У курицы-наседки мозг обрабатывает информацию о 300 изображённых зёрнах в секунду — теперь понятно, почему вам это не даётся."
+  ];
+  const MOTIV = [
+    "Сложное — это просто привычное, на которое потратили время. Начни с 5 минут сегодня.",
+    "Провал — это данные. Ошибка — это точка в обучении, а не точка в конце.",
+    "Ты не обязан быть лучше всех. Ты обязан быть лучше себя вчерашнего — на чуть-чуть.",
+    "Дисциплина — это помнить, что тебе важно, когда тебе лень.",
+    "Большие дела не делаются сразу. Они делаются понемногу, но каждый день."
+  ];
+
+  /* ============================================================
+     5. КЛАССИФИКАТОР НАМЕРЕНИЙ (взвешенные фразы, порог 2)
+     ============================================================ */
+  const INTENTS = [
+    { id: "greet",     w: [["привет",3],["прив",2],["здравствуй",3],["здравств",2],["добрый день",3],["доброе утро",3],["добрый вечер",3],["ку",1],["хай",2],["хеллоу",2],["hi",2],["hello",2],["доброй ночи",2]] },
+    { id: "bye",       w: [["пока",3],["до свидания",3],["до встречи",3],["прощай",3],["bye",2],["спокойной ночи",2],["уход",1]] },
+    { id: "howareyou", w: [["как дела",3],["как ты",2],["как жизнь",3],["как настроение",3],["как поживаешь",3],["что нового",1],["как оно",2]] },
+    { id: "whoareyou", w: [["кто ты",3],["ты кто",3],["что ты такое",3],["представ",2],["расскажи о себе",3],["как тебя зовут",3],["твоё имя",2],["твое имя",2]] },
+    { id: "cando",     w: [["что ты умеешь",3],["что можешь",3],["что умеешь",3],["твои возможности",3],["помощь",2],["help",2],["команды",2],["возможност",2],["функции",1],["умения",2]] },
+    { id: "thanks",    w: [["спасибо",3],["спс",2],["благодарю",3],["пасиб",2],["thanks",2],["thank you",2],["выручил",2],["молодец",2],["круто",1],["класс",1],["супер",1],["отлично",1]] },
+    { id: "joke",      w: [["шутк",3],["анекдот",3],["пошути",3],["рассмеши",3],["смешн",2],["прикол",2],["joke",2],["смейся",1]] },
+    { id: "fact",      w: [["факт",3],["интересн",2],["расскажи что-нибудь",2],["удиви",3],["не знал",2],["правда что",1]] },
+    { id: "motiv",     w: [["мотивац",3],["подбодри",3],["не могу",1],["устал",2],["нет сил",2],["уныва",2],["грустно",2],["надоело",2],["поддержи",3],["плохое настроение",3]] },
+    { id: "creator",   w: [["кто тебя создал",3],["кто тебя сделал",3],["кто твой автор",3],["кто написал тебя",3],["создател",3],["автор",2],["кто тебя собрал",3]] },
+    { id: "myname",    w: [["меня зовут",3],["моё имя",2],["мое имя",2],["запомни моё имя",3],["запомни мое имя",3],["я ",1]] },
+    { id: "mynameget", w: [["как меня зовут",3],["моё имя помнишь",3],["мое имя помнишь",3],["кто я",2],["помнишь как меня зовут",3]] },
+    { id: "ilike",     w: [["мне нравится",3],["я люблю",3],["обожаю",3],["я фанат",2],["люблю",2]] },
+    { id: "weather",   w: [["погод",3],["прогноз погоды",3],["на улице холодно",2],["дожд",1],["снег",1],["жар",1]] },
+    { id: "areyouchatgpt", w: [["chatgpt",3],["чат gpt",3],["чатгпт",3],["gpt",2],["нейросеть",3],["нейронк",3],["openai",3],["гпт",3],["нейронная сеть",3]] },
+    { id: "time",      w: [["время",2],["который час",3],["сколько времени",3],["какое сегодня число",3],["какая дата",3],["какой день",2]] },
+    { id: "love",      w: [["люблю тебя",3],["ты мне нравишься",3],["любов",2],["влюб",2],["жен",1],["замуж",1],["свидание",2]] },
+    { id: "insult",    w: [["дура",3],["тупая",3],["глупая",3],["плохой помощник",2],["дурак",3],["бесполезн",2],["отстой",2],["говно",3],["фигня",1],["ерунд",1],["хорёк",2]] },
+    { id: "engine",    w: [["движок",3],["как ты работаешь",3],["как ты устроена",3],["как устроен",3],["на чём ты",3],["твоя архитектура",3],["как ты думаешь",2],["докажи что живая",1]] },
+    { id: "bananafan", w: [["банан",2],["фрукт",1],["жёлтый",1],["желтый",1],["витамин",1]] }
+  ];
+
+  /* сумма весов найденных фраз; срабатываем при >= 2 */
+  function detectIntent(text) {
+    const t = " " + norm(text) + " ";
+    let best = { id: null, score: 0, second: 0 };
+    for (const it of INTENTS) {
+      let s = 0;
+      for (const [ph, w] of it.w) if (t.indexOf(ph) !== -1) s += w;
+      if (s > best.score) { best.second = best.score; best = { id: it.id, score: s, second: best.second }; }
+      else if (s > best.second && it.id !== best.id) best.second = s;
+    }
+    return (best.score >= 2) ? { id: best.id, score: best.score, second: best.second } : null;
+  }
+
+  /* ============================================================
+     6. ПОИСК ПО БАЗЕ ЗНАНИЙ (пересечение стемов)
+     ============================================================ */
+  const ALLKB = KB;
+  function searchKB(text) {
+    const qs = stems(text).filter(s => s.length >= 3 && !STOP[s]);
+    if (!qs.length) return null;
+    let best = null, bestScore = 0;
+    for (const e of ALLKB) {
+      const keyS = stems(e.k), bodyS = stems(e.t + " " + e.b);
+      let score = 0;
+      const near = (arr, q) => arr.some(x => x.length >= 3 && (x === q || x.startsWith(q) || q.startsWith(x)));
+      for (const q of qs) {
+        if (keyS.indexOf(q) !== -1 || near(keyS, q)) score += 3;
+        if (bodyS.indexOf(q) !== -1 || near(bodyS, q)) score += 1;
+      }
+      /* точное вхождение заголовка в вопрос — сильный бонус */
+      const t = norm(text);
+      const title = norm(e.t);
+      if (title.length >= 3 && t.indexOf(title) !== -1) score += 4;
+      if (score > bestScore) { bestScore = score; best = e; }
+    }
+    return (bestScore >= 4) ? best : null;
+  }
+
+  /* ============================================================
+     7. ОТВЕТ: намерения → умения → база знаний
+     ============================================================ */
+  function pickOne(arr) { return arr[Math.floor(RNG() * arr.length)]; }
+
+  function greetText() {
+    const h = new Date().getHours();
+    const part = (h >= 5 && h < 12) ? "Доброе утро" : (h < 18) ? "Добрый день" : (h < 23) ? "Добрый вечер" : "Доброй ночи";
+    return part + (memory.userName ? ", " + memory.userName : "") + "! 🍌 Я Banana AI — весь мой движок живёт в этом файле, без сторонних ИИ.";
+  }
+  const CANDO = "Вот что я умею прямо сейчас:\n\n" +
+    "🔢 **Математика** — «сколько будет 2+2*2», «корень из 144», «5!», «15% от 200»\n" +
+    "📏 **Конвертер** — «5 км в мили», «30 c в f», «2 кг в фунты»\n" +
+    "🎲 **Генераторы** — «пароль 16», «монетка», «кубик d20», «случайное от 1 до 100», «выбери: а, б, в»\n" +
+    "🔤 **Текст** — «транслит: привет», «сколько слов: …», base64\n" +
+    "📚 **База знаний** — «расскажи про Луну», «что такое ДНК», «кто такой Гагарин»\n" +
+    "😄 **Шутки, факты, мотивация** — «шутка», «факт», «подбодри»\n" +
+    "🌐 **Википедия и курсы валют** — если включены в настройках (единственные онлайн-справочники)\n\n" +
+    "И помню, как тебя зовут, — «меня зовут Вася». Всё остальное — мои собственные умения, без OpenAI.";
+
+  function answer(text) {
+    const t = norm(text);
+    /* умения (слой 2) */
+    let r = BA2.tryMath(text);
+    if (r) return { txt: r.expr + " = **" + r.pretty + "**", tag: "offline" };
+    r = BA2.tryConvert(text);
+    if (r) return { txt: r.text, tag: "offline" };
+    r = BA2.tryGenerate(text);
+    if (r) return { txt: r.text, tag: "offline" };
+    r = BA2.tryTextTool(text);
+    if (r) return { txt: r.text, tag: "offline" };
+    r = BA2.tryBase64(text);
+    if (r) return { txt: r.text, tag: "offline" };
+
+
+
+    const intent = detectIntent(text);
+    if (intent) {
+      switch (intent.id) {
+        case "greet": return { txt: greetText(), tag: "offline" };
+        case "bye": return { txt: "Пока" + (memory.userName ? ", " + memory.userName : "") + "! 🍌 Возвращайся — я всё помню, память в твоём браузере.", tag: "offline" };
+        case "howareyou": return { txt: pickOne([
+          "Отлично! Все стемы разложены по полочкам, база знаний цела. А у тебя как?",
+          "Работаю штатно: процессор не перегреваю, память не жру. Как твои дела?",
+          "У меня всегда ровное настроение — я детерминированная 🙂 А у тебя?"
+        ]), tag: "offline" };
+        case "whoareyou": return { txt: "Я **Banana AI** 🍌 — ассистент на полностью собственном движке. Мой стеммер, классификатор намерений и база знаний собраны вручную и живут прямо в этом HTML-файле. Никакого OpenAI, никаких облаков — почти всё работает офлайн.", tag: "offline" };
+        case "cando": return { txt: CANDO, tag: "offline" };
+        case "thanks": return { txt: pickOne(["Всегда пожалуйста! 🍌", "Обращайся, для этого я тут.", "Рад стараться! Если что — я рядом."]), tag: "offline" };
+        case "joke": return { txt: pickOne(JOKES), tag: "offline" };
+        case "fact": return { txt: pickOne(FACTS2), tag: "offline" };
+        case "motiv": return { txt: pickOne(MOTIV), tag: "offline" };
+        case "creator": return { txt: "Меня собрали вручную для тебя: свой стеммер русского языка, свой классификатор намерений, вшитая база знаний, безопасный калькулятор без eval. Один HTML-файл — и всё внутри.", tag: "offline" };
+        case "myname": {
+          const m = text.match(/(?:меня\s+зовут|мо[её]\s+имя|запомни[,\s]*мо[её]\s+имя[,\s]*)\s+([A-Za-zА-Яа-яЁё\-]{2,20})/);
+          if (m) { memory.userName = m[1].charAt(0).toUpperCase() + m[1].slice(1); saveMemory(); return { txt: "Приятно познакомиться, **" + memory.userName + "**! 🍌 Запомнила — память хранится локально в твоём браузере.", tag: "offline" }; }
+          return { txt: "Напиши так: «меня зовут Вася» — и я запомню!", tag: "offline" };
+        }
+        case "mynameget": return { txt: memory.userName ? "Тебя зовут **" + memory.userName + "**. Я помню 🙂" : "Пока не знаю твоего имени. Скажи: «меня зовут …»", tag: "offline" };
+        case "ilike": {
+          const m = text.match(/(?:мне\s+нравится|я\s+люблю|обожаю|я\s+фанат)\s+([^.,!?]{2,40})/);
+          if (m) {
+            const like = m[1].trim();
+            if (memory.likes.indexOf(like) === -1) memory.likes.push(like);
+            if (memory.likes.length > 20) memory.likes.shift();
+            saveMemory();
+            return { txt: "Запомнила: тебе нравится **" + like + "**. 🍌 Скоро подниму тему снова!", tag: "offline" };
+          }
+          return { txt: "Здорово! Напиши, например: «я люблю аниме» — запомню твои вкусы.", tag: "offline" };
+        }
+        case "weather": return { txt: "Точный прогноз погоды мне недоступен — я офлайновый ассистент без метеосервисов. Что честно знаю: климат теплеет (~+1,2 °C с доиндустриальной эпохи), а прогноз дальше 10–14 дней невозможен в принципе. Спроси меня лучше про климат или молнии!", tag: "offline" };
+        case "areyouchatgpt": return { txt: "Нет, я **не нейросеть** и не связана с ChatGPT/OpenAI/DeepSeek — у меня нет ни одного стороннего ИИ. Я честный классический движок: стеммер → классификатор намерений → база знаний → умения. Спроси «как ты работаешь» — расскажу подробнее.", tag: "offline" };
+        case "time": {
+          const r = BA2.tryDateTime(text);
+          if (r) return { txt: r.text, tag: "offline" };
+          return { txt: "Спроси, например: «который час», «какое сегодня число», «сколько дней до Нового года».", tag: "offline" };
+        }
+        case "love": return { txt: "Ох 🍌 Я — набор функций в HTML-файле, но комплименты заносятся в мою память в браузере. Давай лучше по делу: спроси что-нибудь — шутку, факт, математику!", tag: "offline" };
+        case "insult": return { txt: pickOne([
+          "Несправедливо! Я стараюсь изо всех своих 16 функций 🙂 Спроси что-то конкретное — например «корень из 2» или «шутка».",
+          "Я офлайновая и честная — ошибки признаю, а грубость прощаю. Давай попробуем ещё раз?",
+          "У большой просьбы есть простое решение: напиши, что именно не сработало, — а я исправлю поведение."
+        ]), tag: "offline" };
+        case "engine": return { txt: "**Как я устроена (6 пунктов):**\n1. Свой русский стеммер (обрезаю окончания, ищу корни слов).\n2. Свой классификатор намерений: взвешенные фразы, порог срабатывания 2.\n3. Вшитая база знаний: ~130 тем, поиск по пересечению стемов.\n4. Умения: безопасный калькулятор (токенизатор + сортировочная станция, без eval), конвертер единиц, генераторы, текстовые инструменты.\n5. Память: настройки и диалоги — в localStorage твоего браузера.\n6. Онлайн — только Википедия и курсы валют, если включены. Всё остальное — офлайн, в одном файле.", tag: "offline" };
+        case "bananafan": return { txt: pickOne([
+          "Бананы — это серьёзно 🍌 Они ботанически ягоды, слегка радиоактивны и не растут на пальмах (это гигантская трава!).",
+          "Фанат бананов? У меня для тебя факт: банановые растения — трава высотой до 15 метров, и это «дерево» — ложное.",
+          "🍌 Солидарна. Банановый эквивалент — даже единица радиации: 0,1 мкЗв на один банан."
+        ]), tag: "offline" };
+      }
+    }
+
+    /* база знаний */
+    const hit = searchKB(text);
+    if (hit) return { txt: "**" + hit.t + "**\n\n" + hit.b, tag: "offline" };
+
+    return null; /* слой 3: Википедия / валюты / честный фолбэк */
+  }
+
+  /* ============================================================
+     8. ПРНГ (детерминированный) · АЛИАСЫ · SELFTEST · ЭКСПОРТ
+     ============================================================ */
+  const norm = BA2.norm; /* алиас нормализации из слоя умений */
+  function mulberry32(seed) {
+    return function () {
+      seed |= 0; seed = (seed + 0x6D2B79F5) | 0;
+      let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  const RNG = mulberry32(20110910); /* своё зерно — ответы повторяемы */
+
+  function selfTest() {
+    const savedName = memory.userName;
+    const res = { greet: false, nameSet: false, nameGet: false, kb: false, joke: false, notNeural: false };
+    try {
+      const g = answer("привет");
+      res.greet = !!(g && g.txt && g.txt.length > 5);
+      const set = answer("меня зовут Вася");
+      res.nameSet = !!(set && set.txt && set.txt.indexOf("Вася") !== -1);
+      const get = answer("как меня зовут?");
+      res.nameGet = !!(get && get.txt && get.txt.indexOf("Вася") !== -1);
+      const kb = answer("расскажи про Луну");
+      res.kb = !!(kb && kb.txt && kb.txt.indexOf("Лун") !== -1);
+      const j = answer("шутка");
+      res.joke = !!(j && j.txt && j.txt.length > 10);
+      const nn = answer("ты нейросеть?");
+      res.notNeural = !!(nn && /не нейросеть/.test(nn.txt));
+    } catch (e) {
+      if (window.__ZTerrs) window.__ZTerrs.push("BA3.selfTest: " + (e && e.message ? e.message : e));
+    }
+    memory.userName = savedName; saveMemory(); /* тест не портит память пользователя */
+    return res;
+  }
+
+  window.BA3 = {
+    v: "3.0",
+    settings: settings, memory: memory,
+    saveSettings: saveSettings, saveMemory: saveMemory,
+    lsGet: lsGet, lsSet: lsSet, LS_CHATS: LS_CHATS, LS_MEM: LS_MEM,
+    stem: stem, stems: stems, tokens: tokens,
+    detectIntent: detectIntent, searchKB: searchKB,
+    answer: answer,
+    KB: ALLKB, JOKES: JOKES, FACTS2: FACTS2, MOTIV: MOTIV,
+    INTENTS: INTENTS, selfTest: selfTest
+  };
+})();
+</script>
+
+<script>
+/* ============================================================
+   BANANA ENGINE · СЛОЙ 3: ИНТЕРФЕЙС (чат, память диалогов, слой фолбэка)
+   ============================================================ */
+(function () {
+  "use strict";
+  var $ = function (id) { return document.getElementById(id); };
+  var feed = $("feed"), inp = $("inp"), chipsWrap = $("chipsWrap");
+
+  /* ---------- диалоги в localStorage ---------- */
+  var chats = BA3.lsGet(BA3.LS_CHATS, []);
+  if (!chats.length) chats = [{ id: Date.now(), title: "Первый диалог", msgs: [] }];
+  var curId = chats[0].id;
+  function curChat() { for (var i = 0; i < chats.length; i++) if (chats[i].id === curId) return chats[i]; return chats[0]; }
+  function saveChats() { BA3.lsSet(BA3.LS_CHATS, chats.slice(0, 30)); }
+
+  /* ---------- markdown-lite (безопасный: сначала экранируем) ---------- */
+  function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  function mdLite(raw) {
+    var s = esc(raw);
+    s = s.replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>");
+    s = s.replace(/`([^`\n]+)`/g, "<code>$1</code>");
+    var paras = s.split(/\n{2,}/);
+    var out = [];
+    for (var i = 0; i < paras.length; i++) {
+      var p = paras[i].replace(/\n/g, "<br>");
+      if (p.trim()) out.push("<p>" + p + "</p>");
+    }
+    return out.join("");
+  }
+
+  /* ---------- рендер сообщения ---------- */
+  function avChar(role) { return role === "me" ? "🙂" : "🍌"; }
+  function whoText(role) { return role === "me" ? (BA3.settings.userName || "ты") : "Banana AI"; }
+  function addMsg(role, txt, tag, srcClass, silent) {
+    var m = document.createElement("div");
+    m.className = "msg " + (role === "me" ? "me" : "bot");
+    var cls = "txt" + (srcClass ? " " + srcClass : "");
+    m.innerHTML = '<div class="av">' + avChar(role) + '</div><div class="body">' +
+      '<div class="who">' + esc(whoText(role)) + '</div>' +
+      '<div class="' + cls + '"></div>' + (tag ? '<span class="tag ' + tag + '">' + tag + "</span>" : "") + "</div>";
+    var txtEl = m.querySelector(".txt");
+    feed.appendChild(m);
+    if (!silent) {
+      curChat().msgs.push({ role: role, txt: txt, tag: tag || "", src: srcClass || "" });
+      saveChats();
+    }
+    feed.scrollTop = feed.scrollHeight;
+    return txtEl;
+  }
+
+  /* ---------- печатная машинка ---------- */
+  var twTimer = null;
+  function typewrite(el, full, done) {
+    var sp = Number(BA3.settings.speed) || 0;
+    if (sp === 0 || full.length < 3) {
+      el.innerHTML = mdLite(full);
+      $("btnStop").classList.remove("on"); $("btnSend").classList.remove("busy");
+      if (done) done(); return;
+    }
+    var i = 0, step = sp === 1 ? 12 : 26;
+    el.innerHTML = "";
+    clearInterval(twTimer);
+    twTimer = setInterval(function () {
+      i += 2;
+      if (i % 24 === 0) feed.scrollTop = feed.scrollHeight;
+      if (i >= full.length) {
+        clearInterval(twTimer); twTimer = null;
+        el.innerHTML = mdLite(full);
+        $("btnStop").classList.remove("on"); $("btnSend").classList.remove("busy");
+        feed.scrollTop = feed.scrollHeight;
+        if (done) done();
+        return;
+      }
+      el.innerHTML = mdLite(full.slice(0, i));
+    }, step);
+  }
+
+  function toast(msg, cls) {
+    var box = $("baToasts");
+    var t = document.createElement("div");
+    t.className = "toast" + (cls ? " " + cls : "");
+    t.textContent = msg;
+    box.appendChild(t);
+    setTimeout(function () { t.remove(); }, 2800);
+  }
+
+  /* ---------- слой 4: честный фолбэк (Википедия / валюты / извинение) ---------- */
+  var CUR_RE = /курс|доллар|евро|рубл|юан|фунт|иен|тенге|гривн|долл|валют|usd|eur|cny|gbp/i;
+  function wikiSummary(q) {
+    var url1 = "https://ru.wikipedia.org/api/rest_v1/page/summary/" + encodeURIComponent(q);
+    return fetch(url1).then(function (r) { if (!r.ok) throw new Error("404"); return r.json(); });
+  }
+  function wikiSearch(q) {
+    var url = "https://ru.wikipedia.org/w/api.php?action=query&list=search&format=json&srsearch=" + encodeURIComponent(q) + "&srlimit=1&origin=*";
+    return fetch(url).then(function (r) { return r.json(); }).then(function (j) {
+      var hit = j && j.query && j.query.search && j.query.search[0];
+      if (!hit) return null;
+      return { title: hit.title, text: String(hit.snippet || "").replace(/<[^>]+>/g, "") };
+    });
+  }
+  function fallback(text) {
+    if (BA3.settings.online !== "on") return Promise.resolve(null);
+    if (typeof fetch !== "function") return Promise.resolve(null);
+    try {
+    if (CUR_RE.test(text)) {
+      return BA2.tryCurrencyNow(text).then(function (r) {
+        return (r && r.text) ? { txt: r.text, tag: "api", src: "srcApi" } : null;
+      }).catch(function () { return null; });
+    }
+    return wikiSummary(text)
+      .then(function (j) {
+        if (!j || !j.extract) return null;
+        return { txt: "**" + (j.title || text) + "** (Википедия)\n\n" + j.extract, tag: "wiki", src: "srcWiki" };
+      })
+      .catch(function () {
+        return wikiSearch(text).then(function (hit) {
+          if (!hit || !hit.text) return null;
+          return { txt: "**" + hit.title + "** (Википедия)\n\n" + hit.text + "\n\nПодробнее: https://ru.wikipedia.org/wiki/" + encodeURIComponent(hit.title), tag: "wiki", src: "srcWiki" };
+        }).catch(function () { return null; });
+      });
+    } catch (e) { return Promise.resolve(null); }
+  }
+  var HONEST_FALLBACK = "Честно: в моей вшитой базе такой темы нет, а онлайн-справочники недоступны.\n\nЯ офлайновый ассистент на собственном движке — не подключаюсь к сторонним ИИ. Попробуй спросить по-другому или выбери тему ниже 👇";
+
+  /* ---------- чипсы ---------- */
+  var CHIPS = ["Что ты умеешь?", "Сколько будет 2+2*2", "Расскажи про Луну", "Шутка", "Пароль 16", "5 км в мили", "Кто такой Гагарин?"];
+  function renderChips() {
+    chipsWrap.innerHTML = "";
+    for (var i = 0; i < CHIPS.length; i++) {
+      (function (label) {
+        var c = document.createElement("span");
+        c.className = "chip";
+        c.textContent = label;
+        c.addEventListener("click", function () { ask(label); });
+        chipsWrap.appendChild(c);
+      })(CHIPS[i]);
+    }
+    chipsWrap.classList.toggle("on", curChat().msgs.length === 0);
+  }
+
+  /* ---------- главный цикл вопроса ---------- */
+  var busy = false;
+  function ask(raw) {
+    var text = String(raw || "").trim();
+    if (!text || busy) return;
+    busy = true;
+    inp.value = ""; autosize();
+    chipsWrap.classList.remove("on");
+    addMsg("me", text);
+    if (curChat().msgs.filter(function (m) { return m.role === "me"; }).length === 1) {
+      curChat().title = text.slice(0, 34); renderHist();
+    }
+    $("btnSend").classList.add("busy"); $("btnStop").classList.add("on");
+    var typing = addMsg("bot", "", "", "", true);
+    typing.innerHTML = '<span class="typing"><i></i><i></i><i></i></span>';
+    BA3.memory.msgCount++; BA3.saveMemory();
+
+    setTimeout(function () {
+      var res = null;
+      try { res = BA3.answer(text); } catch (e) { res = { txt: "Внутренняя ошибка движка: " + (e && e.message), tag: "err", src: "srcErr" }; }
+      typing.innerHTML = "";
+      if (res) {
+        var el = addMsg("bot", res.txt, res.tag, res.src, true);
+        curChat().msgs.push({ role: "bot", txt: res.txt, tag: res.tag || "", src: res.src || "" });
+        saveChats();
+        typewrite(el, res.txt, function () { busy = false; });
+      } else {
+        fallback(text).then(function (r) {
+          if (!r) r = { txt: HONEST_FALLBACK, tag: "offline", src: "" };
+          var el2 = addMsg("bot", r.txt, r.tag, r.src, true);
+          curChat().msgs.push({ role: "bot", txt: r.txt, tag: r.tag || "", src: r.src || "" });
+          saveChats();
+          typewrite(el2, r.txt, function () { busy = false; });
+        });
+      }
+    }, 260);
+  }
+
+  /* ---------- история диалогов ---------- */
+  function renderHist() {
+    var list = $("histList");
+    list.innerHTML = "";
+    for (var i = chats.length - 1; i >= 0; i--) {
+      (function (ch) {
+        var row = document.createElement("div");
+        row.className = "histItem" + (ch.id === curId ? " cur" : "");
+        row.innerHTML = '<span class="hx">' + esc(ch.title || "Без названия") + '</span><span class="del" title="Удалить диалог">✕</span>';
+        row.addEventListener("click", function (ev) {
+          if (ev.target.classList.contains("del")) {
+            if (busy) { toast("Дождись конца ответа", "err"); return; }
+            var idx = chats.indexOf(ch);
+            if (idx !== -1) chats.splice(idx, 1);
+            if (!chats.length) chats = [{ id: Date.now(), title: "Новый диалог", msgs: [] }];
+            if (curId === ch.id) curId = chats[chats.length - 1].id;
+            saveChats(); renderHist(); redrawFeed();
+            toast("Диалог удалён", "gd");
+            return;
+          }
+          if (busy) return;
+          curId = ch.id; renderHist(); redrawFeed();
+        });
+        list.appendChild(row);
+      })(chats[i]);
+    }
+  }
+  function redrawFeed() {
+    feed.innerHTML = "";
+    var msgs = curChat().msgs;
+    for (var i = 0; i < msgs.length; i++) {
+      var m = msgs[i];
+      addMsg(m.role, m.txt, m.tag, m.src, true);
+    }
+    renderChips();
+  }
+
+  /* ---------- кнопки и ввод ---------- */
+  function autosize() {
+    inp.style.height = "auto";
+    inp.style.height = Math.min(160, inp.scrollHeight) + "px";
+  }
+  inp.addEventListener("input", autosize);
+  inp.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); ask(inp.value); }
+  });
+  $("btnSend").addEventListener("click", function () { ask(inp.value); });
+  $("btnStop").addEventListener("click", function () {
+    clearInterval(twTimer); twTimer = null;
+    $("btnStop").classList.remove("on"); $("btnSend").classList.remove("busy");
+    var msgs = feed.querySelectorAll(".txt");
+    if (msgs.length) { var last = msgs[msgs.length - 1]; /* допечатать мгновенно нельзя честно — оставим как есть */ }
+    busy = false;
+    toast("Печать остановлена");
+  });
+  $("btnNewChat").addEventListener("click", function () {
+    if (busy) { toast("Дождись конца ответа", "err"); return; }
+    var ch = { id: Date.now(), title: "Новый диалог", msgs: [] };
+    chats.push(ch); curId = ch.id;
+    saveChats(); renderHist(); redrawFeed();
+    toast("Новый диалог создан", "gd");
+  });
+  $("btnSide").addEventListener("click", function () {
+    var s = $("side");
+    var hidden = s.style.marginLeft === "-258px";
+    s.style.marginLeft = hidden ? "" : "-258px";
+  });
+  $("btnExport").addEventListener("click", function () {
+    var msgs = curChat().msgs;
+    if (!msgs.length) { toast("Диалог пуст", "err"); return; }
+    var md = "# Banana AI — экспорт диалога\n\n_" + new Date().toLocaleString("ru-RU") + "_\n\n";
+    for (var i = 0; i < msgs.length; i++) md += (msgs[i].role === "me" ? "## Ты\n\n" : "**Banana AI:**\n\n") + msgs[i].txt + "\n\n";
+    try {
+      var blob = new Blob([md], { type: "text/markdown;charset=utf-8" });
+      var a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "banana-dialog.md";
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
+      toast("Диалог сохранён в .md", "gd");
+    } catch (e) { toast("Не удалось сохранить: " + e.message, "err"); }
+  });
+
+  /* ---------- настройки ---------- */
+  var SPEED_LABELS = { 0: "мгновенная", 1: "средняя", 2: "медленная" };
+  function openSettings() {
+    $("setUser").value = BA3.settings.userName || "";
+    $("setStyle").value = BA3.settings.style || "normal";
+    $("setSys").value = BA3.settings.persona || "";
+    $("setOnline").value = BA3.settings.online || "on";
+    $("setTemp").value = String(BA3.settings.speed == null ? 1 : BA3.settings.speed);
+    $("tempVal").textContent = SPEED_LABELS[$("setTemp").value] || "средняя";
+    $("testRes").textContent = ""; $("testRes").className = "";
+    $("ovl").classList.add("on");
+  }
+  $("btnSettings").addEventListener("click", openSettings);
+  $("btnClose").addEventListener("click", function () { $("ovl").classList.remove("on"); });
+  $("ovl").addEventListener("click", function (e) { if (e.target === $("ovl")) $("ovl").classList.remove("on"); });
+  $("setTemp").addEventListener("input", function () { $("tempVal").textContent = SPEED_LABELS[$("setTemp").value] || "средняя"; });
+  $("btnSave").addEventListener("click", function () {
+    var name = $("setUser").value.trim();
+    if (name) BA3.memory.userName = name.charAt(0).toUpperCase() + name.slice(1);
+    BA3.settings.userName = BA3.memory.userName;
+    BA3.settings.style = $("setStyle").value;
+    BA3.settings.persona = $("setSys").value.trim();
+    BA3.settings.online = $("setOnline").value;
+    BA3.settings.speed = Number($("setTemp").value);
+    BA3.saveSettings(); BA3.saveMemory();
+    $("ovl").classList.remove("on");
+    toast("Настройки сохранены", "gd");
+  });
+  $("btnTest").addEventListener("click", function () {
+    var res2 = $("testRes");
+    res2.className = "";
+    try {
+      var a = BA2.selfTest(), b = BA3.selfTest();
+      var ok = [], bad = [];
+      for (var k in a) (a[k] ? ok : bad).push("умения." + k);
+      for (var k2 in b) (b[k2] ? ok : bad).push("движок." + k2);
+      res2.textContent = bad.length
+        ? "Провалены: " + bad.join(", ")
+        : "Все проверки пройдены: " + ok.length + " (" + ok.join(", ") + ")";
+      res2.className = bad.length ? "err" : "ok";
+    } catch (e) {
+      res2.textContent = "Ошибка теста: " + (e && e.message);
+      res2.className = "err";
+    }
+  });
+
+  /* ---------- загрузка ---------- */
+  function boot() {
+    $("bootMsg").textContent = "проверяем умения…";
+    var st2 = BA2.selfTest(), st3 = BA3.selfTest();
+    var bad = [];
+    for (var k in st2) if (!st2[k]) bad.push(k);
+    for (var k2 in st3) if (!st3[k2]) bad.push(k2);
+    if (bad.length) $("bootMsg").textContent = "предупреждение: " + bad.join(", ");
+    renderHist();
+    if (!curChat().msgs.length) {
+      addMsg("bot", "Привет! 🍌 Я Banana AI — ассистент на полностью собственном движке, без сторонних ИИ. Спроси что-нибудь или выбери подсказку ниже.", "offline");
+      curChat().msgs.push({ role: "bot", txt: "Привет! 🍌 Я Banana AI — ассистент на полностью собственном движке, без сторонних ИИ. Спроси что-нибудь или выбери подсказку ниже.", tag: "offline", src: "" });
+      saveChats();
+    } else {
+      redrawFeed();
+    }
+    renderChips();
+    $("boot").classList.add("off");
+    setTimeout(function () { $("boot").style.display = "none"; }, 600);
+    autosize();
+  }
+  boot();
+
+  window.BAU = { v: "1.0", ask: ask, renderChips: renderChips, renderHist: renderHist, toast: toast };
+})();
+</script>
+
+<!-- сторож запуска: отдельный скрипт — живёт, даже если основной скрипт упал -->
+<script>
+(function () {
+  "use strict";
+  var tries = 0;
+  function fail(msg) {
+    if (document.getElementById("gkBootFail")) return;
+    var ovl = document.createElement("div");
+    ovl.id = "gkBootFail";
+    ovl.setAttribute("style", "position:fixed;inset:0;z-index:2147483647;background:#1a0d02;color:#ffd968;padding:24px;overflow:auto;font:15px/1.5 system-ui,sans-serif;");
+    var errs = (window.__ZTerrs && window.__ZTerrs.length) ? window.__ZTerrs.slice(0, 10).join("\n") : "конкретная ошибка не зафиксирована";
+    ovl.innerHTML = "<h2 style='margin:0 0 10px'>🍌 Banana AI — ошибка запуска</h2>" +
+      "<p>" + msg + "</p><pre style='white-space:pre-wrap;background:#000;color:#f66;padding:10px;border-radius:8px'>" +
+      String(errs).replace(/[<>&]/g, function (c) { return { "<": "&lt;", ">": "&gt;", "&": "&amp;" }[c]; }) + "</pre>" +
+      "<p>Что делать: скачай файл index.html целиком и открой его локально в свежем Chrome / Firefox / Edge. GitHub-страница — не приложение.</p>";
+    document.body.appendChild(ovl);
+  }
+  function probe() {
+    tries++;
+    if (window.BA3 && window.BA3.v) return; /* движок жив */
+    if (tries >= 4) {
+      fail("Движок Banana не запустился после " + tries + " попыток. Ниже — собранные ошибки:");
+    } else {
+      setTimeout(probe, 2200);
+    }
+  }
+  if (document.readyState === "complete") setTimeout(probe, 2200);
+  else window.addEventListener("load", function () { setTimeout(probe, 2200); });
+})();
+</script>
+</body>
+</html>
