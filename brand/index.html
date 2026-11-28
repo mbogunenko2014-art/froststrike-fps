@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BANANA AI — брендбук</title>
+<style>
+/* ============================================================
+   BANANA AI · БРЕНДБУК · один файл, ноль зависимостей
+   Палитра: жёлтый #FFD600 · чёрный #111111 · белый #FFFFFF
+   ============================================================ */
+:root {
+  --yel: #FFD600;
+  --ink: #111111;
+  --white: #FFFFFF;
+  --gray: #F5F5F5;
+  --dgray: #222222;
+  --line: #E4E4E4;
+  --font: "Inter", "Segoe UI", "Helvetica Neue", Arial, system-ui, sans-serif;
+  --mono: "SF Mono", "Cascadia Code", Consolas, monospace;
+  --rads: 18px;
+  --maxw: 1080px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+body {
+  font-family: var(--font);
+  color: var(--ink);
+  background: var(--white);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+::selection { background: var(--yel); color: var(--ink); }
+img, svg { display: block; max-width: 100%; }
+button { font-family: inherit; cursor: pointer; }
+a { color: inherit; }
+
+/* ---------- шапка ---------- */
+#topnav {
+  position: sticky;
+  top: 0;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 18px;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 2px solid var(--ink);
+}
+#topnav .mini {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  font-size: 13px;
+  white-space: nowrap;
+}
+#topnav .mini svg { width: 26px; height: 26px; }
+#navlinks {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  margin-left: auto;
+}
+#navlinks::-webkit-scrollbar { display: none; }
+#navlinks a {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--dgray);
+  text-decoration: none;
+  padding: 7px 12px;
+  border-radius: 999px;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+#navlinks a:hover { background: var(--gray); }
+#navlinks a.on { background: var(--yel); color: var(--ink); }
+
+/* ---------- общая сетка секций ---------- */
+section { padding: 64px 18px; }
+section:nth-of-type(even) { background: var(--gray); }
+.wrap { max-width: var(--maxw); margin: 0 auto; }
+.kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink);
+  background: var(--yel);
+  padding: 5px 14px;
+  border-radius: 999px;
+  margin-bottom: 14px;
+}
+.kicker::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--ink); }
+h2 { font-size: clamp(24px, 4.5vw, 36px); font-weight: 800; letter-spacing: -0.02em; margin-bottom: 10px; }
+.lead { font-size: 15.5px; color: #444; max-width: 640px; margin-bottom: 30px; }
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 18px;
+}
+.card {
+  background: var(--white);
+  border: 2px solid var(--ink);
+  border-radius: var(--rads);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.card .art {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 26px 18px;
+  min-height: 170px;
+  flex: 1;
+}
+.card .art.dark { background: var(--dgray); }
+.card .art.gray { background: var(--gray); }
+.card .art.yellow { background: var(--yel); }
+.card figcaption {
+  border-top: 2px solid var(--ink);
+  padding: 11px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: var(--white);
+}
+.card figcaption b { font-size: 13px; }
+.card figcaption span { font-size: 11.5px; color: #777; }
+.dl {
+  border: 2px solid var(--ink);
+  background: var(--white);
+  color: var(--ink);
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 999px;
+  transition: all 0.15s;
+  flex: none;
+}
+.dl:hover { background: var(--ink); color: var(--yel); }
+
+/* ---------- герой ---------- */
+#hero {
+  padding: 72px 18px 64px;
+  text-align: center;
+  border-bottom: 2px solid var(--ink);
+}
+#hero .logolock {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  margin: 26px auto 8px;
+}
+#hero #mainLogo { width: min(300px, 62vw); height: auto; }
+#hero .lockword {
+  font-size: clamp(34px, 7vw, 56px);
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  line-height: 1.05;
+}
+#hero .lockword em { font-style: normal; color: var(--ink); background: var(--yel); padding: 0 10px; border-radius: 12px; }
+#hero .tagline { font-size: 14px; color: #555; letter-spacing: 0.06em; margin-top: 12px; }
+#hero .badges { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 22px; }
+#hero .badges span {
+  font-size: 11.5px;
+  font-weight: 700;
+  border: 1.5px solid var(--ink);
+  border-radius: 999px;
+  padding: 5px 13px;
+  background: var(--white);
+}
+
+/* ---------- слово-логотип и лого-вариации ---------- */
+.logotype { font-weight: 900; letter-spacing: 0.14em; }
+.logotype.small { font-size: 15px; }
+.logotype.big { font-size: 22px; }
+.hlock { display: flex; align-items: center; gap: 12px; }
+.hlock svg { width: 56px; height: 56px; flex: none; }
+.vlock { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.vlock svg { width: 84px; height: 84px; }
+.iconOnly svg { width: 110px; height: 110px; }
+.favRow { display: flex; align-items: flex-end; gap: 22px; justify-content: center; flex-wrap: wrap; }
+.favRow .fv { display: flex; flex-direction: column; align-items: center; gap: 8px; font-size: 11px; color: #666; }
+.favRow svg { border-radius: 8px; }
+
+/* ---------- маскот ---------- */
+#mascotStage {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 330px;
+  background: var(--white);
+  border: 2px solid var(--ink);
+  border-radius: var(--rads);
+  padding: 20px;
+  margin-bottom: 18px;
+}
+#mascotStage svg { width: min(280px, 70vw); height: auto; }
+.exprBtns { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.exprBtns button {
+  border: 2px solid var(--ink);
+  background: var(--white);
+  font-size: 13px;
+  font-weight: 700;
+  padding: 9px 18px;
+  border-radius: 999px;
+  transition: all 0.15s;
+}
+.exprBtns button:hover { background: var(--gray); }
+.exprBtns button.on { background: var(--ink); color: var(--yel); }
+.exprNote { text-align: center; font-size: 12.5px; color: #666; margin-top: 12px; min-height: 18px; }
+@keyframes blinkEyes { 0%, 92%, 100% { transform: scaleY(1); } 96% { transform: scaleY(0.1); } }
+#mascotSvg .eyes { animation: blinkEyes 4.2s infinite; transform-origin: center; }
+
+/* ---------- палитра ---------- */
+.swatches { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; }
+.sw {
+  border: 2px solid var(--ink);
+  border-radius: var(--rads);
+  overflow: hidden;
+  background: var(--white);
+  text-align: left;
+  padding: 0;
+  transition: transform 0.12s;
+}
+.sw:hover { transform: translateY(-3px); }
+.sw .fill { height: 92px; border-bottom: 2px solid var(--ink); }
+.sw .meta { padding: 12px 14px; }
+.sw .meta b { display: block; font-size: 13.5px; }
+.sw .meta code { font-family: var(--mono); font-size: 12px; color: #555; }
+.sw .meta small { display: block; font-size: 10.5px; color: #999; margin-top: 3px; }
+
+/* ---------- типографика ---------- */
+.typeRow { border-bottom: 1px solid var(--line); padding: 18px 0; }
+.typeRow:last-child { border-bottom: none; }
+.typeRow .lbl { font-size: 11px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: #999; margin-bottom: 6px; }
+.typeRow .h1 { font-size: clamp(28px, 6vw, 44px); font-weight: 900; letter-spacing: -0.02em; }
+.typeRow .h2t { font-size: clamp(21px, 4.5vw, 30px); font-weight: 800; }
+.typeRow .body { font-size: 15.5px; color: #333; max-width: 620px; }
+.typeRow .cap { font-size: 12px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #666; }
+.typeRow .num { font-family: var(--mono); font-size: 16px; }
+
+/* ---------- графические элементы ---------- */
+.elGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; }
+.elTile {
+  background: var(--white);
+  border: 2px solid var(--ink);
+  border-radius: var(--rads);
+  padding: 20px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  min-height: 150px;
+  justify-content: center;
+}
+.elTile svg { width: 64px; height: 64px; }
+.elTile.wide { grid-column: 1 / -1; }
+.elTile.wide svg { width: 100%; height: 64px; }
+.elTile small { font-size: 11px; color: #777; text-align: center; }
+@keyframes spinLoad { to { transform: rotate(360deg); } }
+#spinSvg { animation: spinLoad 1.6s linear infinite; }
+@keyframes pulseDot { 0%, 100% { opacity: 0.25; } 50% { opacity: 1; } }
+#dotsSvg i { animation: pulseDot 1.2s infinite; }
+#dotsSvg i:nth-child(2) { animation-delay: 0.2s; }
+#dotsSvg i:nth-child(3) { animation-delay: 0.4s; }
+
+/* ---------- загрузочный экран (демо) ---------- */
+#bootDemo {
+  position: relative;
+  background: var(--ink);
+  border: 2px solid var(--ink);
+  border-radius: var(--rads);
+  min-height: 380px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  overflow: hidden;
+  padding: 30px;
+}
+#bootDemo.light { background: var(--white); }
+#bootDemo svg.logo { width: min(240px, 58vw); height: auto; }
+#bootDemo .word { color: var(--white); font-weight: 900; letter-spacing: 0.2em; font-size: 20px; }
+#bootDemo.light .word { color: var(--ink); }
+#bootDemo .bar {
+  width: min(200px, 50vw);
+  height: 5px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+  overflow: hidden;
+}
+#bootDemo.light .bar { background: rgba(17, 17, 17, 0.1); }
+#bootDemo .bar i {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: var(--yel);
+  border-radius: 999px;
+}
+@keyframes loadBar { 0% { width: 4%; } 70% { width: 72%; } 100% { width: 100%; } }
+#bootDemo.run .bar i { animation: loadBar 2.6s ease forwards; }
+@keyframes waveBan { 0%, 100% { transform: rotate(0deg); } 30% { transform: rotate(-7deg); } 60% { transform: rotate(5deg); } }
+#bootDemo.run svg.logo { animation: waveBan 1.4s ease-in-out infinite; transform-origin: 70% 90%; }
+#bootDemo .pct { color: #8b8b8b; font-size: 11.5px; letter-spacing: 0.12em; font-family: var(--mono); }
+#bootToggle { margin-top: 16px; }
+
+/* ---------- соцсети ---------- */
+.socialCard {
+  border: 2px solid var(--ink);
+  border-radius: var(--rads);
+  overflow: hidden;
+  background: var(--white);
+}
+.socialCard .sc-head { padding: 12px 16px; border-bottom: 2px solid var(--ink); font-size: 13px; font-weight: 800; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.socialCard .sc-head span { font-size: 10.5px; color: #999; font-weight: 600; }
+.socialCard .sc-body { display: flex; align-items: center; justify-content: center; padding: 22px; }
+.socialCard .sc-body.dark { background: var(--dgray); }
+.socialCard .sc-body.yel { background: var(--yel); }
+#ytBanner { width: 100%; border-radius: 10px; }
+.postTpl { width: 100%; max-width: 300px; border: 2px solid var(--ink); border-radius: 16px; overflow: hidden; background: var(--white); }
+.postTpl .pt-top { display: flex; align-items: center; gap: 9px; padding: 10px 12px; }
+.postTpl .pt-top svg { width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--ink); }
+.postTpl .pt-top b { font-size: 12px; letter-spacing: 0.08em; }
+.postTpl .pt-top small { display: block; font-size: 10px; color: #999; font-weight: 500; }
+.postTpl .pt-art { background: var(--yel); display: flex; justify-content: center; padding: 26px 0; }
+.postTpl .pt-art svg { width: 130px; height: 130px; }
+.postTpl .pt-cap { padding: 12px 14px; font-size: 12px; }
+.postTpl .pt-cap b { display: block; font-size: 13px; margin-bottom: 3px; }
+
+/* ---------- футер ---------- */
+footer {
+  border-top: 2px solid var(--ink);
+  padding: 34px 18px 42px;
+  text-align: center;
+  font-size: 12px;
+  color: #777;
+}
+footer .fw { display: flex; justify-content: center; margin-bottom: 12px; }
+footer .fw svg { width: 40px; height: 40px; }
+
+/* ---------- тост ---------- */
+#toast {
+  position: fixed;
+  left: 50%;
+  bottom: 26px;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--ink);
+  color: var(--yel);
+  font-size: 13px;
+  font-weight: 700;
+  padding: 11px 20px;
+  border-radius: 999px;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.25s;
+  z-index: 200;
+  max-width: 86vw;
+  text-align: center;
+}
+#toast.on { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ---------- мобильная оптимизация ---------- */
+@media (max-width: 720px) {
+  section { padding: 46px 14px; }
+  #hero { padding: 52px 14px 44px; }
+  #topnav { padding: 9px 12px; gap: 10px; }
+  .card .art { min-height: 140px; padding: 20px 12px; }
+  #bootDemo { min-height: 320px; }
+  .grid { grid-template-columns: 1fr; }
+  .swatches { grid-template-columns: repeat(2, 1fr); }
+  .elGrid { grid-template-columns: repeat(2, 1fr); }
+  #mascotStage { min-height: 270px; }
+}
+@media (max-width: 400px) {
+  #navlinks a { padding: 6px 9px; font-size: 11.5px; }
+  .swatches { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .sw .fill { height: 64px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #mascotSvg .eyes, #spinSvg, #dotsSvg i, #bootDemo.run .bar i, #bootDemo.run svg.logo { animation: none; }
+}
+</style>
+</head>
+<body>
+
+<script>
+window.__BAerrs = [];
+window.addEventListener("error", function (e) {
+  window.__BAerrs.push(String((e && e.message) || e));
+});
+window.addEventListener("unhandledrejection", function (e) {
+  window.__BAerrs.push("promise: " + String((e && e.reason && e.reason.message) || e.reason));
+});
+</script>
+
+<!-- ============ SVG-БИБЛИОТЕКА БРЕНДА (вектор, один источник формы) ============ -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <!-- Базовый банан: жёлтая заливка + толстая чёрная обводка, как в оригинале -->
+    <g id="banBody">
+      <path d="M34 12 C 26 13 21 19 23 27 C 30 60 55 89 95 99 C 101 101 107 96 104 90 C 100 84 92 82 84 76 C 65 61 51 41 46 24 C 44 16 40 11 34 12 Z"
+            fill="#FFD600" stroke="#111111" stroke-width="7" stroke-linejoin="round" stroke-linecap="round"/>
+      <path d="M31 15 L 42 26" stroke="#111111" stroke-width="7" stroke-linecap="round"/>
+      <circle cx="99" cy="95" r="3.2" fill="#111111"/>
+    </g>
+    <!-- Монохром (одноцветная сила) -->
+    <g id="banMono">
+      <path d="M34 12 C 26 13 21 19 23 27 C 30 60 55 89 95 99 C 101 101 107 96 104 90 C 100 84 92 82 84 76 C 65 61 51 41 46 24 C 44 16 40 11 34 12 Z"
+            fill="currentColor" stroke="currentColor" stroke-width="7" stroke-linejoin="round" stroke-linecap="round"/>
+      <path d="M31 15 L 42 26" stroke="currentColor" stroke-width="7" stroke-linecap="round"/>
+      <circle cx="99" cy="95" r="3.2" fill="var(--white, #fff)" stroke="none"/>
+    </g>
+    <!-- Паттерн из маленьких бананов -->
+    <pattern id="banPat" width="76" height="66" patternUnits="userSpaceOnUse">
+      <use href="#banBody" transform="translate(4,4) scale(0.24)"/>
+      <use href="#banBody" transform="translate(44,36) scale(0.24) rotate(14 50 50)"/>
+    </pattern>
+    <!-- Иконки-линии (обводочные, 2.4px) -->
+    <g id="icChat">
+      <path d="M8 10 h16 a3 3 0 0 1 3 3 v8 a3 3 0 0 1 -3 3 h-9 l-5 4 v-4 h-2 a3 3 0 0 1 -3 -3 v-8 a3 3 0 0 1 3 -3 Z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/>
+      <circle cx="13" cy="17" r="1.4" fill="currentColor"/><circle cx="17.5" cy="17" r="1.4" fill="currentColor"/><circle cx="22" cy="17" r="1.4" fill="currentColor"/>
+    </g>
+    <g id="icBolt">
+      <path d="M17 4 L8 18 h6 l-2 10 9 -14 h-6 Z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/>
+    </g>
+    <g id="icBrain">
+      <rect x="7" y="7" width="18" height="18" rx="5" fill="none" stroke="currentColor" stroke-width="2.4"/>
+      <path d="M12 16 h8 M12 12 h5 M12 20 h6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+      <circle cx="21.5" cy="12" r="1.4" fill="currentColor"/>
+    </g>
+    <g id="icShield">
+      <path d="M16 5 l9 3.5 v6 c0 5.5 -4 9.5 -9 11 c-5 -1.5 -9 -5.5 -9 -11 v-6 Z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/>
+      <path d="M12 16 l3 3 5.5 -6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+  </defs>
+</svg>
+
+<header id="topnav">
+  <div class="mini">
+    <svg viewBox="0 0 120 120" aria-label="Banana AI"><use href="#banBody"/></svg>
+    BANANA&nbsp;AI
+  </div>
+  <nav id="navlinks">
+    <a href="#hero">Лого</a>
+    <a href="#variations">Вариации</a>
+    <a href="#appicon">Иконка</a>
+    <a href="#mascot">Маскот</a>
+    <a href="#colors">Цвета</a>
+    <a href="#type">Типографика</a>
+    <a href="#elements">Элементы</a>
+    <a href="#loading">Загрузка</a>
+    <a href="#social">Соцсети</a>
+  </nav>
+</header>
+
+<!-- ============ 1. ГЛАВНЫЙ ЛОГОТИП ============ -->
+<section id="hero">
+  <div class="logolock">
+    <svg id="mainLogo" viewBox="0 0 120 120" role="img" aria-label="Логотип Banana AI"><use href="#banBody"/></svg>
+    <div class="lockword">BANANA <em>AI</em></div>
+    <div class="tagline">Искусственный интеллект с характером.</div>
+  </div>
+  <div class="badges">
+    <span>минимализм</span>
+    <span>жёлтый + чёрный</span>
+    <span>вектор · один файл</span>
+    <span>читается от 16px</span>
+  </div>
+</section>
+
+<!-- ============ 2. ВАРИАЦИИ ЛОГОТИПА ============ -->
+<section id="variations">
+  <div class="wrap">
+    <div class="kicker">02 · Логотип</div>
+    <h2>Вариации</h2>
+    <p class="lead">Один и тот же банан во всех вариантах: горизонтальный замок, вертикальный, только иконка, чёрно-белая, жёлто-чёрная и версия для тёмного фона. Каждая скачивается отдельным SVG.</p>
+    <div class="grid">
+      <figure class="card">
+        <div class="art">
+          <div class="hlock">
+            <svg viewBox="0 0 120 120"><use href="#banBody"/></svg>
+            <span class="logotype big">BANANA AI</span>
+          </div>
+        </div>
+        <figcaption><b>Горизонтальный</b><span>основной</span><button class="dl" data-dl="varH" data-name="banana-ai-horizontal">SVG</button></figcaption>
+        <svg id="varH" width="0" height="0" style="position:absolute"><g><use href="#banBody" x="-20" y="10"/><text x="100" y="72" font-family="Inter,Arial,sans-serif" font-weight="900" font-size="26" letter-spacing="2" fill="#111111">BANANA AI</text></g><rect width="0" height="0"/></svg>
+      </figure>
+      <figure class="card">
+        <div class="art gray">
+          <div class="vlock">
+            <svg viewBox="0 0 120 120"><use href="#banBody"/></svg>
+            <span class="logotype small">BANANA AI</span>
+          </div>
+        </div>
+        <figcaption><b>Вертикальный</b><span>шапки и наклейки</span><button class="dl" data-dl="varV" data-name="banana-ai-vertical">SVG</button></figcaption>
+        <svg id="varV" width="0" height="0" style="position:absolute"><g><use href="#banBody" transform="translate(6,4) scale(0.85)"/><text x="60" y="140" text-anchor="middle" font-family="Inter,Arial,sans-serif" font-weight="900" font-size="17" letter-spacing="2" fill="#111111">BANANA AI</text></g></svg>
+      </figure>
+      <figure class="card">
+        <div class="art">
+          <div class="iconOnly"><svg viewBox="0 0 120 120"><use href="#banBody"/></svg></div>
+        </div>
+        <figcaption><b>Только иконка</b><span>аватары</span><button class="dl" data-dl="varIcon" data-name="banana-ai-icon">SVG</button></figcaption>
+        <svg id="varIcon" width="0" height="0" style="position:absolute"><use href="#banBody"/></svg>
+      </figure>
+      <figure class="card">
+        <div class="art gray">
+          <div style="color:#111111"><svg viewBox="0 0 120 120"><use href="#banMono"/></svg></div>
+        </div>
+        <figcaption><b>Чёрно-белый</b><span>печать, факс</span><button class="dl" data-dl="varBW" data-name="banana-ai-monochrome">SVG</button></figcaption>
+        <svg id="varBW" width="0" height="0" style="position:absolute"><use href="#banMono"/></svg>
+      </figure>
+      <figure class="card">
+        <div class="art yellow">
+          <div style="color:#111111"><svg viewBox="0 0 120 120"><use href="#banMono"/></svg></div>
+        </div>
+        <figcaption><b>Жёлтый + чёрный</b><span>фирменный дуэт</span><button class="dl" data-dl="varYB" data-name="banana-ai-yellow-black">SVG</button></figcaption>
+        <svg id="varYB" width="0" height="0" style="position:absolute"><g><rect width="120" height="120" fill="#FFD600"/><use href="#banMono" transform="translate(10,12) scale(0.8)"/></g></svg>
+      </figure>
+      <figure class="card">
+        <div class="art dark">
+          <div style="color:#FFD600"><svg viewBox="0 0 120 120"><use href="#banMono"/></svg></div>
+        </div>
+        <figcaption><b>Тёмный фон</b><span>жёлтый силуэт</span><button class="dl" data-dl="varDark" data-name="banana-ai-dark">SVG</button></figcaption>
+        <svg id="varDark" width="0" height="0" style="position:absolute"><g><rect width="120" height="120" fill="#222222"/><use href="#banMono" transform="translate(10,12) scale(0.8)"/></g></svg>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 3. ИКОНКА ПРИЛОЖЕНИЯ ============ -->
+<section id="appicon">
+  <div class="wrap">
+    <div class="kicker">03 · Иконка</div>
+    <h2>Иконка приложения</h2>
+    <p class="lead">Квадрат со скруглением, жёлтый фон, крупный банан с чёрной обводкой. Композиция без текста — читается даже в 48 пикселей.</p>
+    <div class="grid">
+      <figure class="card">
+        <div class="art">
+          <svg id="appIcon" viewBox="0 0 120 120" style="width:180px">
+            <rect width="120" height="120" rx="27" fill="#FFD600"/>
+            <use href="#banBody" transform="translate(15,13) scale(0.75)"/>
+          </svg>
+        </div>
+        <figcaption><b>App icon 512</b><span>iOS / Android</span><button class="dl" data-dl="appIcon" data-name="banana-ai-appicon">SVG</button></figcaption>
+      </figure>
+      <div class="card">
+        <div class="art">
+          <div class="favRow">
+            <div class="fv"><svg viewBox="0 0 120 120" width="128"><rect width="120" height="120" rx="27" fill="#FFD600"/><use href="#banBody" transform="translate(15,13) scale(0.75)"/></svg>128px</div>
+            <div class="fv"><svg viewBox="0 0 120 120" width="64"><rect width="120" height="120" rx="27" fill="#FFD600"/><use href="#banBody" transform="translate(15,13) scale(0.75)"/></svg>64px</div>
+            <div class="fv"><svg viewBox="0 0 120 120" width="48"><rect width="120" height="120" rx="27" fill="#FFD600"/><use href="#banBody" transform="translate(15,13) scale(0.75)"/></svg>48px</div>
+            <div class="fv"><svg viewBox="0 0 120 120" width="32"><rect width="120" height="120" rx="27" fill="#FFD600"/><use href="#banBody" transform="translate(15,13) scale(0.75)"/></svg>32px</div>
+          </div>
+        </div>
+        <figcaption><b>Масштаб</b><span>до 48px читается</span></figcaption>
+      </div>
+      <div class="card">
+        <div class="art gray">
+          <div class="favRow">
+            <div class="fv"><svg viewBox="0 0 120 120" width="64"><rect width="120" height="120" rx="27" fill="#111111"/><use href="#banMono" x="12" y="12" style="color:#FFD600"/></svg>тёмная</div>
+            <div class="fv"><svg viewBox="0 0 120 120" width="64"><rect width="120" height="120" rx="27" fill="#FFFFFF"/><use href="#banBody" transform="translate(15,13) scale(0.75)"/></svg>светлая</div>
+            <div class="fv"><svg viewBox="0 0 120 120" width="64"><rect width="120" height="120" rx="27" fill="#FFD600"/><use href="#banMono" x="12" y="12" style="color:#111111"/></svg>жёлто-чёрная</div>
+          </div>
+        </div>
+        <figcaption><b>Темы иконки</b><span>светлая / тёмная</span></figcaption>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 4. МАСКОТ ============ -->
+<section id="mascot">
+  <div class="wrap">
+    <div class="kicker">04 · Маскот</div>
+    <h2>Бана́нчик — лицо бренда</h2>
+    <p class="lead">Дружелюбный, но не детский: минимум деталей, тонкий намёк на ИИ — точка-антенна и аккуратные глаза. Три состояния лица плюс анимация загрузки.</p>
+    <div id="mascotStage">
+      <svg id="mascotSvg" viewBox="0 0 120 120" role="img" aria-label="Маскот Banana AI">
+        <use href="#banBody"/>
+        <!-- нейтральный -->
+        <g class="face on" data-expr="neutral">
+          <g class="eyes">
+            <ellipse cx="56" cy="58" rx="3.4" ry="4.6" fill="#111"/>
+            <ellipse cx="72" cy="54" rx="3.4" ry="4.6" fill="#111"/>
+          </g>
+          <path d="M58 72 Q64 74 70 70" fill="none" stroke="#111" stroke-width="2.6" stroke-linecap="round"/>
+        </g>
+        <!-- счастливый -->
+        <g class="face" data-expr="happy">
+          <path d="M51 58 Q56 52 61 58" fill="none" stroke="#111" stroke-width="2.8" stroke-linecap="round"/>
+          <path d="M67 54 Q72 48 77 54" fill="none" stroke="#111" stroke-width="2.8" stroke-linecap="round"/>
+          <path d="M56 68 Q64 78 72 66" fill="none" stroke="#111" stroke-width="2.8" stroke-linecap="round"/>
+          <circle cx="47" cy="66" r="3" fill="#FFB300" opacity="0.55"/>
+          <circle cx="79" cy="62" r="3" fill="#FFB300" opacity="0.55"/>
+        </g>
+        <!-- думающий -->
+        <g class="face" data-expr="thinking">
+          <circle cx="58" cy="57" r="3.4" fill="#111"/>
+          <path d="M67 55 h9" stroke="#111" stroke-width="3" stroke-linecap="round"/>
+          <path d="M56 71 Q63 69 69 73" fill="none" stroke="#111" stroke-width="2.6" stroke-linecap="round"/>
+          <g>
+            <circle cx="88" cy="36" r="10" fill="#fff" stroke="#111" stroke-width="2.4"/>
+            <circle cx="84" cy="36" r="1.5" fill="#111"/><circle cx="89" cy="36" r="1.5" fill="#111"/><circle cx="94" cy="36" r="1.5" fill="#111"/>
+          </g>
+          <path d="M82 44 L76 52" stroke="#111" stroke-width="2.4" stroke-linecap="round"/>
+        </g>
+        <!-- загрузка -->
+        <g class="face" data-expr="loading">
+          <g class="eyes">
+            <path d="M52 58 a4.5 4.5 0 0 1 8 0" fill="none" stroke="#111" stroke-width="2.6" stroke-linecap="round"/>
+            <path d="M68 54 a4.5 4.5 0 0 1 8 0" fill="none" stroke="#111" stroke-width="2.6" stroke-linecap="round"/>
+          </g>
+          <path d="M58 72 Q64 73 70 70" fill="none" stroke="#111" stroke-width="2.6" stroke-linecap="round"/>
+          <g id="dotsSvg">
+            <circle cx="55" cy="84" r="2.2" fill="#111"><animate attributeName="opacity" values="0.2;1;0.2" dur="1.1s" repeatCount="indefinite"/></circle>
+            <circle cx="63" cy="84" r="2.2" fill="#111"><animate attributeName="opacity" values="0.2;1;0.2" dur="1.1s" begin="0.18s" repeatCount="indefinite"/></circle>
+            <circle cx="71" cy="84" r="2.2" fill="#111"><animate attributeName="opacity" values="0.2;1;0.2" dur="1.1s" begin="0.36s" repeatCount="indefinite"/></circle>
+          </g>
+        </g>
+        <!-- ИИ-деталь: антенна -->
+        <g>
+          <path d="M60 20 L60 12" stroke="#111" stroke-width="2.6" stroke-linecap="round"/>
+          <circle cx="60" cy="9" r="3" fill="#111"/>
+          <circle cx="60" cy="9" r="1.2" fill="#FFD600"/>
+        </g>
+      </svg>
+    </div>
+    <div class="exprBtns" id="exprBtns">
+      <button class="on" data-expr="neutral">Нейтральный</button>
+      <button data-expr="happy">Радостный</button>
+      <button data-expr="thinking">Думает</button>
+      <button data-expr="loading">Загрузка</button>
+      <button class="dl" data-dl="mascotSvg" data-name="banana-ai-mascot">Скачать SVG</button>
+    </div>
+    <div class="exprNote" id="exprNote">Нейтральный · спокойное лицо с лёгкой улыбкой — базовое состояние ассистента.</div>
+  </div>
+</section>
+
+<!-- ============ 5. ЦВЕТА ============ -->
+<section id="colors">
+  <div class="wrap">
+    <div class="kicker">05 · Цвета</div>
+    <h2>Палитра</h2>
+    <p class="lead">Пять цветов, сильный контраст, никаких градиентов. Нажми на образец — код скопируется.</p>
+    <div class="swatches">
+      <button class="sw" data-hex="#FFD600"><div class="fill" style="background:#FFD600"></div><div class="meta"><b>Banana Yellow</b><code>#FFD600</code><small>основной акцент</small></div></button>
+      <button class="sw" data-hex="#111111"><div class="fill" style="background:#111111"></div><div class="meta"><b>Ink Black</b><code>#111111</code><small>текст и контуры</small></div></button>
+      <button class="sw" data-hex="#FFFFFF"><div class="fill" style="background:#FFFFFF; border-bottom:2px solid var(--ink)"></div><div class="meta"><b>White</b><code>#FFFFFF</code><small>фон</small></div></button>
+      <button class="sw" data-hex="#F5F5F5"><div class="fill" style="background:#F5F5F5"></div><div class="meta"><b>Light Gray</b><code>#F5F5F5</code><small>секции, карточки</small></div></button>
+      <button class="sw" data-hex="#222222"><div class="fill" style="background:#222222"></div><div class="meta"><b>Dark Gray</b><code>#222222</code><small>тёмные поверхности</small></div></button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 6. ТИПОГРАФИКА ============ -->
+<section id="type">
+  <div class="wrap">
+    <div class="kicker">06 · Типографика</div>
+    <h2>Шрифт</h2>
+    <p class="lead">Геометрический гротеск (Inter / Segoe UI / системный стек — без внешних загрузок). Заголовки — жирные и плотные, текст — спокойный. Никаких рукописных и декоративных шрифтов.</p>
+    <div class="card" style="padding: 8px 22px">
+      <div class="typeRow"><div class="lbl">H1 · Заголовок · 900</div><div class="h1">Banana AI</div></div>
+      <div class="typeRow"><div class="lbl">H2 · Подзаголовок · 800</div><div class="h2t">Быстрый дружелюбный интеллект</div></div>
+      <div class="typeRow"><div class="lbl">Body · Текст · 400</div><div class="body">Banana AI отвечает быстро, честно и по-человечески. Короткие формулировки, конкретика и никакого шума. Банан — простая и узнаваемая форма, как и наш интерфейс.</div></div>
+      <div class="typeRow"><div class="lbl">Caption · Подпись · 600</div><div class="cap">СВОЙ ДВИЖОК · БЕЗ ОБЛАКОВ · ОФЛАЙН</div></div>
+      <div class="typeRow"><div class="lbl">Numeric · Моно</div><div class="num">0123456789 · #FFD600 · 100%</div></div>
+      <div class="typeRow"><div class="lbl">Правила</div><div class="body">Межбуквенное для лого: +14%. Отступ заголовок↔текст: 10px. Максимум два начертания в одном блоке. Регистр лого — только верхний.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 7. ГРАФИЧЕСКИЕ ЭЛЕМЕНТЫ ============ -->
+<section id="elements">
+  <div class="wrap">
+    <div class="kicker">07 · Элементы</div>
+    <h2>Графические элементы</h2>
+    <p class="lead">Мини-бананы, паттерн, обводочные иконки и символы загрузки — всё в той же жёлто-чёрной системе.</p>
+    <div class="elGrid">
+      <div class="elTile"><svg viewBox="0 0 120 120"><use href="#banBody" transform="scale(0.4) translate(90,90)"/></svg><small>мини-банан</small></div>
+      <div class="elTile"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="46" fill="#FFD600" stroke="#111" stroke-width="5"/><use href="#banBody" transform="scale(0.42) translate(84,84)"/></svg><small>значок-медальон</small></div>
+      <div class="elTile"><svg viewBox="0 0 120 120"><rect x="14" y="30" width="92" height="60" rx="30" fill="#FFD600" stroke="#111" stroke-width="5"/><circle cx="38" cy="60" r="6" fill="#111"/></svg><small>скруглённая плашка</small></div>
+      <div class="elTile"><svg viewBox="0 0 120 120"><use href="#banBody" transform="scale(0.36) translate(106,106)"/><use href="#banBody" transform="scale(0.36) translate(230,106)"/><use href="#banBody" transform="scale(0.36) translate(106,230)"/><use href="#banBody" transform="scale(0.36) translate(230,230)"/></svg><small>ракушка 2×2</small></div>
+      <div class="elTile wide">
+        <svg viewBox="0 0 560 70">
+          <rect width="560" height="70" fill="#F5F5F5" rx="14"/>
+          <rect width="560" height="70" fill="url(#banPat)" rx="14" opacity="0.9"/>
+        </svg>
+        <small>паттерн из бананов — подложки, упаковка, фон промо</small>
+      </div>
+      <div class="elTile"><svg viewBox="0 0 32 32" id="ic1"><use href="#icChat"/></svg><small>чат</small></div>
+      <div class="elTile"><svg viewBox="0 0 32 32" id="ic2"><use href="#icBolt"/></svg><small>скорость</small></div>
+      <div class="elTile"><svg viewBox="0 0 32 32" id="ic3"><use href="#icBrain"/></svg><small>логика</small></div>
+      <div class="elTile"><svg viewBox="0 0 32 32" id="ic4"><use href="#icShield"/></svg><small>приватность</small></div>
+      <div class="elTile"><svg viewBox="0 0 32 32" id="spinSvg"><circle cx="16" cy="16" r="11" fill="none" stroke="#F5F5F5" stroke-width="4"/><path d="M16 5 a11 11 0 0 1 11 11" fill="none" stroke="#111" stroke-width="4" stroke-linecap="round"/></svg><small>загрузка: кольцо</small></div>
+      <div class="elTile"><svg viewBox="0 0 32 32" id="dotsSvg"><rect width="32" height="32" fill="none"/><circle cx="8" cy="16" r="3" fill="#111"/><circle cx="16" cy="16" r="3" fill="#111"/><circle cx="24" cy="16" r="3" fill="#111"/></svg><small>загрузка: точки</small></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 8. ЗАГРУЗОЧНЫЙ ЭКРАН ============ -->
+<section id="loading">
+  <div class="wrap">
+    <div class="kicker">08 · Загрузка</div>
+    <h2>Стартовый экран</h2>
+    <p class="lead">Мягкое покачивание банана + полоса прогресса. Тёмная и светлая темы. Кнопка перезапускает анимацию.</p>
+    <div id="bootDemo" class="run">
+      <svg class="logo" viewBox="0 0 120 120"><rect width="120" height="120" rx="27" fill="#FFD600"/><use href="#banBody" transform="translate(15,13) scale(0.75)"/></svg>
+      <div class="word">BANANA AI</div>
+      <div class="bar"><i id="bootBar"></i></div>
+      <div class="pct" id="bootPct">loading…</div>
+    </div>
+    <div class="exprBtns" id="bootToggle">
+      <button id="btnReplay">▶ Проиграть снова</button>
+      <button id="btnTheme">Тёмная / светлая</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 9. СОЦСЕТИ ============ -->
+<section id="social">
+  <div class="wrap">
+    <div class="kicker">09 · Соцсети</div>
+    <h2>Брендинг соцсетей</h2>
+    <p class="lead">Аватары, баннер YouTube, шаблон поста и промо — одинаковый банан, одинаковые цвета.</p>
+    <div class="grid">
+      <figure class="card">
+        <div class="art">
+          <svg viewBox="0 0 120 120" style="width:150px"><circle cx="60" cy="60" r="58" fill="#FFD600" stroke="#111" stroke-width="3"/><use href="#banBody" transform="translate(15,13) scale(0.75)"/></svg>
+        </div>
+        <figcaption><b>Аватар профиля</b><span>круг</span><button class="dl" data-dl="avSvg" data-name="banana-ai-avatar">SVG</button></figcaption>
+        <svg id="avSvg" width="0" height="0" style="position:absolute"><g><circle cx="60" cy="60" r="58" fill="#FFD600" stroke="#111" stroke-width="3"/><use href="#banBody" transform="translate(15,13) scale(0.75)"/></g></svg>
+      </figure>
+      <figure class="card">
+        <div class="art gray">
+          <svg viewBox="0 0 120 120" style="width:150px"><circle cx="60" cy="60" r="58" fill="#111111"/><use href="#banMono" x="12" y="12" style="color:#FFD600"/></svg>
+        </div>
+        <figcaption><b>Telegram-аватар</b><span>тёмный</span><button class="dl" data-dl="tgSvg" data-name="banana-ai-telegram">SVG</button></figcaption>
+        <svg id="tgSvg" width="0" height="0" style="position:absolute"><g><circle cx="60" cy="60" r="58" fill="#111111"/><use href="#banMono" x="12" y="12"/></g></svg>
+      </figure>
+      <figure class="card">
+        <div class="art" style="align-items:flex-start">
+          <svg id="ytBanner" viewBox="0 0 600 150">
+            <rect width="600" height="150" fill="#111111"/>
+            <rect x="0" y="112" width="600" height="38" fill="#FFD600"/>
+            <use href="#banMono" transform="translate(40,18) scale(0.85)" style="color:#FFD600"/>
+            <text x="150" y="72" font-family="Inter,Arial,sans-serif" font-weight="900" font-size="34" letter-spacing="4" fill="#FFFFFF">BANANA AI</text>
+            <text x="152" y="98" font-family="Inter,Arial,sans-serif" font-weight="500" font-size="14" letter-spacing="2" fill="#FFD600">СВОЙ ДВИЖОК · БЕЗ ОБЛАКОВ</text>
+            <use href="#banBody" transform="translate(470,25) scale(0.85)"/>
+          </svg>
+        </div>
+        <figcaption><b>Шапка YouTube</b><span>2560×1440 →-safe зона</span><button class="dl" data-dl="ytBanner" data-name="banana-ai-youtube">SVG</button></figcaption>
+      </figure>
+      <figure class="card">
+        <div class="art gray">
+          <div class="postTpl">
+            <div class="pt-top">
+              <svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="58" fill="#FFD600"/><use href="#banBody" transform="translate(15,13) scale(0.75)"/></svg>
+              <div><b>BANANA AI</b><small>@bananaai</small></div>
+            </div>
+            <div class="pt-art">
+              <svg viewBox="0 0 120 120"><use href="#banBody"/></svg>
+            </div>
+            <div class="pt-cap"><b>Просто. Быстро. Свой движок.</b>Banana AI — ассистент, который работает даже без интернета. 🍌</div>
+          </div>
+        </div>
+        <figcaption><b>Шаблон поста</b><span>1:1 лента</span></figcaption>
+      </figure>
+      <figure class="card">
+        <div class="art yel" style="padding:0">
+          <svg id="promoSvg" viewBox="0 0 600 200" style="width:100%">
+            <rect width="600" height="200" fill="#FFD600"/>
+            <text x="36" y="92" font-family="Inter,Arial,sans-serif" font-weight="900" font-size="44" letter-spacing="3" fill="#111111">BANANA AI</text>
+            <text x="38" y="124" font-family="Inter,Arial,sans-serif" font-weight="600" font-size="17" letter-spacing="1" fill="#111111">умный ассистент на собственном движке</text>
+            <rect x="38" y="146" width="150" height="34" rx="17" fill="#111111"/>
+            <text x="66" y="168" font-family="Inter,Arial,sans-serif" font-weight="700" font-size="14" fill="#FFD600">ПОПРОБОВАТЬ</text>
+            <use href="#banBody" transform="translate(430,30) scale(1.15)"/>
+          </svg>
+        </div>
+        <figcaption><b>Промо-баннер</b><span>og-image / реклама</span><button class="dl" data-dl="promoSvg" data-name="banana-ai-promo">SVG</button></figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 10. ФУТЕР ============ -->
+<footer>
+  <div class="fw"><svg viewBox="0 0 120 120"><use href="#banBody"/></svg></div>
+  BANANA AI · брендбук · вектор живёт в этом же файле · жёлтый #FFD600 + чёрный #111111
+</footer>
+
+<div id="toast" role="status"></div>
+
+<script>
+(function () {
+  "use strict";
+  var $ = function (s) { return document.querySelector(s); };
+  var $$ = function (s) { return Array.prototype.slice.call(document.querySelectorAll(s)); };
+
+  /* ---------- тост ---------- */
+  var toastTimer = null;
+  function toast(msg) {
+    var t = $("#toast");
+    t.textContent = msg;
+    t.classList.add("on");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.classList.remove("on"); }, 2200);
+  }
+
+  /* ---------- активная ссылка в шапке ---------- */
+  var links = $$("#navlinks a");
+  links.forEach(function (a) {
+    a.addEventListener("click", function () {
+      links.forEach(function (x) { x.classList.remove("on"); });
+      a.classList.add("on");
+    });
+  });
+
+  /* ---------- маскот: переключение выражений ---------- */
+  var NOTES = {
+    neutral: "Нейтральный · спокойное лицо с лёгкой улыбкой — базовое состояние ассистента.",
+    happy: "Радостный · глаза-дуги, широкая улыбка, румянец — ответ найден, задача решена.",
+    thinking: "Думает · взгляд в сторону, рот набекрень и облачко «…» — обрабатывает запрос.",
+    loading: "Загрузка · прикрытые глаза и пульсирующие точки — идёт работа, подожди чуть-чуть."
+  };
+  var faces = $$("#mascotSvg .face");
+  $$("#exprBtns button[data-expr]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      $$("#exprBtns button").forEach(function (x) { x.classList.remove("on"); });
+      b.classList.add("on");
+      var id = b.getAttribute("data-expr");
+      faces.forEach(function (f) { f.classList.toggle("on", f.getAttribute("data-expr") === id); });
+      $("#exprNote").textContent = NOTES[id] || "";
+    });
+  });
+
+  /* ---------- загрузочный экран ---------- */
+  function replay() {
+    var d = $("#bootDemo");
+    d.classList.remove("run");
+    void d.offsetWidth; /* перезапуск CSS-анимации */
+    d.classList.add("run");
+    var bar = $("#bootBar"), pct = $("#bootPct"), t0 = Date.now();
+    var iv = setInterval(function () {
+      var p = Math.min(100, Math.round((Date.now() - t0) / 26));
+      pct.textContent = p + "%";
+      if (p >= 100) { clearInterval(iv); pct.textContent = "готово ✓"; }
+    }, 60);
+  }
+  $("#btnReplay").addEventListener("click", replay);
+  $("#btnTheme").addEventListener("click", function () {
+    $("#bootDemo").classList.toggle("light");
+    toast("Тема стартового экрана переключена");
+  });
+
+  /* ---------- палитра: копирование ---------- */
+  function copyText(txt) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(txt);
+    }
+    return new Promise(function (res, rej) {
+      var ta = document.createElement("textarea");
+      ta.value = txt;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand("copy") ? res() : rej(new Error("copy failed")); }
+      catch (e) { rej(e); }
+      ta.remove();
+    });
+  }
+  $$(".sw").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var hex = b.getAttribute("data-hex");
+      copyText(hex).then(function () { toast(hex + " скопирован"); })
+        .catch(function () { toast(hex + " — скопируй вручную"); });
+    });
+  });
+
+  /* ---------- скачивание SVG ---------- */
+  var VB = { varH: "0 0 330 120", varV: "0 0 120 150", varIcon: "0 0 120 120", varBW: "0 0 120 120", varYB: "0 0 120 120", varDark: "0 0 120 120", appIcon: "0 0 120 120", mascotSvg: "0 0 120 120", avSvg: "0 0 120 120", tgSvg: "0 0 120 120", ytBanner: "0 0 600 150", promoSvg: "0 0 600 200" };
+  function dlSVG(id, name) {
+    try {
+      var src = document.getElementById(id);
+      if (!src) { toast("Не нашёл исходник " + id); return; }
+      var clone = src.cloneNode(true);
+      clone.removeAttribute("id");
+      clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+      clone.setAttribute("viewBox", VB[id] || "0 0 120 120");
+      clone.setAttribute("width", (VB[id] || "0 0 120 120").split(" ")[2]);
+      clone.setAttribute("height", (VB[id] || "0 0 120 120").split(" ")[3]);
+      clone.style.position = "static";
+      /* встроить канонический банан в файл — иначе <use href="#banBody"> в скачанном SVG будет пустым */
+      var defsEl = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+      ["banBody", "banMono"].forEach(function (n) {
+        var d = document.getElementById(n);
+        if (d) defsEl.appendChild(d.cloneNode(true));
+      });
+      clone.insertBefore(defsEl, clone.firstChild);
+      var blob = new Blob(['<?xml version="1.0" encoding="UTF-8"?>\n' + clone.outerHTML], { type: "image/svg+xml;charset=utf-8" });
+      var a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = (name || id) + ".svg";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
+      toast("Скачано: " + a.download);
+    } catch (e) {
+      toast("Не удалось скачать: " + (e && e.message));
+    }
+  }
+  $$(".dl").forEach(function (b) {
+    b.addEventListener("click", function () {
+      dlSVG(b.getAttribute("data-dl"), b.getAttribute("data-name"));
+    });
+  });
+
+  /* ---------- самодиагностика ---------- */
+  window.BRANDBOOK = {
+    v: "1.0",
+    dlSVG: dlSVG,
+    toast: toast,
+    errors: window.__BAerrs
+  };
+})();
+</script>
+</body>
+</html>
